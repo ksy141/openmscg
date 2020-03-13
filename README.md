@@ -18,12 +18,12 @@ _Python 3.6.x_
 wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/opencg-0.0.1-cp36-cp36m-linux_x86_64.whl
 ```
 
-** Python 3.7.x **
+_Python 3.7.x_
 ```
 wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/opencg-0.0.1-cp37-cp37m-linux_x86_64.whl
 ```
 
-** Python 3.8.x **
+_Python 3.8.x_
 ```
 wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/opencg-0.0.1-cp38-cp38-linux_x86_64.whl
 ```
