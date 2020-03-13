@@ -31,7 +31,7 @@ wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/ope
 **3. Install the distribution**
 
 ```
-python setup.py install opencg-*.whl --user
+pip install opencg-*.whl --user
 ```
 
 It is recommended to install the package in the user's base directory, i.e., `~/.local` in the UNIX/Linux environment.
