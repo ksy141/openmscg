@@ -13,7 +13,7 @@ Up-to-date Python package management tool is recommended: `conda` or `pip`.
 
 **2. Download precompiled distributions**
 
-** Python 3.6.x **
+_Python 3.6.x_
 ```
 wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/opencg-0.0.1-cp36-cp36m-linux_x86_64.whl
 ```
