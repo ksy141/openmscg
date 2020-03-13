@@ -1,0 +1,7 @@
+dist/
+*.egg-info/
+
+notes.txt
+
+build/
+run/
