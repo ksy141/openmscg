@@ -17,7 +17,7 @@ def read_version(version_file):
 def read_config(args):
     
     cfg = configparser.ConfigParser()
-    cfg.readfp(open('setup.cfg'))
+    cfg.readfp(open('build.cfg'))
     
     if not cfg.has_section('build_options'):
         return
