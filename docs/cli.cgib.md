@@ -1,8 +1,7 @@
 # Command: cgib
 
-The script to calculate distributions of pairs, bonds, angles ... It can also calculate the potential functions from the inversed-boltzmann method.
-
----
+The script to calculate distributions of pairs, bonds, angles ... 
+It can also calculate the potential functions from the inversed-boltzmann method.
 
 ### Arguments:
 
@@ -31,7 +30,7 @@ The script to calculate distributions of pairs, bonds, angles ... It can also ca
 ### Example:
 
 ```
-ibcg \
+cgib \
     --skip 0 \
     --every 10 \
     --frames 100 \
