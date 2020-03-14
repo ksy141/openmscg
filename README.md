@@ -42,3 +42,6 @@ It is recommended to install the package in the user's base directory, i.e., `~/
 export PATH=${HOME}/.local/bin:${PATH}
 cginfo
 ```
+
+pip install --trusted-host software.rcc.uchicago.edu --index-url https://software.rcc.uchicago.edu/mscg/dist opencg
+
