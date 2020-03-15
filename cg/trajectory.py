@@ -8,6 +8,11 @@ from .core import cxx_traj as lib
 class Trajectory:
     
     def __init__(self, filename, fmt=''):
+
+        self.x = None
+        self.f = None
+        self.h = None
+        
         if not os.path.isfile(filename):
             raise Exception('File not found: ' + filename)
         
@@ -36,12 +41,10 @@ class Trajectory:
         self.natoms = lib.get_natoms(self.h)
         self.has_force = lib.has_force(self.h)
         self.box = np.array(lib.get_box(self.h))
-        
-        self.x = None
-        self.f = None
     
     def __del__(self):
-        lib.close(self.h)
+        if self.h is not None:
+            lib.close(self.h)
     
     def get_status(self):
         return lib.get_status(self.h)

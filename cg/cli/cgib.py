@@ -2,15 +2,7 @@
 import numpy as np
 from cg import *
 
-import argparse
-
-class CLIParser(argparse.ArgumentParser):
-    def convert_arg_line_to_args(self, arg_line):
-        if arg_line.strip()[:1] == '#':
-            return []
-        return arg_line.strip().split()
-
-def main():
+def main(*args, **kwargs):
     
     parser = CLIParser(description='Run MSCG Range-finder, RDF Calculations, or Inversed-boltzmann method.', formatter_class=argparse.ArgumentDefaultsHelpFormatter, fromfile_prefix_chars='@')
 
@@ -32,8 +24,11 @@ def main():
     parser.add_argument("--plot", metavar='', type=str, default='U', help="plot the results of U (potential) or n (distribition)")
     parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
     
-    args = parser.parse_args()
-
+    if len(args)>0 or len(kwargs)>0:
+        args = parser.parse_inline_args(*args, **kwargs)
+    else:
+        args = parser.parse_args()
+    
     top = build_topology(args.top, args.topology, {
         'names': [] if args.names is None else args.names.split(',')
     })
@@ -194,7 +189,6 @@ def main():
         if args.frames>0 and nread >= args.frames:
             break
     
-    print()
 
 
     def post_process(d, prefix):
@@ -222,7 +216,7 @@ def main():
 
 
 
-    if args.plot != '':
+    if args.plot != 'none':
         import matplotlib.pyplot as plt
 
         for pair in pairs:
@@ -236,6 +230,9 @@ def main():
             
         plt.legend(loc='upper right')
         plt.show()
+    
+    if args.verbose:
+        print("")
 
 
 if __name__ == '__main__':
