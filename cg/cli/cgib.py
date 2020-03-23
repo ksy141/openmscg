@@ -4,54 +4,66 @@ from cg import *
 
 def main(*args, **kwargs):
     
-    parser = CLIParser(description='Run MSCG Range-finder, RDF Calculations, or Inversed-boltzmann method.', formatter_class=argparse.ArgumentDefaultsHelpFormatter, fromfile_prefix_chars='@')
+    # parse argument
+    
+    parser = CLIParser(description='Run MSCG Range-finder, RDF Calculations, or Inversed-boltzmann method.', formatter_class=argparse.ArgumentDefaultsHelpFormatter, fromfile_prefix_chars='@', add_help=False)
+    
+    group = parser.add_argument_group('General arguments')
+    group.add_argument("-h", "--help", action="help", help="show this help message and exit")
+    group.add_argument("-v", "--verbose", metavar='L', type=int, default=0, help="screen verbose level")
+    
+    group = parser.add_argument_group('Required arguments')
+    group.add_argument("--top",  metavar='file:format', type=str, help="topology file: in format of [filename,format:lammps|cg]", required=True)
+    
+    group = parser.add_argument_group('Optional arguments')
+    group.add_argument("--names",  metavar='', type=str, help="comma separated atom names (needed when using LAMMPS data file for topology)")
+    group.add_argument("--traj", metavar='', type=str, help="trajectory files: in format of [filename,skip:0,every:1,nread:0]", action='append')
+    group.add_argument("--cut",    metavar='', type=float, default=10.0, help="cut-off for pair interactions")
+    group.add_argument("--temp",   metavar='', type=float, default=298.15, help="temperature (K) for IB")
 
-    parser.add_argument("topology",   help="topology file",   type=str)
-    parser.add_argument("trajectory", help="trajectory file", type=str)
-
-    parser.add_argument("--skip",   metavar='N', type=int, default=0, help="skip first N frames")
-    parser.add_argument("--every",  metavar='N', type=int, default=1, help="read the first frame in every N frames")
-    parser.add_argument("--frames", metavar='N', type=int, default=0, help="maximum frames to be processed, 0 for all")
-
-    parser.add_argument("--top",    metavar='', type=str, default="cgtop", help="type of topology file")
-    parser.add_argument("--names",  metavar='', type=str, help="comma separated atom names (needed when using LAMMPS data file for topology)")
-    parser.add_argument("--cut",    metavar='', type=float, default=10.0, help="cut-off for pair interactions")
-    parser.add_argument("--temp",   metavar='', type=float, default=298.15, help="temperature (K) for IB")
-
-    parser.add_argument("--pair", metavar='', type=str, help="add a pair RDF, in format of [type1,type2,min,max,bins]", action='append')
-    parser.add_argument("--bond", metavar='', type=str, help="add a bond distribution, in format of [type1,type2,min,max,bins]", action='append')
-    parser.add_argument("--angle", metavar='', type=str, help="add an angle distribution, in format of [type1,type2,type3,min,max,bins]", action='append')
-    parser.add_argument("--plot", metavar='', type=str, default='U', help="plot the results of U (potential) or n (distribition)")
-    parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
+    group.add_argument("--pair", metavar='', type=str, help="add a pair RDF, in format of [type1,type2,min,max,bins]", action='append')
+    group.add_argument("--bond", metavar='', type=str, help="add a bond distribution, in format of [type1,type2,min,max,bins]", action='append')
+    group.add_argument("--angle", metavar='', type=str, help="add an angle distribution, in format of [type1,type2,type3,min,max,bins]", action='append')
+    group.add_argument("--plot", metavar='U|N', type=str, default='U', help="plot the results of U (potential) or n (distribition)")
     
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
     else:
         args = parser.parse_args()
     
-    top = build_topology(args.top, args.topology, {
+    screen.verbose = args.verbose
+    screen.info("Start running CGIB ...")
+    
+    # load topology
+    
+    top_args = [s.strip() for s in args.top.split(',')]
+    
+    if len(top_args)<2:
+        screen.fatal(["wrong format of the topology argument.", "file format is not specified."])
+    
+    screen.info("Load topology: " + args.top)
+    
+    top = build_topology(top_args[1], top_args[0], {
         'names': [] if args.names is None else args.names.split(',')
     })
 
+    screen.info("Generate bonds/angles/dihedrals ...")
     top.build_special(True, True, True)
-    trj = Trajectory(args.trajectory)
     
-    if top.natoms != trj.natoms:
-        raise Exception("Inconsistent number of atoms between topology (%d) and trajectory (%d)." % (top.natoms, trj.natoms))
-
-    plist = PairList(top, trj)
-    plist.init(cut=args.cut)
-    plist.setup_bins()
+    # prepare lists
     
-    blist = BondList(top, trj)
-    nread = 0
-    
+    screen.info("Build pair and bonding list-based algorithm ...")
+    plist = PairList(top)
+    plist.init(cut = args.cut)
+    blist = BondList(top)
+        
     # prepare pair plots
 
     pairs = []
 
     if args.pair is not None:
         for pair in args.pair:
+            screen.info("Add pair plot: " + pair)
             w = pair.split(',')
             pairs.append({
                 'name': '-'.join(w[:2]),
@@ -69,6 +81,7 @@ def main(*args, **kwargs):
 
     if args.bond is not None:
         for bond in args.bond:
+            screen.info("Add bond plot: " + bond)
             w = bond.split(',')
             bonds.append({
                 'name': '-'.join(w[:2]),
@@ -86,6 +99,7 @@ def main(*args, **kwargs):
 
     if args.angle is not None:
         for angle in args.angle:
+            screen.info("Add angle plot: " + angle)
             w = angle.split(',')
             angles.append({
                 'name': '-'.join(w[:3]),
@@ -98,99 +112,134 @@ def main(*args, **kwargs):
             })
 
     # start processing trajectory
-
-    for i in range(args.skip):
-        trj.read_frame()
     
-    if args.verbose:
-        TIMER.reset()
-        last = TIMER.last
-
-    while trj.read_frame():
+    TIMER.reset()
+    last = TIMER.last
+    
+    for trj_arg in args.traj:
         
-        # process pair styles
-
-        if len(pairs)>0: 
-            plist.build()
-            pstart = 0
-            pn = 100000
-
-            while True:
-                z = plist.get_pairs(pstart, pn)
-                types = np.array(z[0])
-                vals = np.array(z[3])
-
-                for pair in pairs:
-                    dr = vals[types==pair['type']]
-                    hist, edges = np.histogram(dr, bins=pair['bins'], range=(pair['min'], pair['max']))
-
-                    if pair['n'] is None:
-                        pair['n'], pair['x'] = hist, edges[:-1] + np.diff(edges) * 0.5
-                    else:
-                        pair['n'] += hist
-
-                pstart += pn
-                if len(types)<pn:
-                    break
-
-        # process bonding styles
-
-        if len(bonds)>0 or len(angles)>0:
-            blist.build()
-
-            def process_hist(one, types, vals):
-
-                vals = vals[types==one['type']]
-                hist, edges = np.histogram(vals, bins=one['bins'], range=(one['min'], one['max']))
-
-                if one['n'] is None:
-                    one['n'], one['x'] = hist, edges[:-1] + np.diff(edges) * 0.5
-                else:
-                    one['n'] += hist
-
-            for one in bonds:
-                z = blist.get_bonds()
-                types = np.array(z[0])
-                dr = np.array(z[3])
-                process_hist(one, types, dr)
-
-            for one in angles:
-                z = blist.get_angles()
-                types = np.array(z[0])
-                dr = np.array(z[4]) * (180.0 / np.pi)
-                process_hist(one, types, dr)
-
-        # goto the next frame
-
-        for i in range(args.every -1):
+        screen.info("Process trajectory: " + trj_arg)
+        
+        w = trj_arg.split(',')
+        filename, skip, every, frames = w[0], 0, 1, 0
+        
+        if len(w)>1:
+            skip = int(w[1])
+        
+        if len(w)>2:
+            every = int(w[2])
+        
+        if len(w)>3:
+            frames = int(w[3])
+                
+        trj = Trajectory(filename)
+        
+        if top.natoms != trj.natoms:
+            screen.fatal("Inconsistent number of atoms between topology (%d) and trajectory (%d)." % (top.natoms, trj.natoms))
+            
+        plist.setup_bins(trj)
+        start = TIMER.last
+        nread = 0
+                
+        for i in range(skip):
             trj.read_frame()
+        
+        while trj.read_frame():
+            
+            # process pair styles
 
-        nread += 1
+            if len(pairs)>0: 
+                
+                plist.build(trj)
+                pstart = 0
+                pn = 100000 # pairs per page
+                
+                while True:
+                    z = plist.get_pairs(pstart, pn)
+                    types = np.array(z[0])
+                    vals = np.array(z[3])
+
+                    for pair in pairs:
+                        dr = vals[types==pair['type']]
+                        hist, edges = np.histogram(dr, bins=pair['bins'], range=(pair['min'], pair['max']))
+
+                        if pair['n'] is None:
+                            pair['n'], pair['x'] = hist, edges[:-1] + np.diff(edges) * 0.5
+                        else:
+                            pair['n'] += hist
+
+                    pstart += pn
+                    if len(types)<pn:
+                        break
+
+            # process bonding styles
+
+            if len(bonds)>0 or len(angles)>0:
+                blist.build(trj)
+
+                def process_hist(one, types, vals):
+
+                    vals = vals[types==one['type']]
+                    hist, edges = np.histogram(vals, bins=one['bins'], range=(one['min'], one['max']))
+
+                    if one['n'] is None:
+                        one['n'], one['x'] = hist, edges[:-1] + np.diff(edges) * 0.5
+                    else:
+                        one['n'] += hist
+
+                for one in bonds:
+                    z = blist.get_bonds()
+                    types = np.array(z[0])
+                    dr = np.array(z[3])
+                    process_hist(one, types, dr)
+
+                for one in angles:
+                    z = blist.get_angles()
+                    types = np.array(z[0])
+                    dr = np.array(z[4]) * (180.0 / np.pi)
+                    process_hist(one, types, dr)
+
+            # goto the next frame
+
+            for i in range(every -1):
+                trj.read_frame()
+
+            nread += 1
+
+            # timing
+
+            if screen.verbose > 0:
+                TIMER.click(None)
+
+                if TIMER.last - last > 1.0:
+                    last = TIMER.last
+                    elapsed = TIMER.last - start
+
+                    if frames>0:
+                        remained = (TIMER.last - start) / nread * (frames - nread)
+                        msg = " -> Processed %d of %d frames. Elapsed: %0.0f secs. Remaining %0.0f secs ..." % (nread, frames, elapsed, remained)
+                    else:
+                        msg = " -> Processed %d frames. Elapsed: %0.0f secs ..." % (nread, elapsed)
+
+                    print('\r%s' % (msg), end="")
+
+            # end of one frame
+
+            if frames > 0 and nread >= frames:
+                break
         
-        # timing
+        # end of one trajectory
         
-        if args.verbose:
+        if screen.verbose > 0:
             TIMER.click(None)
-
-            if TIMER.last - last > 1.0:
-                last = TIMER.last
-                elapsed = TIMER.last - TIMER.start
-
-                if args.frames>0:
-                    remained = (TIMER.last - TIMER.start) / nread * (args.frames - nread)
-                    msg = "Processed %d of %d frames. Elapsed: %0.0f secs. Remaining %0.0f secs ..." % (nread, args.frames, elapsed, remained)
-                else:
-                    msg = "Processed %d frames. Elapsed: %0.0f secs ..." % (nread, elapsed)
-
-                print('\r%s' % (msg), end="")
-
-        # end
+            elapsed = TIMER.last - start
+            msg = " -> Processed %d frames. Elapsed: %0.0f secs." % (nread, elapsed)
+            print(('\r%s' % (msg)) + " " * 30)
         
-        if args.frames>0 and nread >= args.frames:
-            break
+    # end of processing trajectories
     
-
-
+    # dump results
+    
     def post_process(d, prefix):
         valid = d['n'] > 1.0E-40
         d['x'] = d['x'][valid]
@@ -231,8 +280,8 @@ def main(*args, **kwargs):
         plt.legend(loc='upper right')
         plt.show()
     
-    if args.verbose:
-        print("")
+    screen.info("Processing is finished.")
+
 
 
 if __name__ == '__main__':

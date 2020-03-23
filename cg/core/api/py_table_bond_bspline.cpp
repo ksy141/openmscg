@@ -54,6 +54,12 @@ PYAPI(dump)
     return z;
 }
 
+PYAPI(get_spline)
+{
+    GETPTR();
+    return Py_BuildValue("iiifff", p->order, p->nbreak, p->ncoeff, p->xmin, p->xmax, p->resolution);
+}
+
 static PyMethodDef cModPyMethods[] =
 {
     {"create",      create,      METH_VARARGS, "Create table object."},
@@ -61,6 +67,7 @@ static PyMethodDef cModPyMethods[] =
     {"setup_cache", setup_cache, METH_VARARGS, "Setup cache acceleration."},
     {"compute",     compute,     METH_VARARGS, "Compute coefficients."},
     {"dump",        dump,        METH_VARARGS, "Dump result table."},
+    {"get_spline",  get_spline,  METH_VARARGS, "Get spline parameters."},
     {NULL, NULL}
 };
 

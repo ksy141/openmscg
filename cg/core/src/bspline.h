@@ -17,7 +17,7 @@ class BSpline
     gsl_vector *B0, *B1, *D0, *D1;
     size_t start0, start1, end0, end1;
     
-    int order, ncoeff, scale_flag;
+    int order, nbreak, ncoeff, scale_flag;
     double xmin, xmax, ddx, resolution;
 
     double *table_bvalue;

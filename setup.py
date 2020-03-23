@@ -113,6 +113,13 @@ if __name__ == '__main__':
             extra_link_args = setup_args['lapack_lib'] + setup_args['link'],
         ),
         
+        Extension(core_prefix + 'bspline',
+            include_dirs = [src_path],
+            sources = src_files('py_bspline', ['bspline']),
+            extra_compile_args = setup_args['compile'],
+            extra_link_args = setup_args['gsl_lib'] + setup_args['link'],
+        ),
+        
         table_extention('pair'),
         table_extention('bond'),
         table_extention('angle')

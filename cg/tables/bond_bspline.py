@@ -5,8 +5,9 @@ import numpy as np
 
 class TableBondBSpline:
     
-    def __init__(self, blist, type_id, order=3, resolution=0.05, xmin=1.0, xmax=2.0):
-        self.h =  lib.create(blist.h, type_id, order, resolution, xmin, xmax)
+    def __init__(self, blist, name, type_id, order=3, resolution=0.05, xmin=1.0, xmax=2.0):
+        self.name = 'Bond_' + name
+        self.h = lib.create(blist.h, type_id, order, resolution, xmin, xmax)
         tables.add(self)
     
     def __del__(self):
@@ -17,6 +18,9 @@ class TableBondBSpline:
     
     def compute(self):
         lib.compute(self.h)
+    
+    def get_spline(self):
+        return lib.get_spline(self.h)
     
     def dump(self, xmin, dx, n):
         x = [xmin + dx*i for i in range(n)]

@@ -106,9 +106,11 @@ void Matrix::multiplyadd(float *F)
 #endif
     
     /*
-    for(int i=0; i<20; i++)
+    int _t = 10;
+    
+    for(int i=0; i<_t; i++)
     {
-        for(int j=0; j<20; j++) printf(" %10.2lf", matrix_cov[i*ncols+j]);
+        for(int j=0; j<_t; j++) printf(" %10.2lf", matrix_cov[i*ncols+j]);
         printf("\n");
     }
     printf("\n");
@@ -119,21 +121,24 @@ void Matrix::multiplyadd(float *F)
 
 void Matrix::solve()
 {
-    /*
-    for(int i=ncols-1; i<ncols; i++)
-    {
-        printf("\n|");
-        for(int j=0; j<ncols; j++) printf(" %10.2f", matrix_cov[i*ncols+j]);
-    } printf("\n");
-    
-    print_vector(vector_cov, ncols);
-    */
-    
 #if RANKK_OPERATOR > 0
     LAPACKE_dposv(LAPACK_COL_MAJOR, 'U', ncols, 1, matrix_cov, ncols, vector_cov, ncols);
 #else
     LAPACKE_dgels(LAPACK_ROW_MAJOR, 'N', ncols, ncols, 1, matrix_cov, ncols, vector_cov, 1);
 #endif
+    
+    /*
+    int _t = 10;
+    
+    for(int i=0; i<_t; i++)
+    {
+        for(int j=0; j<_t; j++) printf(" %10.2lf", matrix_cov[i*ncols+j]);
+        printf("\n");
+    }
+    printf("\n");
+    print_vector(vector_cov, ncols);
+    printf("\n");
+    */
 }
 
 

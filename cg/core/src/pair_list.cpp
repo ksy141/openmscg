@@ -64,16 +64,15 @@ void Stencil::setup(PairList *pair, int me)
                 }
 }
 
-PairList::PairList(Topology *top, Traj *traj)
+PairList::PairList(Topology *top, int natoms)
 {
     maxbins = 0;
     binhead = links = ibins = 0;
     stencil = 0;
     
     this->top = top;
-    this->traj = traj;
+    this->natoms = natoms;
     
-    natoms = traj->natoms;
     links = new int [natoms];
     ibins = new int [natoms];
 }
@@ -123,7 +122,7 @@ void PairList::bin2offset(int b, int *x, int *y, int *z)
     (*z) = b % nbinz;
 }
 
-void PairList::setup_bins()
+void PairList::setup_bins(Traj* traj)
 {
     for(int d=0; d<3; d++) 
     {
@@ -159,17 +158,6 @@ void PairList::setup_bins()
         
         for(int i=0; i<maxbins; i++)
             stencil[i].setup(this, i);
-        
-        /*
-        for(int i=0; i<maxbins; i++) 
-        {
-            printf("NEIGH[%d] =", i);
-            for(int j=0; j<stencil[i].n_neigh; j++)
-                printf(" %d", stencil[i].neigh_bins[j]);
-
-            printf("\n");
-        }
-        */
     }
 }
 
@@ -197,14 +185,14 @@ inline int PAIRTYPE(int i, int j, int n)
     return i<j?(i*n+j):(j*n+i);
 }
 
-void PairList::build(bool reset_bins)
+void PairList::build(Traj* traj, bool reset_bins)
 {
-    if(reset_bins) setup_bins();
+    if(reset_bins) setup_bins(traj);
     
     Vec *x = traj->x;
     bin_atoms(x);
     npairs = 0;
-
+    
     int ntype = top->ntypes_atom;
     int *types = top->atom_types;
     int *nspecials = top->nspecials;
@@ -285,12 +273,11 @@ void PairList::build(bool reset_bins)
     }
     
     // printf("npairs: %ld\n", npairs);
-    
     // for(int i=0; i<npairs; i++)
     //     printf("%6d %6d %6d %10lf\n", tlist[i], ilist[i], jlist[i], drlist[i]);
 }
 
-void PairList::build_brutal()
+void PairList::build_brutal(Traj* traj)
 {
     Vec *x = traj->x;
     int npairs = 0;

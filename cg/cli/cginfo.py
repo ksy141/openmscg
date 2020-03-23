@@ -1,6 +1,6 @@
 
 from pkg_resources import get_distribution
-import importlib, inspect
+import importlib, inspect, os
 
 
 
@@ -13,7 +13,7 @@ def terminal_size():
 
 
 def main():
-        
+    
     # print title
     
     title = "OpenCG Python Package"
@@ -28,13 +28,16 @@ def main():
     pkg = get_distribution('opencg')
     
     if pkg.has_metadata('PKG-INFO'):
-        metadata = pkg.get_metadata_lines('PKG-INFO')
+        metadata = list(pkg.get_metadata_lines('PKG-INFO'))
     elif pkg.has_metadata('METADATA'):
-        metadata = pkg.get_metadata_lines('METADATA')
+        metadata = list(pkg.get_metadata_lines('METADATA'))
     else:
         metadata = []
     
     md = []
+    
+    import cg
+    metadata.append("Location: " + os.path.dirname(cg.__file__))
     
     for row in metadata:
         w = row.split(": ")

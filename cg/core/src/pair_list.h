@@ -26,7 +26,6 @@ class PairList
     // settings
     
     Topology* top;
-    Traj* traj;
     
     int natoms;
     float cut, cut_sq;
@@ -43,23 +42,27 @@ class PairList
     Stencil *stencil;
     
     // pair list
+    
     long npairs;   
     int *ilist, *jlist, *tlist;
     float *dxlist, *dylist, *dzlist, *drlist;
     
     // functions
     
-    PairList(Topology*, Traj*);
+    PairList(Topology*, int);
     virtual ~PairList();
-    
-    void init(float, float);
-    void setup_bins();
-    void bin_atoms(Vec*);
-    void build(bool reset_bins = false);
-    void build_brutal();
     
     int offset2bin(int, int, int);
     void bin2offset(int, int*, int*, int*);
+    
+    void init(float, float);
+    void bin_atoms(Vec*);
+    
+    // api
+    
+    void setup_bins(Traj*);
+    void build(Traj*, bool reset_bins = false);
+    void build_brutal(Traj*);
 };
 
 #endif

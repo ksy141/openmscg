@@ -7,7 +7,7 @@ BSpline::BSpline(int order, double resolution, double xmin, double xmax, int sca
     this->xmin = xmin;
     this->xmax = xmax;
     this->scale_flag = scale_flag;
-    int nbreak = static_cast<int>(ceil((xmax - xmin)/resolution)) + 1;
+    nbreak = static_cast<int>(ceil((xmax - xmin)/resolution)) + 1;
 
     bw = gsl_bspline_alloc(order, nbreak);
     gsl_bspline_knots_uniform(xmin, xmax, bw);

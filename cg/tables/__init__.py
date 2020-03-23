@@ -9,8 +9,8 @@ class tables:
     @staticmethod
     def compute_all():
         for table in tables.all:
-            table.compute()    
-    
+            table.compute()
+        
 from .pair_bspline import *
 from .bond_bspline import *
 from .angle_bspline import *

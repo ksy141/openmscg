@@ -5,7 +5,8 @@ import numpy as np
 
 class TableAngleBSpline:
     
-    def __init__(self, blist, type_id, order=3, resolution=3, xmin=0, xmax=180):
+    def __init__(self, blist, name, type_id, order=3, resolution=3, xmin=0, xmax=180):
+        self.name = 'Angle_' + name
         
         xmin = xmin / 180.0 * np.pi
         xmax = xmax / 180.0 * np.pi
@@ -22,6 +23,9 @@ class TableAngleBSpline:
     
     def compute(self):
         lib.compute(self.h)
+    
+    def get_spline(self):
+        return lib.get_spline(self.h)
     
     def dump(self, xmin, dx, n):
         x = [xmin + dx*i for i in range(n)]

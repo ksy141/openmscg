@@ -24,25 +24,33 @@ class TIMER:
         TIMER.last = now
     
     @staticmethod
-    def report():
+    def report(screen = True):
         now = time()
         total = now - TIMER.start
         timed = 0.0
         
         w = 42
-        print("=" * w)
-        print("            Timing Statistics")
-        print("-" * w)
-        print(" %-10s %7s %10s %10s" % ("module", "count", "elapsed", "fraction"))
-        print("-" * w)
+        z = []
+        
+        z.append("=" * w)
+        z.append("            Timing Statistics")
+        z.append("-" * w)
+        z.append(" %-10s %7s %10s %10s" % ("module", "count", "elapsed", "fraction"))
+        z.append("-" * w)
         
         for name in TIMER.recs:
             rec = TIMER.recs[name]
             timed += rec[1]
-            print(" %-10s %7d %10.2f %9.1f%%" % (name[:10], rec[0], rec[1], rec[1]/total * 100))
+            z.append(" %-10s %7d %10.2f %9.1f%%" % (name[:10], rec[0], rec[1], rec[1]/total * 100))
         
-        print("-" * w)
+        z.append("-" * w)
         other = total - timed
-        print(" %-10s %7s %10.2f %9.1f%%" % ("other", "", other, other/total * 100))       
-        print(" %-10s %7s %10.2f %9.1f%%" % ("total", "", total, 100.0))
-        print("=" * w)
+        z.append(" %-10s %7s %10.2f %9.1f%%" % ("other", "", other, other/total * 100))       
+        z.append(" %-10s %7s %10.2f %9.1f%%" % ("total", "", total, 100.0))
+        z.append("=" * w)
+        
+        if screen:
+            print("\n".join(z))
+        
+        return z
+        

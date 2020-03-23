@@ -3,10 +3,9 @@
 #include <cmath>
 #include <cstdio>
 
-BondList::BondList(Topology *top, Traj *trj)
+BondList::BondList(Topology *top)
 {
     this->top = top;
-    this->trj = trj;
     
     dx_bond = dy_bond = dz_bond = dr_bond = 0;
     
@@ -36,24 +35,24 @@ BondList::~BondList()
     #undef _ptr
 }
 
-void BondList::build()
+void BondList::build(Traj* traj)
 {
     for(int d=0; d<3; d++) 
     {
-        box[d] = trj->box[d];
+        box[d] = traj->box[d];
         hbox[d] = 0.5 * box[d];
     }
     
-    build_bonds();
-    build_angls(); 
-    build_dihes();
+    build_bonds(traj);
+    build_angls(traj); 
+    build_dihes(traj);
 }
 
-void BondList::build_bonds()
+void BondList::build_bonds(Traj* traj)
 {    
     int *atom1 = top->bond_atom1;
     int *atom2 = top->bond_atom2;
-    Vec *x = trj->x;
+    Vec *x = traj->x;
 
     for(int i=0; i<top->nbonds; i++)
     {
@@ -76,12 +75,12 @@ void BondList::build_bonds()
     }
 }
 
-void BondList::build_angls()
+void BondList::build_angls(Traj* traj)
 {
     int *atom1 = top->angl_atom1;
     int *atom2 = top->angl_atom2;
     int *atom3 = top->angl_atom3;
-    Vec *x = trj->x;
+    Vec *x = traj->x;
 
     for(int i=0; i<top->nangls; i++)
     {
@@ -127,7 +126,7 @@ void BondList::build_angls()
     }
 }
 
-void BondList::build_dihes()
+void BondList::build_dihes(Traj* traj)
 {
 
 }

@@ -9,10 +9,9 @@
 PYAPI(create)
 {
     Topology *top;
-    Traj *trj;
     
-    PyArg_ParseTuple(args, "LL", &top, &trj);
-    BondList *p = new BondList(top, trj);
+    PyArg_ParseTuple(args, "L", &top);
+    BondList *p = new BondList(top);
     return Py_BuildValue("L", p);
 }
 
@@ -25,8 +24,11 @@ PYAPI(destroy)
 
 PYAPI(build)
 {
-    GETPTR();
-    p->build();
+    BondList *p;
+    Traj *traj;
+    
+    PyArg_ParseTuple(args, "LL", &p, &traj);
+    p->build(traj);
     Py_RETURN_NONE;
 }
 

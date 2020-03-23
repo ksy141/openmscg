@@ -9,10 +9,10 @@
 PYAPI(create)
 {
     Topology *top;
-    Traj *traj;
+    int natoms;
     
-    PyArg_ParseTuple(args, "LL", &top, &traj);
-    PairList *p = new PairList(top, traj);
+    PyArg_ParseTuple(args, "Li", &top, &natoms);
+    PairList *p = new PairList(top, natoms);
     return Py_BuildValue("L", p);
 }
 
@@ -34,17 +34,22 @@ PYAPI(init)
 
 PYAPI(setup_bins)
 {
-    GETPTR();
-    p->setup_bins();
+    PairList *pair;
+    Traj *traj;
+    
+    PyArg_ParseTuple(args, "LL", &pair, &traj);
+    pair->setup_bins(traj);
     Py_RETURN_NONE;
 }
 
 PYAPI(build)
 {
     PairList *pair;
+    Traj *traj;
     int reset_bins;
-    PyArg_ParseTuple(args, "Lp", &pair, &reset_bins);
-    pair->build(reset_bins == 1);
+    
+    PyArg_ParseTuple(args, "LLp", &pair, &traj, &reset_bins);
+    pair->build(traj, reset_bins == 1);
     return Py_BuildValue("L", pair->npairs);
 }
 

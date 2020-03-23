@@ -13,7 +13,6 @@ class BondList
     Vec box, hbox;
     
     Topology* top;
-    Traj* trj;
     
     float *dx_bond, *dy_bond, *dz_bond, *dr_bond;
     
@@ -24,13 +23,13 @@ class BondList
     
     // functions
     
-    BondList(Topology*, Traj*);
+    BondList(Topology*);
     virtual ~BondList();
     
-    void build();
-    void build_bonds();
-    void build_angls();
-    void build_dihes();
+    void build(Traj*);
+    void build_bonds(Traj*);
+    void build_angls(Traj*);
+    void build_dihes(Traj*);
 };
 
 #endif

@@ -21,7 +21,7 @@ PYAPI(destroy)
 
 PYAPI(add_table)
 {
-    Matrix *mtx; 
+    Matrix *mtx;
     Table *tbl;
     PyArg_ParseTuple(args, "LL", &mtx, &tbl);
     mtx->add_table(tbl);
@@ -30,7 +30,7 @@ PYAPI(add_table)
 
 PYAPI(setup)
 {
-    Matrix *mtx; 
+    Matrix *mtx;
     int natoms;
     PyArg_ParseTuple(args, "Li", &mtx, &natoms);
     mtx->setup(natoms);
@@ -39,11 +39,40 @@ PYAPI(setup)
 
 PYAPI(multiplyadd)
 {
-    Matrix *mtx; 
+    Matrix *mtx;
     Traj *trj;
     PyArg_ParseTuple(args, "LL", &mtx, &trj);
     mtx->multiplyadd((float*)(trj->f));
     Py_RETURN_NONE;
+}
+
+PYAPI(cov_X)
+{
+    GETPTR();
+    PyObject *z = PyList_New(p->ncols);
+    
+    for(int i=0; i<p->ncols; i++)
+    {
+        PyObject *row = PyList_New(p->ncols);
+        
+        for(int j=0; j<p->ncols; j++)
+            PyList_SetItem(row, j, Py_BuildValue("f", p->matrix_cov[i*p->ncols+j]));
+        
+        PyList_SetItem(z, i, row);
+    }
+    
+    return z;
+}
+
+PYAPI(cov_y)
+{
+    GETPTR();
+    PyObject *z = PyList_New(p->ncols);
+    
+    for(int i=0; i<p->ncols; i++)
+        PyList_SetItem(z, i, Py_BuildValue("f", p->vector_cov[i]));
+    
+    return z;
 }
 
 PYAPI(reset) { GETPTR(); p->reset(); Py_RETURN_NONE; }
@@ -58,6 +87,8 @@ static PyMethodDef cModPyMethods[] =
     {"reset",       reset,       METH_VARARGS, "Zero coefficient matrix."},
     {"solve",       solve,       METH_VARARGS, "Solve SVD."},
     {"multiplyadd", multiplyadd, METH_VARARGS, "C = M**T * M + C."},
+    {"cov_X",       cov_X,       METH_VARARGS, "X cov matrix = (X^T)X."},
+    {"cov_y",       cov_y,       METH_VARARGS, "y cov matrix = (X^T)y."},
     {NULL, NULL}
 };
 
