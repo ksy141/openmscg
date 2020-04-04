@@ -12,7 +12,7 @@ def main(*args, **kwargs):
     group.add_argument("-v", "--verbose", metavar='L', type=int, default=0, help="screen verbose level")
     
     group = parser.add_argument_group('Required arguments')
-    group.add_argument("--top",  metavar='file:format', type=str, help="topology file: in format of [filename,format:lammps|cg]", required=True)
+    group.add_argument("--top",  metavar='file,format', type=str, help="topology file: in format of [filename,format:lammps|cg]", required=True)
     
     group = parser.add_argument_group('Optional arguments')
     group.add_argument("--names",  metavar='', type=str, help="comma separated atom names (needed when using LAMMPS data file for topology)")
@@ -29,7 +29,7 @@ def main(*args, **kwargs):
         args = parser.parse_args()
     
     screen.verbose = args.verbose
-    screen.info("Start running CGFM ...")
+    screen.info("OpenCG CLI Command: " + __name__)
     
     # load topology
     
@@ -55,7 +55,9 @@ def main(*args, **kwargs):
     blist = BondList(top)
     
     # build up tables
-
+    
+    tables.empty()
+    
     if args.pair is not None:
         for pair in args.pair:
             screen.info("Add pair coefficients table: " + pair)
@@ -88,7 +90,7 @@ def main(*args, **kwargs):
     
     TIMER.reset()
     last = TIMER.last
-    
+            
     for trj_arg in args.traj:
         
         screen.info("Process trajectory: " + trj_arg)
@@ -109,16 +111,19 @@ def main(*args, **kwargs):
         
         if top.natoms != trj.natoms:
             screen.fatal("Inconsistent number of atoms between topology (%d) and trajectory (%d)." % (top.natoms, trj.natoms))
-            
+        
+        cut2 = plist.cut * 2;
+        if trj.box[0]<cut2 or trj.box[1]<cut2 or trj.box[2]<cut2:
+            screen.fatal("Incorrect cut-off for the trajectory: cut-off (%f) must be larger than half of the box dimentions (%s)" % (plist.cut, str(trj.box)))
+        
         plist.setup_bins(trj)
         start = TIMER.last
         nread = 0
-                
+        
         for i in range(skip):
             trj.read_frame()
 
         while trj.read_frame():
-
             TIMER.click('io')
             TIMER.click('matrix', matrix.reset())
             TIMER.click('io', trj.read_frame())
@@ -165,17 +170,22 @@ def main(*args, **kwargs):
             print(('\r%s' % (msg)) + " " * 30)
         
     # end of processing trajectories
-    
-    matrix.save("covariance_" + args.save)
+        
+    if args.save != "return":
+        matrix.save("covariance_" + args.save)
+        
     matrix.solve()
-    matrix.save("coeffs_" + args.save)
+    
+    if args.save != "return":
+        matrix.save("coeffs_" + args.save)
     
     TIMER.click('solver')
     screen.info([""] + TIMER.report(False) + [""])
     
-    # output
+    # end
     
-    
+    if args.save == "return":
+        return matrix.cov_y()
     
 
 if __name__ == '__main__':

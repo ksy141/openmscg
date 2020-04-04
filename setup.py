@@ -4,6 +4,8 @@ sys.path.insert(0, '.')
 from setuptools import setup, find_packages, Extension
 import configparser
 
+package_name = 'mscg'
+
 def read_version(version_file):
     
     with open(version_file, "r") as f:
@@ -60,8 +62,8 @@ if __name__ == '__main__':
     if setup_args['cxx'] != '':
         os.environ['CXX'] = setup_args['cxx']
         
-    core_prefix = 'cg.core.cxx_'
-    core_root   = 'cg/core/'
+    core_prefix = package_name + '.core.cxx_'
+    core_root   = package_name + '/core/'
     api_path    = core_root + 'api/'
     src_path    = core_root + 'src/'
 
@@ -126,12 +128,12 @@ if __name__ == '__main__':
     ]
     
     entry_points = {"console_scripts": [
-        f.split('.')[0] + "=cg.cli." + f.split('.')[0] + ":main" \
-        for f in os.listdir("cg/cli") if f.startswith("cg") and f.endswith(".py")
+        f.split('.')[0] + "=" + package_name + ".cli." + f.split('.')[0] + ":main" \
+        for f in os.listdir(package_name + "/cli") if f.startswith(package_name) and f.endswith(".py")
     ]}
     
     setup(
-        version = read_version('cg/__init__.py'),
+        version = read_version(package_name + '/__init__.py'),
         python_requires = '>=3.6',
         install_requires = read_requirements(),
         packages = find_packages(),

@@ -13,3 +13,5 @@ from .bspline    import *
 from .timer      import *
 from .verbose    import *
 from .cli_parser import *
+
+from .tables import tables

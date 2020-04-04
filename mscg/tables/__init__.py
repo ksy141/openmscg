@@ -3,6 +3,10 @@ class tables:
     all = []
     
     @staticmethod
+    def empty():
+        tables.all = []
+        
+    @staticmethod
     def add(tbl):
         tables.all.append(tbl)
     

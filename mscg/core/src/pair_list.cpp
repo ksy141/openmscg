@@ -3,6 +3,9 @@
 #include <cmath>
 #include <cstdio>
 
+#undef NDEBUG
+#include <cassert>
+
 inline bool not_special(int *specials, int nspecial, int target)
 {
     for(int i=0; i<nspecial; i++) if (specials[i] == target) return false;
@@ -25,10 +28,12 @@ Stencil::~Stencil()
 
 void Stencil::setup(PairList *pair, int me)
 {
-    neigh_bins = new int[pair->nbins];
-    sx = new int[pair->nbins];
-    sy = new int[pair->nbins];
-    sz = new int[pair->nbins];
+    int max_neigh = pair->nbins<27?27:pair->nbins;
+    
+    neigh_bins = new int[max_neigh];
+    sx = new int[max_neigh];
+    sy = new int[max_neigh];
+    sz = new int[max_neigh];
     
     int xme, yme, zme;
     pair->bin2offset(me, &xme, &yme, &zme);
@@ -36,7 +41,7 @@ void Stencil::setup(PairList *pair, int me)
     int nx = static_cast<int>(ceil(pair->cut / pair->binsizex));
     int ny = static_cast<int>(ceil(pair->cut / pair->binsizey));
     int nz = static_cast<int>(ceil(pair->cut / pair->binsizez));
-        
+    
     n_neigh = 0;
     
     for(int ix=xme; ix<=xme+nx; ix++)
@@ -44,6 +49,8 @@ void Stencil::setup(PairList *pair, int me)
             for(int iz=zme-nz; iz<=zme+nz; iz++)
                 if(ix>xme || iy>yme || (iy==yme && iz>zme))
                 {
+                    assert((n_neigh<max_neigh) && "bin_setup() overflow: please check box-size, bin-size and cutoff.");
+                    
                     if(ix>=pair->nbinx) sx[n_neigh] = 1;
                     else sx[n_neigh] = 0;
                     
@@ -99,7 +106,6 @@ PairList::~PairList()
     if(ibins) delete [] ibins;
     if(binhead) delete [] binhead;
     if(stencil) delete [] stencil;
-    
     if(ilist) delete [] ilist;
     if(jlist) delete [] jlist;
     if(tlist) delete [] tlist;
@@ -145,6 +151,7 @@ void PairList::setup_bins(Traj* traj)
     bininvz = 1.0 / binsizez;
     
     nbins = nbinx * nbiny * nbinz;
+    //printf("bins: %d x %d x %d = %d\n", nbinx, nbiny, nbinz, nbins);
     
     if(nbins > maxbins)
     {

@@ -9,6 +9,7 @@ class TIMER:
     def reset():
         TIMER.start = time()
         TIMER.last = time()
+        TIMER.recs = {}
     
     @staticmethod
     def click(name, f=None):

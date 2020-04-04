@@ -1,4 +1,4 @@
-# OpenCG
+# OpenMSCG
 
 An open-source package for multi-scale coarse-graining (MSCG) modeling in computational chemistry and biology
 

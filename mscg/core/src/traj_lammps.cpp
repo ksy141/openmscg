@@ -42,12 +42,12 @@ void TrajLAMMPS::rewind()
 
 int TrajLAMMPS::read_next_frame()
 {
-    read_head();
-    read_body();
+    if(read_head()) return 1;
+    if(read_body()) return 1;
     return 0;
 }
 
-#define GETLINE() fgets(line,1000,fp)
+#define GETLINE() {if(fgets(line,1000,fp)==0) return 1;}
 
 int TrajLAMMPS::read_head()
 {

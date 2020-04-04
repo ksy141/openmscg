@@ -32,7 +32,7 @@ def main(*args, **kwargs):
         args = parser.parse_args()
     
     screen.verbose = args.verbose
-    screen.info("Start running CGIB ...")
+    screen.info("OpenCG CLI Command: " + __name__)
     
     # load topology
     
@@ -136,7 +136,11 @@ def main(*args, **kwargs):
         
         if top.natoms != trj.natoms:
             screen.fatal("Inconsistent number of atoms between topology (%d) and trajectory (%d)." % (top.natoms, trj.natoms))
-            
+        
+        cut2 = plist.cut * 2;
+        if trj.box[0]<cut2 or trj.box[1]<cut2 or trj.box[2]<cut2:
+            screen.fatal("Incorrect cut-off for the trajectory: cut-off (%f) must be larger than half of the box dimentions (%s)" % (plist.cut, str(trj.box)))
+        
         plist.setup_bins(trj)
         start = TIMER.last
         nread = 0

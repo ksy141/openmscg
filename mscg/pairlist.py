@@ -11,6 +11,11 @@ class PairList:
         lib.destroy(self.h)
         
     def init(self, cut = 10.0, binsize = 5.0):
+        self.cut = cut
+        
+        if binsize>cut:
+            binsize = cut * 0.5
+            
         lib.init(self.h, cut, binsize)
         
     def setup_bins(self, traj):

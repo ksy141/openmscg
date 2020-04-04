@@ -211,4 +211,4 @@ def build_topology(fmt, file, args):
     elif fmt == "lammps":
         return build_top_from_lammps(file, args['names'])
     else:
-        raise Exception("Unknown topology type")
+        raise Exception("Unknown topology type: " + fmt)

@@ -106,7 +106,7 @@ def build_top_from_cgtop(filename):
                 mols = w[1]
                 
                 for _ in range(mols):
-                    atoms.extend([i+start for i in mt['atoms']])
+                    atoms.extend([i for i in mt['atoms']])
                     bonds.extend([[b[0]+start, b[1]+start] for b in mt['bonds']])
                     angls.extend([[a[0]+start, a[1]+start, a[2]+start] for a in mt['angls']])
                     dihes.extend([[d[0]+start, d[1]+start, d[2]+start, d[3]+start] for d in mt['dihes']])
