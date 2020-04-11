@@ -36,7 +36,7 @@ def main():
     
     md = []
     
-    import cg
+    import mscg
     metadata.append("Location: " + os.path.dirname(cg.__file__))
     
     for row in metadata:

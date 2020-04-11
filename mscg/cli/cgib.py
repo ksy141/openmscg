@@ -1,6 +1,6 @@
 
 import numpy as np
-from cg import *
+from mscg import *
 
 def main(*args, **kwargs):
     

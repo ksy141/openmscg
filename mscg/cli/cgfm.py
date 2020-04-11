@@ -1,5 +1,5 @@
 
-from cg import *
+from mscg import *
 
 def main(*args, **kwargs):
     
@@ -126,7 +126,6 @@ def main(*args, **kwargs):
         while trj.read_frame():
             TIMER.click('io')
             TIMER.click('matrix', matrix.reset())
-            TIMER.click('io', trj.read_frame())
             TIMER.click('pair', plist.build(trj))
             TIMER.click('bond', blist.build(trj))
             TIMER.click('table', tables.compute_all())
@@ -173,7 +172,7 @@ def main(*args, **kwargs):
         
     if args.save != "return":
         matrix.save("covariance_" + args.save)
-        
+    
     matrix.solve()
     
     if args.save != "return":

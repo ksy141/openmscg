@@ -27,7 +27,7 @@ void TableBondBSpline::compute()
     float *dy = lst->dy_bond;
     float *dz = lst->dz_bond;
     float *dr = lst->dr_bond;
-    
+        
     for(int i=0; i<top->nbonds; i++) if(types[i] == type_id)
     {         
         double *b;

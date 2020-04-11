@@ -1,5 +1,5 @@
 
-from cg import *
+from mscg import *
 import pickle, math
 
 def main(*args, **kwargs):

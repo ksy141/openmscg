@@ -35,6 +35,8 @@ void TableAngleBSpline::compute()
     float *a22 = lst->a22_angl;
     float *theta = lst->theta_angl;
     
+    float r2d = 180 / 3.14159265359;
+    
     for(int i=0; i<top->nangls; i++) if(types[i] == type_id)
     {         
         double *b;
@@ -59,10 +61,10 @@ void TableAngleBSpline::compute()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = -b[c];
+            double Bi = b[c] * r2d;
             int pos = istart + c;
             coeff_i[pos] += Bi * f1x;
-            coeff_j[pos] -= Bi * (f1x - f3x);
+            coeff_j[pos] -= Bi * (f1x + f3x);
             coeff_k[pos] += Bi * f3x;
         }
 
@@ -72,10 +74,10 @@ void TableAngleBSpline::compute()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = -b[c];
+            double Bi = b[c] * r2d;
             int pos = istart + c;
             coeff_i[pos] += Bi * f1y;
-            coeff_j[pos] -= Bi * (f1y - f3y);
+            coeff_j[pos] -= Bi * (f1y + f3y);
             coeff_k[pos] += Bi * f3y;
         }
 
@@ -85,10 +87,10 @@ void TableAngleBSpline::compute()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = -b[c];
+            double Bi = b[c] * r2d;
             int pos = istart + c;
             coeff_i[pos] += Bi * f1z;
-            coeff_j[pos] -= Bi * (f1z - f3z);
+            coeff_j[pos] -= Bi * (f1z + f3z);
             coeff_k[pos] += Bi * f3z;
         }
     }

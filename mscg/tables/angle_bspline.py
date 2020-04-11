@@ -5,7 +5,7 @@ import numpy as np
 
 class TableAngleBSpline:
     
-    def __init__(self, blist, name, type_id, order=3, resolution=3, xmin=0, xmax=180):
+    def __init__(self, blist, name, type_id, order=4, resolution=3, xmin=0, xmax=180):
         self.name = 'Angle_' + name
         
         xmin = xmin / 180.0 * np.pi

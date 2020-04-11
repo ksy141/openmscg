@@ -129,7 +129,7 @@ if __name__ == '__main__':
     
     entry_points = {"console_scripts": [
         f.split('.')[0] + "=" + package_name + ".cli." + f.split('.')[0] + ":main" \
-        for f in os.listdir(package_name + "/cli") if f.startswith(package_name) and f.endswith(".py")
+        for f in os.listdir(package_name + "/cli") if f.startswith("cg") and f.endswith(".py")
     ]}
     
     setup(
