@@ -7,10 +7,19 @@ regression tests. More information for `pytest` can be found
 
 ### Run test
 
-1. Go into the root folder of the OpenMSCG package (where the file`pytest.ini`
+1. Download the data files that are needed for the regression tests
+
+```
+wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/data.tar.gz
+tar xzvf data.tar.gz
+mv data ${path_to_openmscg_package}/tests/
+```
+
+
+2. Go into the root folder of the OpenMSCG package (where the file`pytest.ini`
 exists)
 
-2. Run pytest
+3. Run `pytest`
 
 ```
 pytest
