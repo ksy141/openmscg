@@ -1,0 +1,188 @@
+body {
+    font-family: "Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
+    font-size: 14px;
+    color: #222;
+}
+
+p {
+    font-size: 14px;
+    color: #222;
+    text-align: justify;
+}
+
+p > strong {
+    color: #226;
+}
+
+p > cite {
+    padding: 2px 4px;
+    color: #c0341d;
+    background-color: #fbe5e1;
+    border-radius: 4px;
+    font-style: normal;
+}
+
+th > p {
+    margin: auto !important;
+}
+
+div.figure {
+    max-width: 100%;
+}
+
+A.icon-home {
+    font-size: 120% !important;
+}
+
+.highlight-python {
+    border-radius: 6px;
+    padding:1px;
+    box-sizing: border-box;
+    border-color: coral !important;
+    border-left: solid 4px coral !important;
+}
+
+.highlight-shell {
+    border-radius: 6px;
+    padding:1px;
+    box-sizing: border-box;
+    border-color: rgb(225,195,35) !important;
+    border-left: solid 4px rgb(225,195,35) !important;
+}
+
+.highlight-shell > .highlight {
+    background-color: rgba(225,195,35,0.1);
+}
+
+.highlight-default {
+    border-radius: 6px;
+    padding:1px;
+    box-sizing: border-box;
+    border-color: rgb(145,200,75) !important;
+    border-left: solid 4px rgb(145,200,75) !important;
+}
+
+.highlight {
+    background-color: rgba(255,150,70,0.075);
+}
+
+.highlight-default > .highlight {
+    background-color: rgba(145,200,75,0.075);
+}
+
+.highlight-default > table > tbody > tr > td.code > .highlight {
+    background-color: rgba(125,155,235,0.05);
+}
+
+.literal-block-wrapper {
+    position: relative;
+}
+
+.literal-block-wrapper > .highlight-default {
+    border-radius: 6px;
+    padding:1px;
+    box-sizing: border-box;
+    border-color:deepskyblue !important;
+    border-left: solid 4px deepskyblue !important;
+}
+
+.literal-block-wrapper > .highlight-default > .highlight {
+    background-color: rgba(75,125,200,0.075);
+}
+
+
+.code-block-caption {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    padding: 3px 0px 3px 20px !important;
+    font-style: normal !important;
+    font-weight: bold;
+    text-align: right !important;
+    background-color: white;
+    color: dodgerblue;
+}
+
+
+.admonition-note {
+    border-radius: 6px;
+    box-sizing: border-box;
+    border: solid 1px rgb(90,135,245);
+    border-color: rgb(90,135,245);
+    background-color: rgba(90,135,245,0.1) !important;
+}
+
+.admonition-note > .admonition-title {
+    margin: -15px -13px 15px -13px !important;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 10px 10px;
+    border-color: rgb(90,135,245);
+    background-color: rgb(90,135,245);
+}
+
+.admonition-note > ul {
+    margin-bottom: 10px !important;
+}
+
+
+.admonition-output {
+    border-radius: 6px;
+    box-sizing: border-box;
+    border: solid 1px rgb(145,200,75);
+    border-left-width: 4px !important;
+    background-color: rgba(145,200,75,0.075) !important;
+}
+
+.admonition-output > .admonition-title {
+    display: none;
+}
+
+
+.admonition-question {
+    border-radius: 6px;
+    box-sizing: border-box;
+    border: solid 1px rgb(90,10,70);
+    border-left-width: 4px !important;
+    background-color: rgba(90,10,70,0.075) !important;
+}
+
+.admonition-question > .admonition-title {
+    display: none;
+}
+
+
+.admonition-objectives {
+    border-radius: 6px;
+    box-sizing: border-box;
+    border: solid 1px rgb(120,0,200);
+    border-color: rgb(120,0,200);
+    background-color: rgba(120,0,200,0.1) !important;
+}
+
+.admonition-objectives > .admonition-title {
+    margin: -15px -13px 15px -13px !important;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 10px 10px;
+    border-color: rgb(120,0,200);
+    background-color: rgb(120,0,200);
+}
+
+.admonition-objectives > ul {
+    margin-bottom: 10px !important;
+}
+
+.wy-nav-content {
+    max-width: 1200px !important;
+}
+
+.wy-side-nav-search>a.icon img.logo {
+    width: 175px;
+}
+
+p { line-height: 22px; margin-bottom: 12px; }
+
+.rst-content .section ul li {
+    line-height: 22px; margin-bottom: 8px;
+}

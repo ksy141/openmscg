@@ -6,10 +6,10 @@ from mscg.cli import cgfm
 def test_1s(datafile):
     
     coeffs = cgfm.main(
-        top     = datafile("unary_lj_fluid.top") + ",cgtop",
-        traj    = datafile("unary_lj_fluid.lammpstrj,0,1,20"),
+        top     = datafile("unary_lj_fluid.top"),
+        traj    = datafile("unary_lj_fluid.lammpstrj,frames=20"),
         cut     = 2.50,
-        pair    = ['1,1,0.9,0.1'],
+        pair    = ['1,1,min=0.9,resolution=0.1'],
         verbose = 0,
         save    = 'return'
     )
@@ -31,10 +31,10 @@ def test_1s(datafile):
 def test_96(datafile):
     
     coeffs = cgfm.main(
-        top     = datafile("96_lj_liquid.top") + ",cgtop",
-        traj    = datafile("96_lj_liquid.lammpstrj,0,1,20"),
+        top     = datafile("96_lj_liquid.top"),
+        traj    = datafile("96_lj_liquid.lammpstrj,frames=20"),
         cut     = 2.50,
-        pair    = ['1,1,0.75,0.1'],
+        pair    = ['1,1,min=0.75,resolution=0.1'],
         verbose = 0,
         save    = 'return'
     )
@@ -67,10 +67,10 @@ def test_2s(datafile):
     
     
     coeffs = cgfm.main(
-        top     = datafile("binary_lj_fluid.top") + ",cgtop",
-        traj    = datafile("binary_lj_fluid.lammpstrj,0,1,1000"),
+        top     = datafile("binary_lj_fluid.top"),
+        traj    = datafile("binary_lj_fluid.lammpstrj,frames=1000"),
         cut     = 8.50,
-        pair    = ['1,1,2.9,0.1', '1,2,2.7,0.1', '2,2,2.6,0.1'],
+        pair    = ['1,1,min=2.9,resolution=0.1', '1,2,min=2.7,resolution=0.1', '2,2,min=2.6,resolution=0.1'],
         verbose = 0,
         save    = 'return'
     )

@@ -1,7 +1,7 @@
 
 from .topology import *
 
-def build_top_from_lammps(filename, atom_names = []):
+def build_top_from_lammps(filename):
 
     # read file content
 
@@ -55,7 +55,7 @@ def build_top_from_lammps(filename, atom_names = []):
     # create c++ handle
     
     top = Topology()
-    top.set_names(atom_names)
+    top.set_names([str(i) for i in range(1, max(atoms)+2)])
     top.create()
     top.add_atoms(atoms)
     top.add_bonds(bond_atom1, bond_atom2)

@@ -4,10 +4,10 @@ from mscg.cli import cgfm
 def test(datafile):
     
     coeffs = cgfm.main(
-        top     = datafile("unary_lj_fluid.top") + ",cgtop",
+        top     = datafile("unary_lj_fluid.top"),
         traj    = datafile("power_fluid.lammpstrj"),
         cut     = 10.0,
-        pair    = ['1,1,3.0,0.25'],
+        pair    = ['1,1,min=3.0,resolution=0.25'],
         verbose = 0,
         save    = 'return'
     )

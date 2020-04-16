@@ -16,7 +16,7 @@ def main():
     
     # print title
     
-    title = "OpenCG Python Package"
+    title = "OpenMSCG Python Package"
     sw = terminal_size()[0]
         
     info = "\n" + " " * ((sw - len(title))//2) + title + "\n" 
@@ -25,7 +25,7 @@ def main():
     
     # format metadata
     
-    pkg = get_distribution('opencg')
+    pkg = get_distribution('openmscg')
     
     if pkg.has_metadata('PKG-INFO'):
         metadata = list(pkg.get_metadata_lines('PKG-INFO'))
@@ -37,7 +37,7 @@ def main():
     md = []
     
     import mscg
-    metadata.append("Location: " + os.path.dirname(cg.__file__))
+    metadata.append("Location: " + os.path.dirname(mscg.__file__))
     
     for row in metadata:
         w = row.split(": ")
@@ -79,7 +79,7 @@ def main():
     
     info += "\n\n> Classes in Package\n--------------------\n\n"
     
-    module = importlib.import_module('cg')
+    module = importlib.import_module('mscg')
     for name, obj in inspect.getmembers(module, inspect.isclass):
         info += " %18s -> %s\n" % (name, str(obj).split("'")[1])
     

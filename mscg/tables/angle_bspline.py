@@ -5,14 +5,14 @@ import numpy as np
 
 class TableAngleBSpline:
     
-    def __init__(self, blist, name, type_id, order=4, resolution=3, xmin=0, xmax=180):
+    def __init__(self, blist, name, type_id, order=4, resolution=3, min=0, max=180):
         self.name = 'Angle_' + name
         
-        xmin = xmin / 180.0 * np.pi
-        xmax = xmax / 180.0 * np.pi
+        min = min / 180.0 * np.pi
+        max = max / 180.0 * np.pi
         resolution = resolution / 180.0 * np.pi
         
-        self.h =  lib.create(blist.h, type_id, order, resolution, xmin, xmax)
+        self.h =  lib.create(blist.h, type_id, order, resolution, min, max)
         tables.add(self)
     
     def __del__(self):

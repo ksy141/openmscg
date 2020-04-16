@@ -155,6 +155,27 @@ class Topology:
             raise Exception('Topology does not exist.')
 
         lib.build_special(self.h, use_bond, use_angle, use_dihed)
+    
+    def reset_names(self, names):
+        
+        if len(names) != self.ntypes_atom:
+            raise ValueException("inconsistent number of types in reset_names()")
+        
+        m = {}
+        
+        for i in range(self.ntypes_atom):
+            m[self.types_atom[i]] = names[i]
+        
+        self.types_atom = names
+        
+        t = [one.split('-') for one in self.types_bond]
+        self.types_bond = ['-'.join([m[tt[0]], m[tt[1]]]) for tt in t]
+        
+        t = [one.split('-') for one in self.types_angl]
+        self.types_angl = ['-'.join([m[tt[0]], m[tt[1]], m[tt[2]]]) for tt in t]
+        
+        t = [one.split('-') for one in self.types_dihe]
+        self.types_dihe = ['-'.join([m[tt[0]], m[tt[1]], m[tt[2]], m[tt[3]]]) for tt in t]
 
 
 
@@ -205,10 +226,17 @@ def generate_dihedrals(natoms, bonds):
 from .top_lammps import *
 from .top_cg import*
 
-def build_topology(fmt, file, args):
-    if fmt == "cgtop":
+def build_topology(file):
+    
+    with open(file, "r") as f:
+        text = f.read()
+    
+    segs = file.split(".")
+    suffix = segs[-1] if len(segs)>1 else ""
+    
+    if ("atom types" in text) and ("Masses" in text):
+        return build_top_from_lammps(file)
+    elif ("cgsites " in text) and ("cgtypes " in text):
         return build_top_from_cgtop(file)
-    elif fmt == "lammps":
-        return build_top_from_lammps(file, args['names'])
     else:
         raise Exception("Unknown topology type: " + fmt)

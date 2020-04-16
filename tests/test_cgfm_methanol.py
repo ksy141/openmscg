@@ -6,11 +6,11 @@ from mscg.cli import cgfm
 def test_1s(datafile):
     
     coeffs = cgfm.main(
-        top     = datafile("methanol_1728.data") + ",lammps",
+        top     = datafile("methanol_1728.data"),
         traj    = datafile("methanol_1728.trr"),
         names   = 'MeOH',
         cut     = 8.0,
-        pair    = ['MeOH,MeOH,2.8,0.2'],
+        pair    = ['MeOH,MeOH,min=2.8,resolution=0.2'],
         verbose = 0,
         save    = 'return'
     )
@@ -29,12 +29,12 @@ def test_1s(datafile):
 def test_2s(datafile):
     
     coeffs = cgfm.main(
-        top     = datafile("methanol_1728_2s.data") + ",lammps",
-        traj    = datafile("methanol_1728_2s.trr,0,1,500"),
+        top     = datafile("methanol_1728_2s.data"),
+        traj    = datafile("methanol_1728_2s.trr,frames=500"),
         names   = 'CH3,OH',
         cut     = 8.0,
-        pair    = ['CH3,CH3,2.9,0.1', 'CH3,OH,2.8,0.1', 'OH,OH,2.5,0.1'],
-        bond    = ['CH3,OH,1.35,1.65,0.01'],
+        pair    = ['CH3,CH3,min=2.9', 'CH3,OH,min=2.8', 'OH,OH,min=2.5'],
+        bond    = ['CH3,OH,min=1.35,max=1.65,resolution=0.01'],
         verbose = 0,
         save    = 'return'
     )

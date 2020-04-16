@@ -4,10 +4,10 @@ from mscg.cli import cgfm
 def test_bond(datafile):
     
     coeffs = cgfm.main(
-        top     = datafile("4_site.top") + ",cgtop",
+        top     = datafile("4_site.top"),
         traj    = datafile("4_site_d_non_periodic.lammpstrj"),
         cut     = 15.0,
-        bond   = ["1,1,2.8,3.2,0.05"],
+        bond    = ["1,1,min=2.8,max=3.2,resolution=0.05"],
         verbose = 0,
         save    = 'return'
     )
@@ -26,10 +26,10 @@ def test_bond(datafile):
 def test_angle(datafile):
     
     coeffs = cgfm.main(
-        top     = datafile("4_site.top") + ",cgtop",
+        top     = datafile("4_site.top"),
         traj    = datafile("4_site_d_non_periodic.lammpstrj"),
         cut     = 15.0,
-        angle   = ["1,1,1,80,100,5"],
+        angle   = ["1,1,1,min=80,max=100,resolution=5"],
         verbose = 0,
         save    = 'return'
     )
@@ -49,11 +49,11 @@ def test_angle(datafile):
 def test_bond_angle(datafile):
     
     coeffs = cgfm.main(
-        top     = datafile("4_site.top") + ",cgtop",
+        top     = datafile("4_site.top"),
         traj    = datafile("4_site_d_non_periodic.lammpstrj"),
         cut     = 15.0,
-        bond    = ["1,1,2.75,3.25,0.05"],
-        angle   = ["1,1,1,79,104,5"],
+        bond    = ["1,1,min=2.75,max=3.25,resolution=0.05"],
+        angle   = ["1,1,1,min=79,max=104,resolution=5"],
         verbose = 0,
         save    = 'return'
     )

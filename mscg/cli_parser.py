@@ -1,7 +1,10 @@
 
 import argparse
 
+
+
 class CLIParser(argparse.ArgumentParser):
+    
     def convert_arg_line_to_args(self, arg_line):
         if arg_line.strip()[:1] == '#':
             return []
@@ -26,3 +29,54 @@ class CLIParser(argparse.ArgumentParser):
                 arg_list.append(str(v))
         
         return self.parse_args(arg_list)
+
+
+
+from .topology import build_topology
+
+class TopAction(argparse.Action):
+    
+    help = "topology file"
+    
+    def __call__(self, parser, namespace, values, option_string=None):
+        
+        if type(values) != str:
+            raise ValueError("incorrect format of value for option --top")
+        
+        top = build_topology(values)
+        setattr(namespace, self.dest, top)
+
+
+from .trajectory import TrajReader
+
+class TrajReaderAction(argparse.Action):
+    
+    help = "reader for a trajectory file, multiple fields separated by commas, the first field is the file name, while others define the skip, every and frames (default args: file,skip=0,every=1,frames=0)"
+    
+    def __call__(self, parser, namespace, values, option_string=None):
+        
+        if type(values) != str:
+            raise ValueError("incorrect format of value for option --traj")
+        
+        skip, every, frames = 0, 1, 0
+        segs = values.split(",")
+        
+        for i in range(1, len(segs)):
+            w = [seg.strip() for seg in segs[i].split("=")]
+            
+            if len(w)==1:
+                raise ValueError("incorrect format of value for option --traj: " + segs[i])
+            elif w[0] == 'skip':
+                skip = int(w[1])
+            elif w[0] == 'every':
+                every = int(w[1])
+            elif w[0] == 'frames':
+                frames = int(w[1])
+            else:
+                raise ValueError("incorrect format of value for option --traj: " + segs[i])
+        
+        reader = TrajReader(segs[0], skip, every, frames)
+        getattr(namespace, self.dest).append(reader)
+        
+        
+        

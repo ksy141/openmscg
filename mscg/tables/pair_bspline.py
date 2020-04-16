@@ -5,9 +5,9 @@ import numpy as np
 
 class TablePairBSpline:
 
-    def __init__(self, pair, name, type_id, order=6, resolution=0.1, xmin=2.0):
+    def __init__(self, pair, name, type_id, order=6, resolution=0.1, min=2.0):
         self.name = 'Pair_' + name
-        self.h = lib.create(pair.h, type_id, order, resolution, xmin)
+        self.h = lib.create(pair.h, type_id, order, resolution, min)
         tables.add(self)
         
     def __del__(self):

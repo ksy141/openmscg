@@ -1,6 +1,9 @@
 #
 
-__version__ = '0.0.1'
+doc_root = 'https://software.rcc.uchicago.edu/mscg/docs/'
+
+__version__ = '0.1.0'
+__doc__ = doc_root
 
 from .topology   import *
 from .trajectory import *

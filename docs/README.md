@@ -1,1 +1,1 @@
-# The Guide to OpenCG
+Documentation of OpenMSCG

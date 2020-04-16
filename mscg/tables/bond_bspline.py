@@ -5,9 +5,9 @@ import numpy as np
 
 class TableBondBSpline:
     
-    def __init__(self, blist, name, type_id, order=4, resolution=0.05, xmin=1.0, xmax=2.0):
+    def __init__(self, blist, name, type_id, order=4, resolution=0.05, min=1.0, max=2.0):
         self.name = 'Bond_' + name
-        self.h = lib.create(blist.h, type_id, order, resolution, xmin, xmax)
+        self.h = lib.create(blist.h, type_id, order, resolution, min, max)
         tables.add(self)
     
     def __del__(self):
