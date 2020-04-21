@@ -31,7 +31,7 @@ wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/Ope
 **3. Install the distribution**
 
 ```
-pip install opencg-*.whl --user
+pip install OpenMSCG-*.whl --user
 ```
 
 It is recommended to install the package in the user's base directory, i.e., `~/.local` in the UNIX/Linux environment.
