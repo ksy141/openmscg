@@ -2,7 +2,10 @@
 #include "table.h"
 #include "std.h"
 
-#include "mkl.h"
+#ifdef USE_MKL
+  #include "mkl.h"
+#endif
+
 #define MEM_ALIGN 64
 
 Matrix::Matrix()
