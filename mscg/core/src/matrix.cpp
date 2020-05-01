@@ -3,10 +3,18 @@
 #include "std.h"
 
 #ifdef USE_MKL
-  #include "mkl.h"
+    #include "mkl.h"
+    #define ALLOC(size) mkl_malloc(size, 64)
+    #define FREE(p) mkl_free(p)
+    #define RANKK_OPERATOR 1
+#else
+    #include "cblas.h"
+    #include "lapacke/lapacke_config.h"
+    #include "lapacke/lapacke_utils.h"
+    #define ALLOC(size) malloc(size)
+    #define FREE(p) free(p)
+    #define RANKK_OPERATOR 0
 #endif
-
-#define MEM_ALIGN 64
 
 Matrix::Matrix()
 {
@@ -19,16 +27,18 @@ Matrix::Matrix()
     matrix_cov = 0;
     vector_cov = 0;
     
-    mkl_set_num_threads(1);
+    #ifdef USE_MKL
+        mkl_set_num_threads(1);
+    #endif
 }
 
 Matrix::~Matrix()
 {
-    if(matrix_coeff) mkl_free(matrix_coeff);
-    if(matrix_coeff_t) mkl_free(matrix_coeff_t);
-    if(matrix_cov) mkl_free(matrix_cov);
-    if(vector_cov) mkl_free(vector_cov);
-    if(vector_f) mkl_free(vector_f);
+    if(matrix_coeff) FREE(matrix_coeff);
+    if(matrix_coeff_t) FREE(matrix_coeff_t);
+    if(matrix_cov) FREE(matrix_cov);
+    if(vector_cov) FREE(vector_cov);
+    if(vector_f) FREE(vector_f);
 }
 
 void Matrix::add_table(Table *tbl)
@@ -43,20 +53,20 @@ void Matrix::setup(int natoms)
     size_t bytes;
     
     bytes = natoms * 3 * sizeof(double);
-    vector_f = (double*)mkl_malloc(bytes, MEM_ALIGN);
+    vector_f = (double*)ALLOC(bytes);
     memset(vector_f, 0, bytes);
     
     bytes = ncols * ncols * sizeof(double);
-    matrix_cov = (double*)mkl_malloc(bytes, MEM_ALIGN);
+    matrix_cov = (double*)ALLOC(bytes);
     memset(matrix_cov, 0, bytes);
     
     bytes = ncols * sizeof(double);
-    vector_cov = (double*)mkl_malloc(bytes, MEM_ALIGN);
+    vector_cov = (double*)ALLOC(bytes);
     memset(vector_cov, 0, bytes);
     
     bytes = natoms * 3 * ncols * sizeof(double);
-    matrix_coeff = (double*)mkl_malloc(bytes, MEM_ALIGN);
-    matrix_coeff_t = (double*)mkl_malloc(bytes, MEM_ALIGN);
+    matrix_coeff = (double*)ALLOC(bytes);
+    matrix_coeff_t = (double*)ALLOC(bytes);
     
     int icol = 0;
     
@@ -78,7 +88,7 @@ void Matrix::reset()
     memset(matrix_coeff, 0, bytes);
 }
 
-#define RANKK_OPERATOR 1
+
 
 void Matrix::multiplyadd(float *F)
 {    

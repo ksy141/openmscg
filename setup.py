@@ -124,7 +124,7 @@ if __name__ == '__main__':
             sources = src_files('py_matrix', ['matrix']),
             define_macros = build_defs(setup_args['lapack_def']),
             extra_compile_args = setup_args['compile'],
-            extra_link_args = setup_args['lapack_lib'] + setup_args['link'],
+            extra_link_args = setup_args['gsl_lib'] + setup_args['lapack_lib'] + setup_args['link'],
         ),
         
         Extension(core_prefix + 'bspline',

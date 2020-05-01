@@ -1,0 +1,8 @@
+[build_options]
+cc         = g++
+cxx        = g++
+compile    = -O2
+link       = 
+gsl_lib    = -lgsl -lgslcblas 
+lapack_def = 
+lapack_lib = -llapack -llapacke
