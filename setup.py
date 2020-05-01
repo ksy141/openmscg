@@ -40,6 +40,17 @@ def read_requirements():
     with open("requirements.txt") as f:
         return f.read().strip().split("\n")
 
+def build_defs(args):
+    defs = []
+    
+    for arg in args:
+        w = arg.split('=')
+        defs.append((w[0], w[1]) if len(w)>1 else (w[0], None))
+    
+    return defs
+        
+    
+
 if __name__ == '__main__':
     
     setup_args = {
@@ -48,6 +59,7 @@ if __name__ == '__main__':
         'compile'   : [],
         'link'      : [],
         'gsl_lib'   : [],
+        'lapack_def': [],
         'lapack_lib': [],
     }
     
@@ -110,7 +122,7 @@ if __name__ == '__main__':
         Extension(core_prefix + 'matrix',
             include_dirs = [src_path],
             sources = src_files('py_matrix', ['matrix']),
-            define_macros=[('USE_MKL', None)],
+            define_macros = build_defs(setup_args['lapack_def']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['lapack_lib'] + setup_args['link'],
         ),
