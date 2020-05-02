@@ -6,15 +6,19 @@
     #include "mkl.h"
     #define ALLOC(size) mkl_malloc(size, 64)
     #define FREE(p) mkl_free(p)
-    #define RANKK_OPERATOR 1
+
 #else
-    #include "cblas.h"
-    #include "lapacke/lapacke_config.h"
-    #include "lapacke/lapacke_utils.h"
+    #include "gsl/gsl_cblas.h"
     #define ALLOC(size) malloc(size)
     #define FREE(p) free(p)
-    #define RANKK_OPERATOR 0
+
+extern "C" {
+    void dposv_(char *UPLO, int *N, int *NRHS, double *A, int *LDA, double *B, int *LDB, int *INFO);
+    void dsyrk_(char *UPLO, char *TRANS, int *N, int *K, double *alpha, double *A, int *LDA, double *beta, double *C, int *LDC);
+}
+
 #endif
+
 
 Matrix::Matrix()
 {
@@ -99,24 +103,32 @@ void Matrix::multiplyadd(float *F)
     cblas_dgemv(CblasRowMajor, CblasTrans, natoms * 3, ncols,
         1.0, matrix_coeff, ncols, vector_f, 1, 1.0, vector_cov, 1);
 
-#if RANKK_OPERATOR == 1
+#ifdef USE_MKL
     double one = 1.0;
     mkl_domatcopy('R', 'T', k, ncols, 1.0, matrix_coeff, ncols, matrix_coeff_t, k);
-    dsyrk("U", "T", &ncols, &k, &one, matrix_coeff_t, &k, &one, matrix_cov, &ncols);
-    
-#elif RANKK_OPERATOR == 2
-    mkl_domatcopy('R', 'T', k, ncols, 1.0, matrix_coeff, ncols, matrix_coeff_t, k);
-    cblas_dsyrk(CblasColMajor, CblasUpper, CblasTrans, ncols, k,
-        1.0, matrix_coeff_t, k, 1.0, matrix_cov, ncols);
-    
+    DSYRK((char*)"U", (char*)"T", &ncols, &k, &one, matrix_coeff_t, &k, &one, matrix_cov, &ncols);
 #else
     size_t bytes = k * ncols * sizeof(double);
     memcpy(matrix_coeff_t, matrix_coeff, bytes);
-    
+
     cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, ncols, ncols, k,
         1.0, matrix_coeff_t, ncols, matrix_coeff, ncols, 1.0, matrix_cov, ncols);
-
 #endif
+
+    /* Sover 2:
+
+        mkl_domatcopy('R', 'T', k, ncols, 1.0, matrix_coeff, ncols, matrix_coeff_t, k);
+        cblas_dsyrk(CblasColMajor, CblasUpper, CblasTrans, ncols, k,
+            1.0, matrix_coeff_t, k, 1.0, matrix_cov, ncols);
+
+       Sover 3:
+
+        size_t bytes = k * ncols * sizeof(double);
+        memcpy(matrix_coeff_t, matrix_coeff, bytes);
+
+        cblas_dgemm(CblasRowMajor, CblasTrans, CblasNoTrans, ncols, ncols, k,
+            1.0, matrix_coeff_t, ncols, matrix_coeff, ncols, 1.0, matrix_cov, ncols);
+    */
     
     /*
     int _t = 10;
@@ -134,11 +146,16 @@ void Matrix::multiplyadd(float *F)
 
 void Matrix::solve()
 {
-#if RANKK_OPERATOR > 0
-    LAPACKE_dposv(LAPACK_COL_MAJOR, 'U', ncols, 1, matrix_cov, ncols, vector_cov, ncols);
+    int nrhs = 1, info;
+    
+#ifdef USE_MKL
+    DPOSV((char*)"U", &ncols, &nrhs, matrix_cov, &ncols, vector_cov, &ncols, &info);
 #else
-    LAPACKE_dgels(LAPACK_ROW_MAJOR, 'N', ncols, ncols, 1, matrix_cov, ncols, vector_cov, 1);
+    dposv_((char*)"U", &ncols, &nrhs, matrix_cov, &ncols, vector_cov, &ncols, &info);
 #endif
+    
+    // Another solver:
+    // LAPACKE_dgels(LAPACK_ROW_MAJOR, 'N', ncols, ncols, 1, matrix_cov, ncols, vector_cov, 1);
     
     /*
     int _t = 10;

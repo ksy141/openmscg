@@ -1,8 +1,8 @@
 [build_options]
-cc         = g++
+cc         = gcc
 cxx        = g++
-compile    = -O2
+compile    = -O2 -Wno-sign-compare
 link       = 
 gsl_lib    = -lgsl -lgslcblas 
 lapack_def = 
-lapack_lib = -llapack -llapacke
+lapack_lib = -llapack
