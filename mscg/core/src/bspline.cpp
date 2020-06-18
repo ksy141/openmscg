@@ -2,6 +2,8 @@
 
 BSpline::BSpline(int order, double resolution, double xmin, double xmax, int scale_flag)
 {
+    //printf("BSpline %d, %lf, %lf, %lf\n", order, resolution, xmin, xmax);
+    
     this->order = order;
     this->resolution = resolution;
     this->xmin = xmin;
@@ -152,5 +154,30 @@ void BSpline::eval(double *input, double *output, double xmin, double dx, int n)
     gsl_vector_free(Cs);
 }
 
+void BSpline::eval(double *knots, double *in, double *out, int size)
+{
+    gsl_vector *Bs = gsl_vector_calloc(ncoeff);
+    gsl_vector *Cs = gsl_vector_calloc(ncoeff);
+    
+    for(int i=0; i<ncoeff; i++) gsl_vector_set(Cs, i, knots[i]);
+
+    for(int i=0; i<size; i++)
+    {
+        size_t istart;
+        int nn;
+        double *b;
+        
+        double x = in[i];
+        eval_coeffs(x, &b, &istart, &nn);
+        
+        gsl_vector_set_zero(Bs);
+        for(int c=0; c<nn; c++) Bs->data[istart+c] = b[c];
+        if(scale_flag) gsl_vector_scale(Bs, -x);
+        gsl_blas_ddot(Bs, Cs, out++);
+    }
+
+    gsl_vector_free(Bs);
+    gsl_vector_free(Cs);
+}
 
 

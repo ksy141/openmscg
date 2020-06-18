@@ -26,6 +26,7 @@ class BSpline
     void setup_cache(double dx_factor = 0.001);
     void eval_coeffs(double, double**, size_t*, int*);
     void eval(double*, double*, double, double, int);
+    void eval(double*, double*, double*, int);
 };
 
 #endif

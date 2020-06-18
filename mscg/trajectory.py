@@ -63,38 +63,6 @@ class Trajectory:
             return True
         else:
             return False
-        
-
-class TrajReader:
-    
-    def __init__(self, file, skip, every, frames):
-        
-        segs = file.split(".")
-        suffix = segs[-1] if len(segs)>1 else ""
-        
-        self.traj   = Trajectory(file, suffix)
-        self.file   = file
-        self.skip   = skip
-        self.every  = every
-        self.frames = frames
-        self.nread  = 0
-        
-        for i in range(self.skip):
-            self.traj.read_frame()
-    
-    def next_frame(self):
-        
-        if self.frames>0 and self.nread>=self.frames:
-            return False
-        
-        for i in range(self.every-1):
-            self.traj.read_frame()
-        
-        if self.traj.read_frame():
-            self.nread += 1
-            return True
-        else:
-            return False
 
 
 

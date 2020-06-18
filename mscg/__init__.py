@@ -16,5 +16,9 @@ from .bspline    import *
 from .timer      import *
 from .verbose    import *
 from .cli_parser import *
+from .checkpoint import *
 
 from .tables import tables
+
+from .model import *
+from .traj_reader import *

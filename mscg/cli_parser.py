@@ -47,7 +47,7 @@ class TopAction(argparse.Action):
         setattr(namespace, self.dest, top)
 
 
-from .trajectory import TrajReader
+from .traj_reader import TrajReader
 
 class TrajReaderAction(argparse.Action):
     

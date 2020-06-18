@@ -3,6 +3,7 @@ sys.path.insert(0, '.')
 
 from setuptools import setup, find_packages, Extension
 import configparser
+import numpy as np
 
 package_name = 'mscg'
 
@@ -90,6 +91,14 @@ if __name__ == '__main__':
             extra_link_args = setup_args['gsl_lib'] + setup_args['link'],
         )
     
+    def model_extention(name, extra_src = [], extra_link = []):
+        return Extension(core_prefix + 'model_' + name,
+            include_dirs = [src_path, np.get_include()],
+            sources = src_files('py_model_' + name, ['model', 'model_' + name] + extra_src),
+            extra_compile_args = setup_args['compile'],
+            extra_link_args = extra_link + setup_args['link'],
+        )
+    
     extensions = [
         Extension(core_prefix + 'topol',
             include_dirs = [src_path],
@@ -106,7 +115,7 @@ if __name__ == '__main__':
         ),
 
         Extension(core_prefix + 'pairlist',
-            include_dirs = [src_path],
+            include_dirs = [src_path, np.get_include()],
             sources = src_files('py_pairlist', ['pair_list']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
@@ -136,7 +145,9 @@ if __name__ == '__main__':
         
         table_extention('pair'),
         table_extention('bond'),
-        table_extention('angle')
+        table_extention('angle'),
+        
+        model_extention('pair_bspline', extra_src=['bspline'], extra_link=setup_args['gsl_lib'])
     ]
     
     entry_points = {"console_scripts": [

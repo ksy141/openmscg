@@ -1,4 +1,6 @@
 #include <Python.h>
+#include <numpy/arrayobject.h>
+
 #include "pair_list.h"
 #include "traj.h"
 #include "topology.h"
@@ -75,9 +77,49 @@ PYAPI(get_pairs)
         PyList_SetItem(rlist, i, Py_BuildValue("f", pair->drlist[i+start]));
     }
     
-    PyObject *z = Py_BuildValue("(O,O,O,O)", tlist, ilist, jlist, rlist);
-    Py_XDECREF(tlist); Py_XDECREF(ilist); Py_XDECREF(jlist); Py_XDECREF(rlist);
-    return z;
+    return Py_BuildValue("(N,N,N,N)", tlist, ilist, jlist, rlist);
+}
+
+PYAPI(fill_page)
+{
+    PairList *pair;
+    int inext, page_size, type_id;
+    PyArrayObject *npIndex, *npVector, *npScalar;
+    
+    PyArg_ParseTuple(args, "LiiiOOO", &pair, &type_id, &inext, &page_size, &npIndex, &npVector, &npScalar);
+    int nfill = 0, npairs = pair->npairs;
+    
+    while(inext<npairs && nfill<page_size)
+    {
+        while(inext<npairs && pair->tlist[inext]!=type_id) inext++;
+        if(inext >= npairs) break;
+        
+        if(Py_None != (PyObject *)npIndex)
+        {
+            long *d = (long*)(npIndex->data);
+            d[nfill] = pair->ilist[inext];
+            d[nfill+page_size] = pair->jlist[inext];
+        }
+        
+        if(Py_None != (PyObject *)npVector)
+        {
+            double *d = (double*)(npVector->data);
+            d[nfill] = pair->dxlist[inext];
+            d[nfill+page_size] = pair->dylist[inext];
+            d[nfill+page_size+page_size] = pair->dzlist[inext];
+        }
+        
+        if(Py_None != (PyObject *)npScalar)
+        {
+            double *d = (double*)(npScalar->data);
+            d[nfill] = pair->drlist[inext];
+        }
+        
+        nfill++;
+        inext++;
+    }
+    
+    return Py_BuildValue("ii", inext, nfill);
 }
 
 static PyMethodDef cModPyMethods[] =
@@ -88,6 +130,7 @@ static PyMethodDef cModPyMethods[] =
     {"setup_bins", setup_bins, METH_VARARGS, "Setup verlet-list bins."},
     {"build",      build,      METH_VARARGS, "Build from frame data."},
     {"get_pairs",  get_pairs,  METH_VARARGS, "Get pairs data."},
+    {"fill_page",  fill_page,   METH_VARARGS, "Fill a page of pairs."},
     {NULL, NULL}
 };
 
@@ -102,5 +145,6 @@ static struct PyModuleDef cModPy =
 
 PyMODINIT_FUNC PyInit_cxx_pairlist(void)
 {
+    import_array();
     return PyModule_Create(&cModPy);
 }
