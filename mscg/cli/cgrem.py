@@ -3,8 +3,43 @@ from mscg import *
 from mscg.cli.cgderiv import CGDeriv
 from mscg.table import LammpsTable
 
-import pickle, os
-    
+import pickle, os, sys
+
+class OptimizerBuiltin:
+
+    def __init__(self, **kwargs):
+
+        self.chi = float(kwargs.get('chi', 0.05))
+        self.t = float(kwargs.get('t', 298.15))
+        self.beta = 1.0 / (0.001985875 * self.t)
+
+
+    def run(self, params, dudl_ref, dudl_mean, dudl_var):
+
+        if dudl_mean is None:
+            return params
+
+        for name, dudl_aa in dudl_ref.items():
+            dudl_cg = dudl_mean[name].copy()
+            dudl_var = dudl_var[name].copy()
+            dudl_var += (dudl_cg<1.0e6)
+
+            step = self.chi * (dudl_cg - dudl_aa) / (self.beta * (-dudl_var))
+            param_prev = params[name].copy()
+            params[name] = param_prev - step
+
+            screen.info("")
+            screen.info("<dU/dL>_aa: " + str(dudl_aa))
+            screen.info("<dU/dL>_cg: " + str(dudl_cg))
+            screen.info("Var(dU/dL): " + str(dudl_var))
+            screen.info("")
+
+            for i in range(params[name].shape[0]):
+                screen.info("=> %15.5e %15.5e %15.5e" % (step[i], param_prev[i], params[name][i]))
+
+        return params
+
+
 class OptimizerAction(argparse.Action):
     
     help = "Define optimizer"
@@ -25,8 +60,13 @@ class OptimizerAction(argparse.Action):
             else:
                 kwargs[w[0]] = w[1]
         
-        model_module = importlib.import_module(segs[0])
-        model_class = getattr(model_module, "Optimizer")
+        if segs[0]=='builtin':
+            model_class = OptimizerBuiltin
+        else:
+            sys.path.append(os. getcwd())
+            model_module = importlib.import_module(segs[0])
+            model_class = getattr(model_module, "Optimizer")
+            
         setattr(namespace, self.dest, model_class(**kwargs))
 
 
@@ -145,6 +185,7 @@ def main(*args, **kwargs):
         
         # generate tables
         
+        Checkpoint(args.restart + ".bak").update({'dudl_ref': dudl_ref, 'iterations': iters}).dump()
         params = args.optimizer.run(params.copy(), dudl_ref, dudl_mean, dudl_var)
         
         for m in model.items:
