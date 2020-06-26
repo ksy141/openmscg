@@ -136,54 +136,18 @@ def main(*args, **kwargs):
     TIMER.reset()
     last = TIMER.last
             
-    for reader in args.traj:
-        
-        screen.info("Process trajectory: " + reader.file)
-        trj = reader.traj
-        
-        if args.top.natoms != trj.natoms:
-            screen.fatal("Inconsistent number of atoms between topology (%d) and trajectory (%d)." % (top.natoms, trj.natoms))
-        
-        cut2 = plist.cut * 2;
-        if trj.box[0]<cut2 or trj.box[1]<cut2 or trj.box[2]<cut2:
-            screen.fatal("Incorrect cut-off for the trajectory: cut-off (%f) must be larger than half of the box dimentions (%s)" % (plist.cut, str(trj.box)))
-        
-        plist.setup_bins(trj)
-        start = TIMER.last
+    for reader in TrajBatch(args.traj, natoms = args.top.natoms, cut = plist.cut):
 
-        while reader.next_frame():
-            TIMER.click('io')
-            TIMER.click('matrix', matrix.reset())
-            TIMER.click('pair', plist.build(trj))
-            TIMER.click('bond', blist.build(trj))
-            TIMER.click('table', tables.compute_all())
-            TIMER.click('matrix', matrix.multiplyadd(trj))
-            
-            # timing
-
-            if screen.verbose > 0:
-                TIMER.click(None)
-
-                if TIMER.last - last > 1.0:
-                    last = TIMER.last
-                    elapsed = TIMER.last - start
-
-                    if reader.frames>0:
-                        remained = (TIMER.last - start) / reader.nread * (reader.frames - reader.nread)
-                        msg = " -> Processed %d of %d frames. Elapsed: %0.0f secs. Remaining %0.0f secs ..." % (reader.nread, reader.frames, elapsed, remained)
-                    else:
-                        msg = " -> Processed %d frames. Elapsed: %0.0f secs ..." % (reader.nread, elapsed)
-
-                    print('\r%s' % (msg), end="")
-        
-        # end of one trajectory
-        
-        if screen.verbose > 0:
-            TIMER.click(None)
-            elapsed = TIMER.last - start
-            msg = " -> Processed %d frames. Elapsed: %0.0f secs." % (reader.nread, elapsed)
-            print(('\r%s' % (msg)) + " " * 30)
-        
+        if reader.nread == 1:
+            plist.setup_bins(reader.traj)
+                
+        TIMER.click('io')
+        TIMER.click('matrix', matrix.reset())
+        TIMER.click('pair', plist.build(reader.traj))
+        TIMER.click('bond', blist.build(reader.traj))
+        TIMER.click('table', tables.compute_all())
+        TIMER.click('matrix', matrix.multiplyadd(reader.traj))
+    
     # end of processing trajectories
         
     if args.save != "return":

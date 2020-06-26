@@ -1,0 +1,9 @@
+recursive-include arch *
+recursive-include docs *
+recursive-exclude docs/build *
+recursive-include tests README.md *.py
+recursive-include mscg *.h *.cpp *.py
+
+include pytest.ini
+include requirements.txt
+

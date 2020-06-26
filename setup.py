@@ -8,7 +8,6 @@ import numpy as np
 package_name = 'mscg'
 
 def read_version(version_file):
-    
     with open(version_file, "r") as f:
         version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", f.read(), re.M)
     
@@ -18,6 +17,8 @@ def read_version(version_file):
     raise RuntimeError("Unable to find version string.")
 
 def read_config(args):
+    if not os.path.isfile('build.cfg'):
+        return
     
     cfg = configparser.ConfigParser()
     cfg.readfp(open('build.cfg'))
@@ -37,6 +38,30 @@ def read_config(args):
     
     return
 
+def parse_args(args):
+    cli_args = sys.argv[1:]
+    print("CLI Args: ", cli_args)
+    
+    for arg in cli_args:
+        if arg.startswith('--with-'):
+            w = arg[7:].split('=', 1)
+            key = w[0].replace('-','_')
+            
+            if key in args:
+                if type(args[key]) == list:
+                    args[key] = w[1].split(' ') if len(w)>1 else []
+                else:
+                    args[key] = w[1] if len(w)>1 else ''
+                    
+                sys.argv.remove(arg)
+    
+def update_envs(args):
+    if args['cc'] != '':
+        os.environ['CC'] = args['cc']
+    
+    if setup_args['cxx'] != '':
+        os.environ['CXX'] = args['cxx']
+
 def read_requirements():
     with open("requirements.txt") as f:
         return f.read().strip().split("\n")
@@ -49,7 +74,7 @@ def build_defs(args):
         defs.append((w[0], w[1]) if len(w)>1 else (w[0], None))
     
     return defs
-        
+    
     
 
 if __name__ == '__main__':
@@ -57,23 +82,19 @@ if __name__ == '__main__':
     setup_args = {
         'cc'        : '',
         'cxx'       : '',
-        'compile'   : [],
+        'compile'   : ['-O2', '-Wno-sign-compare'],
         'link'      : [],
-        'gsl_lib'   : [],
-        'lapack_def': [],
-        'lapack_lib': [],
+        'gsl_lib'   : ['-lgsl', '-lgslcblas'],
+        'lapack_def': ['USE_MKL'],
+        'lapack_lib': ['-lmkl_gf_lp64', '-lmkl_intel_thread', '-lmkl_core', '-liomp5'],
     }
     
     read_config(setup_args)
-    
+    parse_args(setup_args)
+    update_envs(setup_args)
+        
     for k in setup_args:
         print("Build option: " + k + "=" + str(setup_args[k]))
-    
-    if setup_args['cc'] != '':
-        os.environ['CC'] = setup_args['cc']
-    
-    if setup_args['cxx'] != '':
-        os.environ['CXX'] = setup_args['cxx']
         
     core_prefix = package_name + '.core.cxx_'
     core_root   = package_name + '/core/'
@@ -154,6 +175,7 @@ if __name__ == '__main__':
         f.split('.')[0] + "=" + package_name + ".cli." + f.split('.')[0] + ":main" \
         for f in os.listdir(package_name + "/cli") if f.startswith("cg") and f.endswith(".py")
     ]}
+    
     
     setup(
         version = read_version(package_name + '/__init__.py'),

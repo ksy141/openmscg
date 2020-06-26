@@ -14,9 +14,9 @@ Prerequisites
 Download Precompiled Distributions
 **********************************
 
-* For Python 3.6.x users: `wheel-py36 <https://software.rcc.uchicago.edu/mscg/downloads/OpenMSCG-0.0.1-cp36-cp36m-linux_x86_64.whl>`_
-* For Python 3.7.x users: `wheel-py37 <https://software.rcc.uchicago.edu/mscg/downloads/OpenMSCG-0.0.1-cp37-cp37m-linux_x86_64.whl>`_
-* For Python 3.8.x users: `wheel-py38 <https://software.rcc.uchicago.edu/mscg/downloads/OpenMSCG-0.0.1-cp38-cp38-linux_x86_64.whl>`_
+* For Python 3.6.x users: `wheel-py36 <https://software.rcc.uchicago.edu/download/OpenMSCG-0.1.0-cp36-cp36m-linux_x86_64.whl>`_
+* For Python 3.7.x users: `wheel-py37 <https://software.rcc.uchicago.edu/download/OpenMSCG-0.1.0-cp37-cp37m-linux_x86_64.whl>`_
+* For Python 3.8.x users: `wheel-py38 <https://software.rcc.uchicago.edu/download/OpenMSCG-0.1.0-cp38-cp38-linux_x86_64.whl>`_
 
 Quick Install
 *************

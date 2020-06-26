@@ -98,7 +98,7 @@ class TrajBatch:
                 elapsed = now - self.timer_start
 
                 if self.reader.frames>0:
-                    remained = (now - start) / self.reader.nread * (self.reader.frames - self.reader.nread)
+                    remained = (now - self.timer_start) / self.reader.nread * (self.reader.frames - self.reader.nread)
                     msg = " -> Processed %d of %d frames. Elapsed: %0.0f secs. Remaining %0.0f secs ..." % (self.reader.nread, self.reader.frames, elapsed, remained)
                 else:
                     msg = " -> Processed %d frames. Elapsed: %0.0f secs ..." % (self.reader.nread, elapsed)
