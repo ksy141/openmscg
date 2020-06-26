@@ -17,7 +17,10 @@ def build_top_from_lammps(filename):
 
     atoms = []
 
-    while ir < len(rows) and rows[ir]!= ['Atoms']:
+    while ir < len(rows):
+        if(len(rows[ir]) > 0):
+            if(rows[ir][0] == 'Atoms'):
+                break
         ir += 1
 
     ir += 2
