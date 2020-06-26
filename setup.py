@@ -86,7 +86,7 @@ if __name__ == '__main__':
         'link'      : [],
         'gsl_lib'   : ['-lgsl', '-lgslcblas'],
         'lapack_def': ['USE_MKL'],
-        'lapack_lib': ['-lmkl_gf_lp64', '-lmkl_intel_thread', '-lmkl_core', '-liomp5'],
+        'lapack_lib': ['-lmkl_gf_lp64', '-lmkl_intel_thread', '-lmkl_core'],
     }
     
     read_config(setup_args)
