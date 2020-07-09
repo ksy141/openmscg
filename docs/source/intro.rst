@@ -26,26 +26,12 @@ this manual and the comments in the source code.
 
 **This package also provides support for the methods described in these references:**
 
-* "Multiscale coarse graining of liquid-state systems", S. Izvekov, and G. A. Voth, The Journal of Chemical Physics, 123(13), 134105 (2005). doi:10.1063/1.2038787
+* "Multiscale coarse graining of liquid-state systems", S. Izvekov, and G. A. Voth, The Journal of Chemical Physics, 123, 134105 (2005). doi:10.1063/1.2038787
 
-* "A Bayesian statistics approach to multiscale coarse graining", P. Liu, Q. Shi, H. D. Daume III, and G. A. Voth, Journal of Chemical Physics, 129, 214114 (2008). doi:10.1063/1.3033218
+* "The multiscale coarse-graining method. II. Numerical implementation for coarse-grained molecular models," W. G. Noid, P. Liu, Y. Wang, J.-W. Chu, G. S. Ayton, S. Izvekov, H. C. Andersen, and G. A. Voth, The Journal of Chemical Physics, 128, 244115 (2008). doi:10.1063/1.2938857
 
-* "Multiscale coarse graining of liquid-state systems", S. Izvekov, and G. A. Voth, The Journal of Chemical Physics, 123(13), 134105 (2005). doi:10.1063/1.2038787
+* "The theory of ultra-coarse-graining. 2. Numerical implementation" A. Davtyan, J. F. Dama, A. V. Sinitskiy, and G. A. Voth, The Journal of Chemical Theory and Computation, 10, 5265–5275 (2014). doi:10.1021/ct500834t
 
-* "A Bayesian statistics approach to multiscale coarse graining", P. Liu, Q. Shi, H. D. Daume III, and G. A. Voth, Journal of Chemical Physics, 129, 214114 (2008). doi:10.1063/1.3033218
+* "The theory of ultra-coarse-graining. 3. Coarse-grained sites with rapid local equilibrium of internal states", J. F. Dama, J. Jin, and G. A. Voth, The Journal of Chemical Theory and Computation, 13, 1010-1022 (2017). doi: 10.1021/acs.jctc.6b01081
 
-* "The multiscale coarse-graining method. VI. Implementation of three-body coarse-grained potentials" L. Larini, L. Lu, and G. A. Voth, Journal of Chemical Physics, 132, 164107 (2010). doi:10.1063/1.3394863
-
-* "Fitting coarse-grained distribution functions through an iterative force-matching method" L. Lu, J. F. Dama, and G. A. Voth, Journal of Chemical Physics, 139, 21906 (2013). doi:10.1063/1.4811667
-
-* "The Theory of Ultra-Coarse-Graining. 2. Numerical Implementation" A. Davtyan, J. F. Dama, A. V. Sinitskiy, and G. A. Voth, Journal of Chemical Theory and Computation, 10 (12), 5265–5275 (2014). doi:10.1021/ct500834t
-
-* "The multiscale coarse-graining method. XI. Accurate interactions based on the centers of charge of coarse-grained sites", Z. Cao and G. A. Voth, Journal of Chemical Physics, 143, 243116 (2015). doi:10.1063/1.4933249
-
-* "Predicting the Sensitivity of Multiscale Coarse-Grained Models to their Underlying Fine-Grained Model Parameters" J. W. Wagner, J. F. Dama, and G. A. Voth, Journal of Chemical Theory and Computation, 11(8), 3547–3560 (2015). doi:10.1021/acs.jctc.5b00180
-
-* "A Direct Method for Incorporating Experimental Data into Multiscale Coarse-Grained Models", T. Dannenhoffer-Lafage, A. D. White, and G. A. Voth, Journal of Chemical Theory and Computation, 12(5), 2144–2153 (2016). doi:10.1021/acs.jctc.6b00043
-
-* "The Theory of Ultra-Coarse-Graining. 3. Coarse-Grained Sites with Rapid Local Equilibrium of Internal States", J. F. Dama, J. Jin, and G. A. Voth, Journal of Chemical Theory and Computation, 2017 ASAP Article. doi: 10.1021/acs.jctc.6b01081
-
-* "Extending the Range and Physical Accuracy of Coarse-grained Models: Order Parameter Dependent Interactions", J. W. Wagner, T. Dannenhoffer-Lafage, J. Jin, and G. A. Voth, Journal of Chemical Physics, 147, 044113 (2017). doit:10.1063/1.4995946
+* "Coarse-graining errors and numerical optimization using a relative entropy framework," A. Chaimovich and M. Shell, The Journal of Chemical Physics, 134, 094112 (2011). doi:10.1063/1.3557038
