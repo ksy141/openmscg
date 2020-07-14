@@ -78,6 +78,7 @@ def build_defs(args):
     
 
 if __name__ == '__main__':
+    print("ENV=> ", os.environ)    
     
     setup_args = {
         'cc'        : '',
@@ -100,13 +101,17 @@ if __name__ == '__main__':
     core_root   = package_name + '/core/'
     api_path    = core_root + 'api/'
     src_path    = core_root + 'src/'
-
+    inc_path    = [src_path]
+    
+    if 'PREFIX' in os.environ:
+        inc_path.append(os.environ['PREFIX'] + '/include')
+    
     def src_files(api, files):
         return [api_path + api + '.cpp'] + [src_path + file + '.cpp' for file in files]
     
     def table_extention(name):
         return Extension(core_prefix + 'table_' + name + '_bspline',
-            include_dirs = [src_path],
+            include_dirs = inc_path,
             sources = src_files('py_table_' + name + '_bspline', ['table', 'bspline', 'table_' + name + '_bspline']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['gsl_lib'] + setup_args['link'],
@@ -114,7 +119,7 @@ if __name__ == '__main__':
     
     def model_extention(name, extra_src = [], extra_link = []):
         return Extension(core_prefix + 'model_' + name,
-            include_dirs = [src_path, np.get_include()],
+            include_dirs = inc_path + [np.get_include()],
             sources = src_files('py_model_' + name, ['model', 'model_' + name] + extra_src),
             extra_compile_args = setup_args['compile'],
             extra_link_args = extra_link + setup_args['link'],
@@ -122,35 +127,35 @@ if __name__ == '__main__':
     
     extensions = [
         Extension(core_prefix + 'topol',
-            include_dirs = [src_path],
+            include_dirs = inc_path,
             sources = src_files('py_topol', ['topology']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
         ),
 
         Extension(core_prefix + 'traj',
-            include_dirs = [src_path],
+            include_dirs = inc_path,
             sources = src_files('py_traj', ['traj','traj_lammps','traj_trr','xdrfile','xdrfile_trr']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
         ),
 
         Extension(core_prefix + 'pairlist',
-            include_dirs = [src_path, np.get_include()],
+            include_dirs = inc_path + [np.get_include()],
             sources = src_files('py_pairlist', ['pair_list']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
         ),
         
         Extension(core_prefix + 'bondlist',
-            include_dirs = [src_path],
+            include_dirs = inc_path,
             sources = src_files('py_bondlist', ['bond_list']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
         ),
         
         Extension(core_prefix + 'matrix',
-            include_dirs = [src_path],
+            include_dirs = inc_path,
             sources = src_files('py_matrix', ['matrix']),
             define_macros = build_defs(setup_args['lapack_def']),
             extra_compile_args = setup_args['compile'],
@@ -158,7 +163,7 @@ if __name__ == '__main__':
         ),
         
         Extension(core_prefix + 'bspline',
-            include_dirs = [src_path],
+            include_dirs = inc_path,
             sources = src_files('py_bspline', ['bspline']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['gsl_lib'] + setup_args['link'],

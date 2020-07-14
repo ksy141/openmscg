@@ -9,7 +9,7 @@ def build_top_from_lammps(filename):
         raise Exception('File is not found: ' + filename)
 
     with open(filename, 'r') as f:
-        rows = [row.split() for row in f.read().split("\n")]
+        rows = [row.split('#')[0].strip().split() for row in f.read().split("\n")]
     
     ir = 2
     

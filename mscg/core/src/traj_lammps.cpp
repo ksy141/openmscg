@@ -86,19 +86,22 @@ int TrajLAMMPS::parse_columns()
     
     cx = cy = cz = cfx = cfy = cfz = cid = ctype = -1;
     
-    #define KEY(k) else if(strcmp(argv[i], #k)==0) c##k = i
+    #define KEY(k,name) else if(strcmp(argv[i], #name)==0) c##k = i
     
     for(int i=0; i<argn; i++)
     {
         if(0);
-        KEY(x);
-        KEY(y);
-        KEY(z);
-        KEY(fx);
-        KEY(fy);
-        KEY(fz);
-        KEY(id);
-        KEY(type);
+        KEY(x,x);
+        KEY(x,xu);
+        KEY(y,y);
+        KEY(y,yu);
+        KEY(z,z);
+        KEY(z,zu);
+        KEY(fx,fx);
+        KEY(fy,fy);
+        KEY(fz,fz);
+        KEY(id,id);
+        KEY(type,type);
     }
     
     return 0;
