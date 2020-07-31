@@ -24,7 +24,7 @@ Documentation of OpenMSCG
    :caption: Developer's Manual
    
    tests
-
+   api/modules
 
 
 
