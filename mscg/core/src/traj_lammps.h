@@ -12,10 +12,11 @@ class TrajLAMMPS : public Traj
   
     FILE *fp;
     
-    TrajLAMMPS(const char*);
+    TrajLAMMPS(const char*, const char*);
     virtual ~TrajLAMMPS();
     
     virtual int read_next_frame();
+    virtual int write_frame();
     virtual void rewind();
     
     int read_head();
@@ -26,7 +27,7 @@ class TrajLAMMPS : public Traj
     char columns[1001];
     Vec boxlo;
     
-    int cx, cy, cz, cfx, cfy, cfz, cid, ctype;
+    int cx, cy, cz, cfx, cvx, cvy, cvz, cfy, cfz, cid, ctype;
 };
 
 #endif

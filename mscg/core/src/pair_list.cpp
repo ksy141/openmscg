@@ -284,6 +284,12 @@ void PairList::build(Traj* traj, bool reset_bins)
     //     printf("%6d %6d %6d %10lf\n", tlist[i], ilist[i], jlist[i], drlist[i]);
 }
 
+void PairList::update_types(int ntype, int * types)
+{
+    for(int i=0; i<npairs; i++)
+        tlist[i] = PAIRTYPE(types[ilist[i]], types[jlist[i]], ntype);
+}
+
 void PairList::build_brutal(Traj* traj)
 {
     Vec *x = traj->x;

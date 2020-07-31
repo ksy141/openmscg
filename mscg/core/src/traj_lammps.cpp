@@ -1,10 +1,16 @@
 #include "traj_lammps.h"
 
-TrajLAMMPS::TrajLAMMPS(const char* filename) : Traj()
+TrajLAMMPS::TrajLAMMPS(const char* filename, const char* mode) : Traj()
 {
     status = 1;
-    fp = fopen((char*)filename, "r");
+    fp = fopen((char*)filename, mode);
     if(!fp) return;
+    
+    if(mode[0]=='w' || mode[0]=='a')
+    {
+        status = 0;
+        return;
+    }
     
     status = 2;
     if(read_head()) return;
@@ -12,13 +18,17 @@ TrajLAMMPS::TrajLAMMPS(const char* filename) : Traj()
     
     parse_columns();
     if(cid==-1 || cx==-1 || cy==-1 || cz==-1) return;
+    
+    if(ctype!=-1 && ctype!=-1 && ctype!=-1) has_type = true;
+    else has_type = false;
+    
+    if(cvx!=-1 && cvy!=-1 && cvz!=-1) has_vel = true;
+    else has_vel = false;
+    
     if(cfx!=-1 && cfy!=-1 && cfz!=-1) has_force = true;
     else has_force = false;
     
-    x = new Vec[natoms];
-    v = new Vec[natoms];
-    f = new Vec[natoms];
-    
+    allocate();
     status = 0;
     
     if(read_next_frame()) 
@@ -51,7 +61,10 @@ int TrajLAMMPS::read_next_frame()
 
 int TrajLAMMPS::read_head()
 {
-    for(int i=0; i<4; i++) GETLINE();
+    for(int i=0; i<2; i++) GETLINE();
+    sscanf(line, "%d", &(step));
+    
+    for(int i=0; i<2; i++) GETLINE();
     sscanf(line, "%d", &(natoms));
     
     GETLINE();
@@ -97,6 +110,9 @@ int TrajLAMMPS::parse_columns()
         KEY(y,yu);
         KEY(z,z);
         KEY(z,zu);
+        KEY(vx,vx);
+        KEY(vy,vy);
+        KEY(vz,vz);
         KEY(fx,fx);
         KEY(fy,fy);
         KEY(fz,fz);
@@ -149,7 +165,33 @@ int TrajLAMMPS::read_body()
     return 0;
 }
 
-
+int TrajLAMMPS::write_frame()
+{    
+    fprintf(fp, "ITEM: TIMESTEP\n%d\n", step);
+    fprintf(fp, "ITEM: NUMBER OF ATOMS\n%d\n", natoms);
+    
+    fprintf(fp, "ITEM: BOX BOUNDS pp pp pp\n");
+    for(int dim=0; dim<3; dim++) fprintf(fp, "%e %e\n", 0.0, box[dim]);
+    
+    fprintf(fp, "ITEM: ATOMS id");
+    if(has_type) fprintf(fp, " type");
+    fprintf(fp, " x y z");
+    if(has_vel) fprintf(fp, " vx vy vz");
+    if(has_force) fprintf(fp, " fx fy fz");
+    fprintf(fp, "\n");
+    
+    for(int i=0; i<natoms; i++)
+    {
+        fprintf(fp, "%d", i);
+        if(has_type) fprintf(fp, " %d", type[i]);
+        fprintf(fp, " %f %f %f", x[i][0], x[i][1], x[i][2]);
+        if(has_vel) fprintf(fp, " %f %f %f", v[i][0], v[i][1], v[i][2]);
+        if(has_force) fprintf(fp, " %f %f %f", f[i][0], f[i][1], f[i][2]);
+        fprintf(fp, "\n");
+    }
+    
+    return 0;
+}
 
 
 

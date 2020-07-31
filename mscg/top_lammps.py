@@ -13,6 +13,24 @@ def build_top_from_lammps(filename):
     
     ir = 2
     
+    # read masses (atom types)
+    
+    masses = []
+    
+    while ir < len(rows):
+        if(len(rows[ir]) > 0):
+            if(rows[ir][0] == 'Masses'):
+                break
+        ir += 1
+
+    ir += 2
+
+    while ir < len(rows) and rows[ir]!=[]:
+        row = rows[ir]
+        if len(row)<2: raise Exception("Wrong format for [Masses] block at line %d." % (ir))
+        masses.append(row[1])
+        ir += 1
+    
     # read atoms
 
     atoms = []
@@ -58,7 +76,7 @@ def build_top_from_lammps(filename):
     # create c++ handle
     
     top = Topology()
-    top.set_names([str(i) for i in range(1, max(atoms)+2)])
+    top.set_names(masses)
     top.create()
     top.add_atoms(atoms)
     top.add_bonds(bond_atom1, bond_atom2)

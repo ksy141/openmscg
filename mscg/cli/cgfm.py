@@ -91,6 +91,9 @@ def main(*args, **kwargs):
     AngleAction = BuildTableAction(3,"angle");
     group.add_argument("--angle", metavar='types,args', action=AngleAction, help=AngleAction.help(), default=[])
     
+    group.add_argument("--ucg", action=UCGArgAction, help=UCGArgAction.help, default="")
+    group.add_argument("--ucg-wf", action=WFArgAction, help=WFArgAction.help, default=[])
+    
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
     else:
@@ -115,6 +118,7 @@ def main(*args, **kwargs):
     plist = PairList(args.top)
     plist.init(cut = args.cut)
     blist = BondList(args.top)
+    UCG.init(plist, blist)
     
     # build up tables
     
@@ -137,17 +141,26 @@ def main(*args, **kwargs):
     last = TIMER.last
             
     for reader in TrajBatch(args.traj, natoms = args.top.natoms, cut = plist.cut):
-
+    
         if reader.nread == 1:
             plist.setup_bins(reader.traj)
                 
         TIMER.click('io')
-        TIMER.click('matrix', matrix.reset())
         TIMER.click('pair', plist.build(reader.traj))
         TIMER.click('bond', blist.build(reader.traj))
-        TIMER.click('table', tables.compute_all())
-        TIMER.click('matrix', matrix.multiplyadd(reader.traj))
-    
+        
+        if UCG.weighting_funcs != []:
+            saved_atom_types = args.top.atom_types.copy()
+        
+        for types in UCGSpawner(args.top, args.traj):
+            if types is not None:
+                plist.update_types(args.top.ntypes_atom, types)
+                TIMER.click('ucg')
+            
+            TIMER.click('matrix', matrix.reset())
+            TIMER.click('table', tables.compute_all())
+            TIMER.click('matrix', matrix.multiplyadd(reader.traj))
+        
     # end of processing trajectories
         
     if args.save != "return":

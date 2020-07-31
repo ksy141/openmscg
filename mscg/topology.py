@@ -177,8 +177,6 @@ class Topology:
         t = [one.split('-') for one in self.types_dihe]
         self.types_dihe = ['-'.join([m[tt[0]], m[tt[1]], m[tt[2]], m[tt[3]]]) for tt in t]
 
-
-
 def generate_angles(natoms, bonds):
     links = [[] for _ in range(natoms)]
 

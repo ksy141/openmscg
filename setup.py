@@ -134,7 +134,7 @@ if __name__ == '__main__':
         ),
 
         Extension(core_prefix + 'traj',
-            include_dirs = inc_path,
+            include_dirs = inc_path + [np.get_include()],
             sources = src_files('py_traj', ['traj','traj_lammps','traj_trr','xdrfile','xdrfile_trr']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],

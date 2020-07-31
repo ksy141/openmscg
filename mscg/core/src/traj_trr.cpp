@@ -11,23 +11,27 @@ struct XDRFILE
     int      buf2size; 
 };
 
-TrajTRR::TrajTRR(const char* filename) : Traj()
+TrajTRR::TrajTRR(const char* filename, const char* mode) : Traj()
 {
     status = 1;
-    xd = xdrfile_open((char*)filename, "r");
+    xd = xdrfile_open((char*)filename, mode);
     if(!xd) return;
+    
+    if(mode[0]=='w' || mode[0]=='a')
+    {
+        status = 0;
+        return;
+    }
     
     status = 2;
     if(do_trnheader(xd, 1, &header)) return;
     rewind();
     
     natoms = header.natoms;
+    has_vel = (header.v_size > 0);
     has_force = (header.f_size > 0);
     
-    x = new Vec[natoms];
-    v = new Vec[natoms];
-    f = new Vec[natoms];
-    
+    allocate();
     status = 0;
     
     if(read_next_frame()) 
@@ -51,13 +55,42 @@ void TrajTRR::rewind()
 
 int TrajTRR::read_next_frame()
 {
-    int step;
     matrix _box;
     float t, lambda;
     
     if(status) return 1;
     if(read_trr(xd, natoms, &step, &t, &lambda, _box, x, v, f)) return 1;
-    for(int dim=0; dim<3; dim++) box[dim] = _box[dim][dim];
+    
+    for(int i=0; i<natoms; i++)
+    {
+        x[i][0] *= 10.0; x[i][1] *= 10.0; x[i][2] *= 10.0;
+        if(has_vel) { v[i][0] *= 0.01; v[i][1] *= 0.01; v[i][2] *= 0.01; }
+        if(has_force) { f[i][0] /= 41.82; f[i][1] /= 41.82; f[i][2] /= 41.82; }
+    }
+    
+    for(int dim=0; dim<3; dim++) box[dim] = _box[dim][dim] * 10.0;
     pbc();
     return 0;
+}
+
+int TrajTRR::write_frame()
+{
+    matrix _box;
+    float lambda = 1.0;
+    float t = step;
+    
+    for(int dim=0; dim<3; dim++)
+    {
+        _box[dim][0] = _box[dim][1] = _box[dim][2] = 0.0;
+        _box[dim][dim] = box[dim] * 0.1;
+    }
+    
+    for(int i=0; i<natoms; i++)
+    {
+        x[i][0] *= 0.1; x[i][1] *= 0.1; x[i][2] *= 0.1;
+        if(has_vel) { v[i][0] *= 100.0; v[i][1] *= 100.0; v[i][2] *= 100.0; }
+        if(has_force) { f[i][0] *= 41.82; f[i][1] *= 41.82; f[i][2] *= 41.82; }
+    }
+    
+    return write_trr(xd, natoms, step, t, lambda, _box, x, has_vel?v:NULL, has_force?f:NULL);
 }

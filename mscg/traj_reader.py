@@ -26,7 +26,7 @@ class TrajReader:
         
         if self.traj is None:
             self.nread = 0
-            self.traj = Trajectory(self.file, self.suffix)
+            self.traj = Trajectory(self.file, "r", self.suffix)
             for i in range(self.skip):
                 self.traj.read_frame()
         
@@ -43,6 +43,7 @@ class TrajReader:
         else:
             self.close()
             return False
+    
 
 
 

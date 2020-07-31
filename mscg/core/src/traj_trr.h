@@ -11,10 +11,11 @@ class TrajTRR : public Traj
     t_trnheader header;
     XDRFILE *xd;
     
-    TrajTRR(const char*);
+    TrajTRR(const char*, const char*);
     virtual ~TrajTRR();
     
     virtual int read_next_frame();
+    virtual int write_frame();
     virtual void rewind();
 };
 

@@ -1,4 +1,6 @@
 #include <Python.h>
+
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
 #include "pair_list.h"
@@ -96,14 +98,14 @@ PYAPI(fill_page)
         
         if(Py_None != (PyObject *)npIndex)
         {
-            long *d = (long*)(npIndex->data);
+            long *d = (long*)PyArray_DATA(npIndex);
             d[nfill] = pair->ilist[inext];
             d[nfill+page_size] = pair->jlist[inext];
         }
         
         if(Py_None != (PyObject *)npVector)
         {
-            double *d = (double*)(npVector->data);
+            double *d = (double*)PyArray_DATA(npVector);
             d[nfill] = pair->dxlist[inext];
             d[nfill+page_size] = pair->dylist[inext];
             d[nfill+page_size+page_size] = pair->dzlist[inext];
@@ -111,7 +113,7 @@ PYAPI(fill_page)
         
         if(Py_None != (PyObject *)npScalar)
         {
-            double *d = (double*)(npScalar->data);
+            double *d = (double*)PyArray_DATA(npScalar);
             d[nfill] = pair->drlist[inext];
         }
         
@@ -122,15 +124,27 @@ PYAPI(fill_page)
     return Py_BuildValue("ii", inext, nfill);
 }
 
+PYAPI(update_types)
+{
+    PairList *pair;
+    int ntypes;
+    PyArrayObject *npTypes;
+    PyArg_ParseTuple(args, "LiO", &pair, &ntypes, &npTypes);
+    int *types = (int*)PyArray_DATA(npTypes);
+    pair->update_types(ntypes, types);
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef cModPyMethods[] =
 {
-    {"create",     create,     METH_VARARGS, "Create pair-list."},
-    {"destroy",    destroy,    METH_VARARGS, "Destroy pair-list."},
-    {"init",       init,       METH_VARARGS, "Initialize pair-list."},
-    {"setup_bins", setup_bins, METH_VARARGS, "Setup verlet-list bins."},
-    {"build",      build,      METH_VARARGS, "Build from frame data."},
-    {"get_pairs",  get_pairs,  METH_VARARGS, "Get pairs data."},
-    {"fill_page",  fill_page,   METH_VARARGS, "Fill a page of pairs."},
+    {"create",       create,       METH_VARARGS, "Create pair-list."},
+    {"destroy",      destroy,      METH_VARARGS, "Destroy pair-list."},
+    {"init",         init,         METH_VARARGS, "Initialize pair-list."},
+    {"setup_bins",   setup_bins,   METH_VARARGS, "Setup verlet-list bins."},
+    {"build",        build,        METH_VARARGS, "Build from frame data."},
+    {"get_pairs",    get_pairs,    METH_VARARGS, "Get pairs data."},
+    {"fill_page",    fill_page,    METH_VARARGS, "Fill a page of pairs."},
+    {"update_types", update_types, METH_VARARGS, "Update pair types."},
     {NULL, NULL}
 };
 

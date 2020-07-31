@@ -67,6 +67,7 @@ class PairList:
     def get_pairs(self, start, count):
         return lib.get_pairs(self.h, start, count)
     
-    
+    def update_types(self, ntypes, types):
+        return lib.update_types(self.h, ntypes, np.array(types, dtype=np.int32))
     
     

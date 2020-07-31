@@ -17,7 +17,11 @@ def main(*args, **kwargs):
     
     group = parser.add_argument_group('Optional arguments')
     group.add_argument("--dump", metavar='', type=str, help="dump a LAMMPS table file, in format of [table_name,xmin,xmax,dx]", action='append')
-    group.add_argument("--plot", metavar='', type=str, help="plot table, in format of [table_name,xmin,xmax,dx]")
+    group.add_argument("--plot", metavar='', type=str, help="plot table, in format of [table_name,xmin,xmax,dx]", action='append')
+    group.add_argument("--plot-force", metavar='', default=True, type=bool, help="plot force tables")
+   
+    parser.add_argument('--no-plot-frc', default=False, action='store_true')
+    parser.add_argument('--no-plot-pot', default=False, action='store_true')
     
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
@@ -106,16 +110,21 @@ def main(*args, **kwargs):
     
     
     if args.plot is not None:
+        import matplotlib.pyplot as plt
+        legends = []
         
-        T = gen_table(args.plot)
+        for plot in args.plot:
+            T = gen_table(plot)
+
+            if T is not None:
+                if not args.no_plot_frc:
+                    plt.plot(T[0], T[2], label='Force/' + plot)
+                
+                if not args.no_plot_pot:
+                    plt.plot(T[0], T[1], '.', label='Potential/' + plot)
         
-        if T is not None:
-            import matplotlib.pyplot as plt
-            plt.plot(T[0], T[2], label='Force - Kcal/mol/angstrom')
-            plt.plot(T[0], T[1], label='Potential Energy - Kcal/mol')
-            plt.legend(loc='upper right')
-            plt.title(args.plot.split(',')[0])
-            plt.show()
+        plt.legend()
+        plt.show()
     
     return
 

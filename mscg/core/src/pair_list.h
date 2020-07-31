@@ -63,6 +63,7 @@ class PairList
     void setup_bins(Traj*);
     void build(Traj*, bool reset_bins = false);
     void build_brutal(Traj*);
+    void update_types(int, int*);
 };
 
 #endif

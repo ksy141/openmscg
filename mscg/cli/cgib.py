@@ -89,6 +89,8 @@ def main(*args, **kwargs):
     
     group.add_argument("--plot", metavar='U or N', type=str, default='U', help="plot the results of U (potential) or n (distribition)")
     
+    group.add_argument("--save", metavar='prefix or return', default='noname', type=str)
+    
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
     else:
@@ -136,102 +138,63 @@ def main(*args, **kwargs):
     TIMER.reset()
     last = TIMER.last
     
-    for reader in args.traj:
+    for reader in TrajBatch(args.traj, natoms = args.top.natoms, cut = plist.cut):
+
+        if reader.nread == 1:
+            plist.setup_bins(reader.traj)
         
-        screen.info("Process trajectory: " + reader.file)
-        trj = reader.traj
+        TIMER.click('io')
         
-        if args.top.natoms != trj.natoms:
-            screen.fatal("Inconsistent number of atoms between topology (%d) and trajectory (%d)." % (args.top.natoms, trj.natoms))
+        # process pair styles
         
-        cut2 = plist.cut * 2;
-        if trj.box[0]<cut2 or trj.box[1]<cut2 or trj.box[2]<cut2:
-            screen.fatal("Incorrect cut-off for the trajectory: cut-off (%f) must be larger than half of the box dimentions (%s)" % (plist.cut, str(trj.box)))
-        
-        plist.setup_bins(trj)
-        start = TIMER.last
-        
-        while reader.next_frame():
+        if len(args.pair)>0: 
+            plist.build(reader.traj)
             
-            # process pair styles
-
-            if len(args.pair)>0: 
+            for pair in args.pair:
                 
-                plist.build(trj)
-                pstart = 0
-                pn = 100000 # pairs per page
-                
-                while True:
-                    z = plist.get_pairs(pstart, pn)
-                    types = np.array(z[0])
-                    vals = np.array(z[3])
-
-                    for pair in args.pair:
-                        dr = vals[types==pair.id]
-                        hist, edges = np.histogram(dr, bins=pair.bins, range=(pair.min, pair.max))
-
-                        if pair.n is None:
-                            pair.n, pair.x = hist, edges[:-1] + np.diff(edges) * 0.5
-                        else:
-                            pair.n += hist
-
-                    pstart += pn
-                    if len(types)<pn:
-                        break
-
-            # process bonding styles
-
-            if len(args.bond)>0 or len(args.angle)>0:
-                blist.build(trj)
-
-                def process_hist(one, types, vals):
-
-                    vals = vals[types==one.id]
-                    hist, edges = np.histogram(vals, bins=one.bins, range=(one.min, one.max))
-
-                    if one.n is None:
-                        one.n, one.x = hist, edges[:-1] + np.diff(edges) * 0.5
+                for page in plist.pages(pair.id):
+                    hist, edges = np.histogram(page.r, bins=pair.bins, range=(pair.min, pair.max))
+                    
+                    if pair.n is None:
+                        pair.n, pair.x = hist, edges[:-1] + np.diff(edges) * 0.5
                     else:
-                        one.n += hist
-
-                for one in args.bond:
-                    z = blist.get_bonds()
-                    types = np.array(z[0])
-                    dr = np.array(z[3])
-                    process_hist(one, types, dr)
-
-                for one in args.angle:
-                    z = blist.get_angles()
-                    types = np.array(z[0])
-                    dr = np.array(z[4]) * (180.0 / np.pi)
-                    process_hist(one, types, dr)
+                        pair.n += hist
             
-            # timing
+            TIMER.click('pair')
+            
+        # process bonding styles
 
-            if screen.verbose > 0:
-                TIMER.click(None)
+        if len(args.bond)>0 or len(args.angle)>0:
+            blist.build(reader.traj)
 
-                if TIMER.last - last > 1.0:
-                    last = TIMER.last
-                    elapsed = TIMER.last - start
+            def process_hist(one, types, vals):
 
-                    if reader.frames>0:
-                        remained = (TIMER.last - start) / reader.nread * (reader.frames - reader.nread)
-                        msg = " -> Processed %d of %d frames. Elapsed: %0.0f secs. Remaining %0.0f secs ..." % (reader.nread, reader.frames, elapsed, remained)
-                    else:
-                        msg = " -> Processed %d frames. Elapsed: %0.0f secs ..." % (reader.nread, elapsed)
+                vals = vals[types==one.id]
+                hist, edges = np.histogram(vals, bins=one.bins, range=(one.min, one.max))
 
-                    print('\r%s' % (msg), end="")
+                if one.n is None:
+                    one.n, one.x = hist, edges[:-1] + np.diff(edges) * 0.5
+                else:
+                    one.n += hist
 
-            # end of one frame
+            for one in args.bond:
+                z = blist.get_bonds()
+                types = np.array(z[0])
+                dr = np.array(z[3])
+                process_hist(one, types, dr)
+
+            for one in args.angle:
+                z = blist.get_angles()
+                types = np.array(z[0])
+                dr = np.array(z[4]) * (180.0 / np.pi)
+                process_hist(one, types, dr)
+
+            TIMER.click('bond')
         
         # end of one trajectory
         
-        if screen.verbose > 0:
-            TIMER.click(None)
-            elapsed = TIMER.last - start
-            msg = " -> Processed %d frames. Elapsed: %0.0f secs." % (reader.nread, elapsed)
-            print(('\r%s' % (msg)) + " " * 30)
+    if screen.verbose > 0:
+        screen.info([""] + TIMER.report(False) + [""])
         
     # end of processing trajectories
     
@@ -242,25 +205,32 @@ def main(*args, **kwargs):
         d.x = d.x[valid]
         d.n = d.n[valid]
         d.U = -0.0019872041 * args.temp *np.log(d.n)
-        np.savetxt(prefix + '-' + d.name + '.dat', np.vstack([d.x, d.n, d.U]).T)
-        return
+        
+        return {
+            'name': prefix + '-' + d.name,
+            'data': np.vstack([d.x, d.n, d.U]).T
+        }
 
-
+    results = []
 
     for pair in args.pair:
         pair.n = np.divide(pair.n, 4.0 * np.pi * np.square(pair.x))
         pair.n = np.divide(pair.n, pair.n[-1])
-        post_process(pair, 'Pair')
+        results.append(post_process(pair, 'Pair'))
 
     for bond in args.bond:
         bond.n = np.divide(bond.n, bond.n.max())
-        post_process(bond, 'Bond')
+        results.append(post_process(bond, 'Bond'))
 
     for angle in args.angle:
         angle.n = np.divide(angle.n, angle.n.max())
-        post_process(angle, 'Angle')
+        results.append(post_process(angle, 'Angle'))
     
-    
+    if args.save == 'return':
+        return results
+    else:
+        for res in results:
+            np.savetxt(args.save + "_" + res['name'] + '.dat', res['data'])
 
     if args.plot != 'none':
         import matplotlib.pyplot as plt
