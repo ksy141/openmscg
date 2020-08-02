@@ -43,9 +43,11 @@ Syntax of running ``cgib`` command ::
                           (default: [])
 
 
-* For more details about the option ``--top`` and ``--name``, check the `topology concept <../basics.html#cli-option-for-topology>`_.
+.. include:: common.rst
 
-* For more details about the option ``--traj``, check the `trajectory concept <../basics.html#cli-option-for-trajectory>`_.
+* |cli-opt-top-name|
+
+* |cli-opt-traj|
 
 * Users can use options ``--pair``, ``--bond``, ``--angle`` to add force tables to be computed. These options are followed by multi-field values, which comes first with a number of atom types defining the type of forces and then several optional arguments defining the B-Spline knots as described above.
 

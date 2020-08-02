@@ -1,9 +1,23 @@
-#
+'''the mscg package provides a toolkit of data structures and API 
+functions, which can be used to build up a customized or extended 
+workflow of multi-scale coarse-graining modeling in Python. These
+APIs are designed with object-oriented programming paradigm and
+organized in sub-packages and modules. To use these APIs, simply
+load the package in a Python script: ::
+    
+    >>> import mscg as cg
+    >>> help(cg)
 
-doc_root = 'https://software.rcc.uchicago.edu/mscg/docs/'
+or, directly import sub-packages and modules into current 
+namespace: ::
+
+    >>> from mscg import *
+
+'''
 
 __version__ = '0.1.0'
-__doc__ = doc_root
+
+doc_root = "https://software.rcc.uchicago.edu/mscg/docs/"
 
 from .topology   import *
 from .trajectory import *

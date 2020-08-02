@@ -14,18 +14,15 @@ Documentation of OpenMSCG
    quickstart
    setup
    basics
+   cli
    commands
-   modules
-
-
 
 .. toctree::
    :maxdepth: 2
    :caption: Developer's Manual
    
+   package
    tests
-   api/modules
-
 
 
 Indices and tables

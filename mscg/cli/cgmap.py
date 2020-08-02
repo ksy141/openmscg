@@ -1,3 +1,27 @@
+'''
+`cgmap` reads one or more all-atom (AA) simulation trajectories, and
+converts the frames into a coarse-grained (CG) trajectory, according 
+to the provided mapping rules.
+
+Usage
+-----
+
+Syntax of running ``cgmap`` command ::
+
+    usage: cgmap [-h] [-v] --map file --out file [--traj file[,args]]
+    
+    General arguments:
+      -h, --help          show this help message and exit
+      -v , --verbose      screen verbose level (default: 0)
+
+    Required arguments:
+      --map file          A YAML file with mapping rules (default: None)
+      --out file          output trajectory (default: None)
+      --traj file[,args]  reader for a trajectory file, multiple fields separated
+                          by commas, the first field is the file name, while
+                          others define the skip, every and frames (default args:
+                          file,skip=0,every=1,frames=0) (default: [])
+'''
 
 from mscg import *
 
@@ -14,7 +38,7 @@ def main(*args, **kwargs):
     group.add_argument("-v", "--verbose", metavar='', type=int, default=0, help="screen verbose level")
     
     group = parser.add_argument_group('Required arguments')
-    group.add_argument("--map", metavar='file', type=str, required=True)
+    group.add_argument("--map", metavar='file', type=str, required=True, help="A YAML file with mapping rules")
     group.add_argument("--out", metavar='file', type=str, help="output trajectory", required=True)
     group.add_argument("--traj", metavar='file[,args]', action=TrajReaderAction, help=TrajReaderAction.help, default=[])
         
