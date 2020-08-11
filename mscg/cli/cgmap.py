@@ -1,5 +1,9 @@
-'''
-`cgmap` reads one or more all-atom (AA) simulation trajectories, and
+''' Convert AA trajectories into a CG trajectory
+
+Description
+-----------
+
+The `cgmap` command reads one or more all-atom (AA) simulation trajectories, and
 converts the frames into a coarse-grained (CG) trajectory, according 
 to the provided mapping rules.
 

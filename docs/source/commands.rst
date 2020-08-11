@@ -1,8 +1,19 @@
 List of Commands
 ================
 
+.. currentmodule:: mscg.cli
+
+.. autosummary::
+
+   cgib
+   cgmap
+   cgfm
+   cgdump
+   cgderiv
+   cgrem
+
 .. toctree::
-   :maxdepth: 1
+   :hidden:
 
    commands/cgib
    commands/cgmap
@@ -10,3 +21,4 @@ List of Commands
    commands/cgdump
    commands/cgderiv
    commands/cgrem
+   
