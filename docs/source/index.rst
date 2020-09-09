@@ -21,7 +21,7 @@ Documentation of OpenMSCG
    :maxdepth: 2
    :caption: Developer's Manual
    
-   package
+   module
    tests
 
 

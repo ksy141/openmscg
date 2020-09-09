@@ -58,7 +58,7 @@ Build New Test
   ``datafile`` is a pre-defined funtion decorator to get the full path for a
   data file, for example,::
 
-    top_file('lj_liquid.top')
+    datafile('lj_liquid.top')
 
 
 
