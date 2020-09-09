@@ -101,7 +101,7 @@ if __name__ == '__main__':
     core_root   = package_name + '/core/'
     api_path    = core_root + 'api/'
     src_path    = core_root + 'src/'
-    inc_path    = [src_path]
+    inc_path    = [src_path, np.get_include()]
     
     if 'PREFIX' in os.environ:
         inc_path.append(os.environ['PREFIX'] + '/include')
@@ -119,7 +119,7 @@ if __name__ == '__main__':
     
     def model_extention(name, extra_src = [], extra_link = []):
         return Extension(core_prefix + 'model_' + name,
-            include_dirs = inc_path + [np.get_include()],
+            include_dirs = inc_path,
             sources = src_files('py_model_' + name, ['model', 'model_' + name] + extra_src),
             extra_compile_args = setup_args['compile'],
             extra_link_args = extra_link + setup_args['link'],
@@ -134,14 +134,14 @@ if __name__ == '__main__':
         ),
 
         Extension(core_prefix + 'traj',
-            include_dirs = inc_path + [np.get_include()],
+            include_dirs = inc_path,
             sources = src_files('py_traj', ['traj','traj_lammps','traj_trr','xdrfile','xdrfile_trr']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
         ),
 
         Extension(core_prefix + 'pairlist',
-            include_dirs = inc_path + [np.get_include()],
+            include_dirs = inc_path,
             sources = src_files('py_pairlist', ['pair_list']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],

@@ -133,7 +133,14 @@ PYAPI(build_special)
     top->build_special(bond==1, angle==1, dihed==1);    
     Py_RETURN_NONE;
 }
-
+/*
+PYAPI(get_pair_type)
+{
+    int i, j;
+    PyArg_ParseTuple(args, "ii", &i, &j);
+    return Py_BuildValue("i", get_pair_tid(i, j));
+}
+*/
 static PyMethodDef cModPyMethods[] =
 {
     {"create",     create,     METH_VARARGS, "Create topology."},
@@ -143,6 +150,7 @@ static PyMethodDef cModPyMethods[] =
     {"add_angles", add_angles, METH_VARARGS, "Add angles."},
     {"add_dihedrals", add_dihedrals,  METH_VARARGS, "Add dihedrals."},
     {"build_special", build_special, METH_VARARGS, "Build special pair-lists."},
+    //{"get_pair_type", get_pair_type, METH_VARARGS, "Return type id of a pairs."},
     {NULL, NULL}
 };
 

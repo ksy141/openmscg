@@ -1,9 +1,11 @@
 import numpy as np
+import time
 
 class UCG:
     
     weighting_funcs = []
     replica = 100
+    seed = int(time.time())
     
     top = None
     traj = None
@@ -26,7 +28,6 @@ import importlib
 
 class UCGArgAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
-        
         args = values.split(',')
         sf_name = args[0]
         kwargs = {}
@@ -42,7 +43,8 @@ class UCGArgAction(argparse.Action):
                 setattr(UCG, k, vtype(v))
             except:
                 raise Exception("Incorrect format for UCG parameter: " + arg)
-            
+        
+        np.random.seed(UCG.seed)
         return
 
     def help():

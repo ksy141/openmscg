@@ -1,14 +1,12 @@
-topology module
+Topology Module
 ===============
 
-Topology class
+.. currentmodule: mscg.topology
+
+.. automodule:: mscg.topology
+   
+Topology Class
 --------------
 
-.. autoclass:: mscg.topology.Topology
-
-Loader Functions
-----------------
-
-.. autofunction:: mscg.topology.build_top_from_lammps
-
-.. autofunction:: mscg.topology.build_top_from_cgtop
+.. autoclass:: Topology
+   :members:

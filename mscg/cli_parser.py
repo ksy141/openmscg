@@ -32,7 +32,7 @@ class CLIParser(argparse.ArgumentParser):
 
 
 
-from .topology import build_topology
+from .topology import Topology
 
 class TopAction(argparse.Action):
     
@@ -43,7 +43,7 @@ class TopAction(argparse.Action):
         if type(values) != str:
             raise ValueError("incorrect format of value for option --top")
         
-        top = build_topology(values)
+        top = Topology.read_file(values)
         setattr(namespace, self.dest, top)
 
 

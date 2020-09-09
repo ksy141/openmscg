@@ -4,19 +4,17 @@
 #include <numpy/arrayobject.h>
 
 #include "pair_list.h"
-#include "traj.h"
-#include "topology.h"
 
 #define PYAPI(api) PyObject* api(PyObject* self, PyObject* args)
 #define GETPTR() PairList *p; PyArg_ParseTuple(args, "L", &p)
 
 PYAPI(create)
 {
-    Topology *top;
-    int natoms;
+    float cut, binsize;
+    long maxpairs;
     
-    PyArg_ParseTuple(args, "Li", &top, &natoms);
-    PairList *p = new PairList(top, natoms);
+    PyArg_ParseTuple(args, "ffL", &cut, &binsize, &maxpairs);
+    PairList *p = new PairList(cut, binsize, maxpairs);
     return Py_BuildValue("L", p);
 }
 
@@ -30,65 +28,48 @@ PYAPI(destroy)
 PYAPI(init)
 {
     PairList *pair;
-    float cut, binsize;
-    PyArg_ParseTuple(args, "Lff", &pair, &cut, &binsize);
-    pair->init(cut, binsize);
+    PyArrayObject *types, *exmap;
+    PyArg_ParseTuple(args, "LOO", &pair, &types, &exmap);
+    
+    int *t = (int*)PyArray_DATA(types);
+    int natoms = PyArray_DIMS(types)[0];
+    
+    if(Py_None != (PyObject *)exmap)
+        pair->init(t, natoms, (int*)PyArray_DATA(exmap), PyArray_DIMS(exmap)[1]);
+    else pair->init(t, natoms, 0, 0);
+    
     Py_RETURN_NONE;
 }
 
 PYAPI(setup_bins)
 {
     PairList *pair;
-    Traj *traj;
+    PyArrayObject *box;
     
-    PyArg_ParseTuple(args, "LL", &pair, &traj);
-    pair->setup_bins(traj);
+    PyArg_ParseTuple(args, "LO", &pair, &box);
+    pair->setup_bins((float*)PyArray_DATA(box));
     Py_RETURN_NONE;
 }
 
 PYAPI(build)
 {
     PairList *pair;
-    Traj *traj;
-    int reset_bins;
+    PyArrayObject *x;
     
-    PyArg_ParseTuple(args, "LLp", &pair, &traj, &reset_bins);
-    pair->build(traj, reset_bins == 1);
+    PyArg_ParseTuple(args, "LO", &pair, &x);
+    pair->build((vec3f*)PyArray_DATA(x));
     return Py_BuildValue("L", pair->npairs);
-}
-
-PYAPI(get_pairs)
-{
-    PairList *pair;
-    int start, count;
-    
-    PyArg_ParseTuple(args, "Lii", &pair, &start, &count);
-    if(start + count > pair->npairs) count = pair->npairs - start;
-    if(count<=0) return Py_BuildValue("[[],[],[],[]]");
-    
-    PyObject *tlist = PyList_New(count);
-    PyObject *ilist = PyList_New(count);
-    PyObject *jlist = PyList_New(count);
-    PyObject *rlist = PyList_New(count);
-    
-    for(int i=0; i<count; i++)
-    {
-        PyList_SetItem(tlist, i, Py_BuildValue("i", pair->tlist[i+start]));
-        PyList_SetItem(ilist, i, Py_BuildValue("i", pair->ilist[i+start]));
-        PyList_SetItem(jlist, i, Py_BuildValue("i", pair->jlist[i+start]));
-        PyList_SetItem(rlist, i, Py_BuildValue("f", pair->drlist[i+start]));
-    }
-    
-    return Py_BuildValue("(N,N,N,N)", tlist, ilist, jlist, rlist);
 }
 
 PYAPI(fill_page)
 {
     PairList *pair;
-    int inext, page_size, type_id;
+    int type_id, inext, page_size;
     PyArrayObject *npIndex, *npVector, *npScalar;
     
-    PyArg_ParseTuple(args, "LiiiOOO", &pair, &type_id, &inext, &page_size, &npIndex, &npVector, &npScalar);
+    PyArg_ParseTuple(args, "LiiiOOO", &pair, &type_id, &inext, &page_size, 
+                     &npIndex, &npVector, &npScalar);
+    
     int nfill = 0, npairs = pair->npairs;
     
     while(inext<npairs && nfill<page_size)
@@ -124,27 +105,22 @@ PYAPI(fill_page)
     return Py_BuildValue("ii", inext, nfill);
 }
 
-PYAPI(update_types)
+PYAPI(get_tid)
 {
-    PairList *pair;
-    int ntypes;
-    PyArrayObject *npTypes;
-    PyArg_ParseTuple(args, "LiO", &pair, &ntypes, &npTypes);
-    int *types = (int*)PyArray_DATA(npTypes);
-    pair->update_types(ntypes, types);
-    Py_RETURN_NONE;
+    int i, j;
+    PyArg_ParseTuple(args, "ii", &i, &j);
+    return Py_BuildValue("i", pair_tid(i, j));
 }
 
 static PyMethodDef cModPyMethods[] =
 {
-    {"create",       create,       METH_VARARGS, "Create pair-list."},
-    {"destroy",      destroy,      METH_VARARGS, "Destroy pair-list."},
-    {"init",         init,         METH_VARARGS, "Initialize pair-list."},
-    {"setup_bins",   setup_bins,   METH_VARARGS, "Setup verlet-list bins."},
-    {"build",        build,        METH_VARARGS, "Build from frame data."},
-    {"get_pairs",    get_pairs,    METH_VARARGS, "Get pairs data."},
-    {"fill_page",    fill_page,    METH_VARARGS, "Fill a page of pairs."},
-    {"update_types", update_types, METH_VARARGS, "Update pair types."},
+    {"create",     create,     METH_VARARGS, "Create pair-list."},
+    {"destroy",    destroy,    METH_VARARGS, "Destroy pair-list."},
+    {"init",       init,       METH_VARARGS, "Initialize pair-list."},
+    {"setup_bins", setup_bins, METH_VARARGS, "Setup verlet-list bins."},
+    {"build",      build,      METH_VARARGS, "Build from frame data."},
+    {"fill_page",  fill_page,  METH_VARARGS, "Fill a page of pairs."},
+    {"get_tid",    get_tid,    METH_VARARGS, "Get type ID of a pair."},
     {NULL, NULL}
 };
 

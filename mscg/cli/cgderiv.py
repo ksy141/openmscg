@@ -1,3 +1,35 @@
+'''Calculate derivatives with respect to the model parameters from CG trajectories.
+
+Description
+-----------
+
+*To be added*
+
+Usage
+-----
+
+Syntax of running ``cgderiv`` command ::
+
+    General arguments:
+      -h, --help          show this help message and exit
+      -v L, --verbose L   screen verbose level (default: 0)
+      --save              file name for model output (default: model)
+
+    Required arguments:
+      --top file          topology file (default: None)
+
+    Optional arguments:
+      --names             comma separated atom names (needed when using LAMMPS
+                          data file for topology) (default: None)
+      --traj file[,args]  reader for a trajectory file, multiple fields separated
+                          by commas, the first field is the file name, while
+                          others define the skip, every and frames (default args:
+                          file,skip=0,every=1,frames=0) (default: [])
+      --cut               cut-off for pair interactions (default: 10.0)
+      --pair types,args   define new pair model with format:
+                          style,type1,style,type2,kwargs (default: [])
+
+'''
 
 from mscg import *
 import numpy as np

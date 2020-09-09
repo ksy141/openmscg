@@ -1,35 +1,40 @@
 #ifndef BOND_LIST_H
 #define BOND_LIST_H
 
-#include "traj.h"
-#include "topology.h"
+#include "defs.h"
 
 class BondList
 {
   public:
     
-    // settings
+    // bonds
+    int nbonds;
+    vec2i *bond_atoms;
+    float *dr_bond;
+    float *dx_bond, *dy_bond, *dz_bond;
     
-    Vec box, hbox;
+    // angles
+    int nangles;
+    vec3i *angle_atoms;
+    float *theta_angle;
+    float *dx1_angle, *dy1_angle, *dz1_angle;
+    float *dx2_angle, *dy2_angle, *dz2_angle;
+    float *a11_angle, *a12_angle, *a22_angle;
     
-    Topology* top;
-    
-    float *dx_bond, *dy_bond, *dz_bond, *dr_bond;
-    
-    float *theta_angl;
-    float *dx1_angl, *dy1_angl, *dz1_angl;
-    float *dx2_angl, *dy2_angl, *dz2_angl;
-    float *a11_angl, *a12_angl, *a22_angl;
+    // dihedrals
+    int ndihedrals;
+    vec4i *dihedral_atoms;
+    float *theta_dihedral;
     
     // functions
     
-    BondList(Topology*);
+    BondList(int nbonds, vec2i *bonds, int nangles, vec3i *angles, int ndihedrals, vec4i *dihedrals);
     virtual ~BondList();
     
-    void build(Traj*);
-    void build_bonds(Traj*);
-    void build_angls(Traj*);
-    void build_dihes(Traj*);
+    void build(vec3f box, vec3f *x);
+    void build_bonds(vec3f box, vec3f *x);
+    void build_angles(vec3f box, vec3f *x);
+    void build_dihedrals(vec3f box, vec3f *x);
 };
 
 #endif

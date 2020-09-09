@@ -1,3 +1,33 @@
+'''Iterative relative-entroy method (REM) for CG modeling.
+
+Description
+-----------
+
+*To be added*
+
+Usage
+-----
+
+Syntax of running ``cgrem`` command ::
+
+    General arguments:
+      -h, --help            show this help message and exit
+      -v L, --verbose L     screen verbose level (default: 0)
+
+    Required arguments:
+      --ref file            checkpoint file for reference model (default: None)
+      --cgderiv-arg file    file for cgderiv arguments (default: None)
+      --md file             file containing MD command (default: None)
+
+    Optional arguments:
+      --chi                 Chi-value (default: 1.0)
+      --maxiter             maximum iterations (default: 20)
+      --restart file        restart file (default: restart)
+      --models file         target models (default: model.txt)
+      --optimizer name,args
+                            Define optimizer (default: [])
+
+'''
 
 from mscg import *
 from mscg.cli.cgderiv import CGDeriv

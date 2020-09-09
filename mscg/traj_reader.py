@@ -1,11 +1,90 @@
+"""
+Examples with Reader Utilities
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Besides directly calling the low-level APIs in the `Trajectory` class,
+the package also provides a high-level `TrajReader` class to simplify 
+the reading process of a group of trajectory files with flexible 
+controling parameters::
+
+    >>> from mscg import TrajReader
+    >>> reader = TrajReader('tests/data/methanol_1728_cg.trr', skip=50, every=10, frames=25)
+    >>> nread = 0
+    >>> while reader.next_frame():
+    ...     nread += 1
+    ...
+    >>> nread
+    25
+
+To read a group of trajectories consecutively, the package also provide
+an `iterator` class for the batch processing::
+    
+    >>> from mscg import TrajBatch
+    >>> for reader in TrajBatch(readers):
+    ...     if reader.nread == 1:
+    ...         pass # do something here for the first frame in a file
+    ...
+    ...     pass # other operations for the frames
+    ...
+
+For the development of a CLI script, a customized argument parser is provided
+to accept multiple trajectory arguments for processing. This is widely used by
+the CLI commands included in this package:
+    
+.. code-block:: python
+    
+    from mscg import *
+    
+    parser = CLIParser(description=desc,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        fromfile_prefix_chars='@', add_help=False)
+    
+    parser.add_argument("--traj", metavar='file[,args]',
+        action=TrajReaderAction, help=TrajReaderAction.help, default=[])
+    ...
+    
+    args = parser.parse_args()
+    ...
+    
+    for reader in TrajBatch(args.traj):
+        pass # processing frames in the trajectories specified by --traj
+        ...
+    ...
+
+More instructions for this argument parser can be found `here <../basics.html#cli-option-for-trajectory>`__
+
+"""
+
 from .trajectory import Trajectory
 from .verbose import screen
 from time import time
 
 
 class TrajReader:
+    """
+    A reader controller class for reading frames from a trajectory file.
     
-    def __init__(self, file, skip, every, frames):
+    Attribute:
+        traj : mscg.Trajectory
+            a trajectory object controlled by this reader.
+    """
+    
+    def __init__(self, file:str, skip:int=0, every:int=1, frames:int=0):
+        """
+        Create a reader controller for a trajectory file.
+        
+        :param file: file name.
+        :type file: str
+        
+        :param skip: number of frames to be skipped at the head, default to 0.
+        :type skip: int
+        
+        :param every: read a frame data for every the number of frames, default to 1.
+        :type every: int
+        
+        :param frames: total number of frames to be read (0 for reading all frames), default to 0.
+        :type frames: int
+        """
         
         segs = file.split(".")
         suffix = segs[-1] if len(segs)>1 else ""
@@ -17,12 +96,27 @@ class TrajReader:
         self.every  = every
         self.frames = frames
         self.nread  = 0
+    
+    def __del__(self):
+        self.close()
         
     def close(self):
-        del(self.traj)
-        self.traj = None
+        """
+        Close the reader and release the trajectory object.
+        """
+        
+        if self.traj is not None:
+            del(self.traj)
+            self.traj = None
             
     def next_frame(self):
+        """
+        Read the next available frame in the trajectory according
+        to the controlling parameters.
+        
+        :return: return *True* if new frame data is read, else return *False*.
+        :rtype: bool
+        """
         
         if self.traj is None:
             self.nread = 0
@@ -31,7 +125,7 @@ class TrajReader:
                 self.traj.read_frame()
         
         if self.frames>0 and self.nread>=self.frames:
-            self.close
+            self.close()
             return False
         
         for i in range(self.every-1):
@@ -48,7 +142,25 @@ class TrajReader:
 
 
 class TrajBatch:
+    """
+    A batch iterator for multiple trajectory readers. The check enforcements can
+    be set that, if the number of atoms or box sizes of the system in a new trajectory
+    dosen't match the requirement, an exception will be raised up.
+    """
+    
     def __init__(self, readers, natoms = None, cut = None):
+        """
+        Create a batch object.
+        
+        :param readers: a list of trajectory readers
+        :type readers: [mscg.TrajReader]
+        
+        :param natoms: enforcing certain number atoms in the trajectory if not *None*.
+        :type natoms: int or None
+        
+        :param cut: enforcing the box dimensions are larger than 2x of the cut-off, if not *None*.
+        :type cut: float or None
+        """
         self.readers = readers
         self.natoms = natoms
         self.cut = cut

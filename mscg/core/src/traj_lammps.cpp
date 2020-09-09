@@ -19,14 +19,11 @@ TrajLAMMPS::TrajLAMMPS(const char* filename, const char* mode) : Traj()
     parse_columns();
     if(cid==-1 || cx==-1 || cy==-1 || cz==-1) return;
     
-    if(ctype!=-1 && ctype!=-1 && ctype!=-1) has_type = true;
-    else has_type = false;
-    
-    if(cvx!=-1 && cvy!=-1 && cvz!=-1) has_vel = true;
-    else has_vel = false;
-    
-    if(cfx!=-1 && cfy!=-1 && cfz!=-1) has_force = true;
-    else has_force = false;
+    attrs['t'] = (ctype!=-1);
+    attrs['q'] = (cq!=-1);
+    attrs['x'] = (cx!=-1 && cy!=-1 && cz!=-1);
+    attrs['v'] = (cvx!=-1 && cvy!=-1 && cvz!=-1);
+    attrs['f'] = (cfx!=-1 && cfy!=-1 && cfz!=-1);
     
     allocate();
     status = 0;
@@ -97,7 +94,7 @@ int TrajLAMMPS::parse_columns()
         ch = strtok(NULL, " \r\n");
     }
     
-    cx = cy = cz = cfx = cfy = cfz = cid = ctype = -1;
+    cx = cy = cz = cvx = cvy = cvz = cfx = cfy = cfz = cid = ctype = cq = -1;
     
     #define KEY(k,name) else if(strcmp(argv[i], #name)==0) c##k = i
     
@@ -118,6 +115,7 @@ int TrajLAMMPS::parse_columns()
         KEY(fz,fz);
         KEY(id,id);
         KEY(type,type);
+        KEY(q,q);
     }
     
     return 0;
@@ -145,7 +143,17 @@ int TrajLAMMPS::read_body()
         x[id][1] = atof(argv[cy]);
         x[id][2] = atof(argv[cz]);
         
-        if(has_force)
+        if(attrs['t']) t[id] = atoi(argv[ctype]);
+        if(attrs['q']) q[id] = atof(argv[cq]);
+        
+        if(attrs['v'])
+        {
+            v[id][0] = atof(argv[cvx]);
+            v[id][1] = atof(argv[cvy]);
+            v[id][2] = atof(argv[cvz]);
+        }
+        
+        if(attrs['f'])
         {
             f[id][0] = atof(argv[cfx]);
             f[id][1] = atof(argv[cfy]);
@@ -174,19 +182,21 @@ int TrajLAMMPS::write_frame()
     for(int dim=0; dim<3; dim++) fprintf(fp, "%e %e\n", 0.0, box[dim]);
     
     fprintf(fp, "ITEM: ATOMS id");
-    if(has_type) fprintf(fp, " type");
+    if(attrs['t']) fprintf(fp, " type");
+    if(attrs['q']) fprintf(fp, " q");
     fprintf(fp, " x y z");
-    if(has_vel) fprintf(fp, " vx vy vz");
-    if(has_force) fprintf(fp, " fx fy fz");
+    if(attrs['v']) fprintf(fp, " vx vy vz");
+    if(attrs['f']) fprintf(fp, " fx fy fz");
     fprintf(fp, "\n");
     
     for(int i=0; i<natoms; i++)
     {
         fprintf(fp, "%d", i);
-        if(has_type) fprintf(fp, " %d", type[i]);
+        if(attrs['t']) fprintf(fp, " %d", t[i]);
+        if(attrs['q']) fprintf(fp, " %f", q[i]);
         fprintf(fp, " %f %f %f", x[i][0], x[i][1], x[i][2]);
-        if(has_vel) fprintf(fp, " %f %f %f", v[i][0], v[i][1], v[i][2]);
-        if(has_force) fprintf(fp, " %f %f %f", f[i][0], f[i][1], f[i][2]);
+        if(attrs['v']) fprintf(fp, " %f %f %f", v[i][0], v[i][1], v[i][2]);
+        if(attrs['f']) fprintf(fp, " %f %f %f", f[i][0], f[i][1], f[i][2]);
         fprintf(fp, "\n");
     }
     

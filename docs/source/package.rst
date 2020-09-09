@@ -15,4 +15,3 @@ API References
    :caption: List of sub-packages
    
    package/model
-   package/ucg

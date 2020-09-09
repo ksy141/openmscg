@@ -3,9 +3,16 @@
 Traj::Traj()
 {
     natoms = maxatoms = 0;
+    
+    t = 0;
+    q = 0;
     x = v = f = 0;
-    type = 0;
-    has_type = has_vel = has_force = false;
+    
+    attrs['t'] = false;
+    attrs['q'] = false;
+    attrs['x'] = true;
+    attrs['v'] = false;
+    attrs['f'] = false;
 }
 
 Traj::~Traj()
@@ -19,7 +26,8 @@ void Traj::allocate()
     {
         deallocate();
         maxatoms = natoms;
-        type = new int[maxatoms];
+        t = new int[maxatoms];
+        q = new float[maxatoms];
         x = new Vec[maxatoms];
         v = new Vec[maxatoms];
         f = new Vec[maxatoms];
@@ -28,7 +36,8 @@ void Traj::allocate()
 
 void Traj::deallocate()
 {
-    if(type) delete [] type;
+    if(t) delete [] t;
+    if(q) delete [] q;
     if(x) delete [] x;
     if(v) delete [] v;
     if(f) delete [] f;

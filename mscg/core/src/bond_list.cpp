@@ -2,18 +2,24 @@
 
 #include <cmath>
 #include <cstdio>
+#include <cassert>
 
-BondList::BondList(Topology *top)
+BondList::BondList(int nbonds, vec2i *bonds, int nangles, vec3i *angles, int ndihedrals, vec4i *dihedrals)
 {
-    this->top = top;
+    this->nbonds = nbonds;
+    this->bond_atoms = bonds;
     
-    dx_bond = dy_bond = dz_bond = dr_bond = 0;
+    this->nangles = nangles;
+    this->angle_atoms = angles;
     
-    #define _ptr(p) if(top->nbonds>0) p##_bond = new float[top->nbonds]; else p##_bond = 0
+    this->ndihedrals = ndihedrals;
+    this->dihedral_atoms = dihedrals;
+    
+    #define _ptr(p) if(nbonds>0) p##_bond = new float[nbonds]; else p##_bond = 0
     _ptr(dx); _ptr(dy); _ptr(dz); _ptr(dr);
     #undef _ptr
     
-    #define _ptr(p) if(top->nangls>0) p##_angl = new float[top->nangls]; else p##_angl = 0
+    #define _ptr(p) if(nangles>0) p##_angle = new float[nangles]; else p##_angle = 0
     _ptr(dx1); _ptr(dy1); _ptr(dz1); 
     _ptr(dx2); _ptr(dy2); _ptr(dz2);
     _ptr(a11); _ptr(a12); _ptr(a22);
@@ -27,7 +33,7 @@ BondList::~BondList()
     _ptr(dx); _ptr(dy); _ptr(dz); _ptr(dr);
     #undef _ptr
     
-    #define _ptr(p) if(p##_angl) delete [] p##_angl
+    #define _ptr(p) if(p##_angle) delete [] p##_angle
     _ptr(dx1); _ptr(dy1); _ptr(dz1); 
     _ptr(dx2); _ptr(dy2); _ptr(dz2);
     _ptr(a11); _ptr(a12); _ptr(a22);
@@ -35,35 +41,19 @@ BondList::~BondList()
     #undef _ptr
 }
 
-void BondList::build(Traj* traj)
+void BondList::build(vec3f box, vec3f *x)
 {
-    for(int d=0; d<3; d++) 
-    {
-        box[d] = traj->box[d];
-        hbox[d] = 0.5 * box[d];
-    }
-    
-    build_bonds(traj);
-    build_angls(traj); 
-    build_dihes(traj);
+    if(bond_atoms) build_bonds(box, x);
+    if(angle_atoms) build_angles(box, x); 
+    if(dihedral_atoms) build_dihedrals(box, x);
 }
 
-void BondList::build_bonds(Traj* traj)
+void BondList::build_bonds(vec3f box, vec3f *x)
 {    
-    int *atom1 = top->bond_atom1;
-    int *atom2 = top->bond_atom2;
-    Vec *x = traj->x;
-
-    for(int i=0; i<top->nbonds; i++)
+    for(int i=0; i<nbonds; i++)
     {
-        int ia = atom1[i], ib = atom2[i];
-        float dx = x[ib][0] - x[ia][0];
-        float dy = x[ib][1] - x[ia][1];
-        float dz = x[ib][2] - x[ia][2];
-        
-        if(dx>hbox[0]) dx-=box[0]; else if(dx<-hbox[0]) dx+=box[0];
-        if(dy>hbox[1]) dy-=box[1]; else if(dy<-hbox[1]) dy+=box[1];
-        if(dz>hbox[2]) dz-=box[2]; else if(dz<-hbox[2]) dz+=box[2];
+        int ia = bond_atoms[i][0], ib = bond_atoms[i][1];
+        vector_sub(d, x[ib], x[ia]);
         
         float r2 = dx*dx + dy*dy + dz*dz;
         float dr = sqrt(r2);
@@ -75,40 +65,22 @@ void BondList::build_bonds(Traj* traj)
     }
 }
 
-void BondList::build_angls(Traj* traj)
+void BondList::build_angles(vec3f box, vec3f *x)
 {
-    int *atom1 = top->angl_atom1;
-    int *atom2 = top->angl_atom2;
-    int *atom3 = top->angl_atom3;
-    Vec *x = traj->x;
-
-    for(int i=0; i<top->nangls; i++)
+    for(int i=0; i<nangles; i++)
     {
-        int ia = atom1[i], ib = atom2[i], ic = atom3[i];
+        int ia = angle_atoms[i][0], ib = angle_atoms[i][1], ic = angle_atoms[i][2];
         
-        float dx1 = x[ia][0] - x[ib][0];
-        float dy1 = x[ia][1] - x[ib][1];
-        float dz1 = x[ia][2] - x[ib][2];
+        vector_sub(d1, x[ia], x[ib]);
+        vector_sub(d2, x[ic], x[ib]);        
         
-        if(dx1>hbox[0]) dx1-=box[0]; else if(dx1<-hbox[0]) dx1+=box[0];
-        if(dy1>hbox[1]) dy1-=box[1]; else if(dy1<-hbox[1]) dy1+=box[1];
-        if(dz1>hbox[2]) dz1-=box[2]; else if(dz1<-hbox[2]) dz1+=box[2];
-        
-        float dx2 = x[ic][0] - x[ib][0];
-        float dy2 = x[ic][1] - x[ib][1];
-        float dz2 = x[ic][2] - x[ib][2];
-        
-        if(dx2>hbox[0]) dx2-=box[0]; else if(dx2<-hbox[0]) dx2+=box[0];
-        if(dy2>hbox[1]) dy2-=box[1]; else if(dy2<-hbox[1]) dy2+=box[1];
-        if(dz2>hbox[2]) dz2-=box[2]; else if(dz2<-hbox[2]) dz2+=box[2];
-        
-        float rsq1 = dx1*dx1 + dy1*dy1 + dz1*dz1;
+        float rsq1 = d1x*d1x + d1y*d1y + d1z*d1z;
         float dr1 = sqrt(rsq1);
         
-        float rsq2 = dx2*dx2 + dy2*dy2 + dz2*dz2;
+        float rsq2 = d2x*d2x + d2y*d2y + d2z*d2z;
         float dr2 = sqrt(rsq2);
         
-        float c = dx1*dx2 + dy1*dy2 + dz1*dz2;
+        float c = d1x*d2x + d1y*d2y + d1z*d2z;
         c /= dr1*dr2;
         if (c > 1.0) c = 1.0;
         if (c < -1.0) c = -1.0;
@@ -117,16 +89,16 @@ void BondList::build_angls(Traj* traj)
         if (s < 0.0001) s = 0.0001;
         s = 1.0/s;
         
-        theta_angl[i] = acos(c);
-        dx1_angl[i] = dx1; dy1_angl[i] = dy1; dz1_angl[i] = dz1;
-        dx2_angl[i] = dx2; dy2_angl[i] = dy2; dz2_angl[i] = dz2;
-        a11_angl[i] = s * c / rsq1;
-        a12_angl[i] = -s / (dr1 * dr2);
-        a22_angl[i] = s * c / rsq2;
+        theta_angle[i] = acos(c);
+        dx1_angle[i] = d1x; dy1_angle[i] = d1y; dz1_angle[i] = d1z;
+        dx2_angle[i] = d2x; dy2_angle[i] = d2y; dz2_angle[i] = d2z;
+        a11_angle[i] = s * c / rsq1;
+        a12_angle[i] = -s / (dr1 * dr2);
+        a22_angle[i] = s * c / rsq2;
     }
 }
 
-void BondList::build_dihes(Traj* traj)
+void BondList::build_dihedrals(vec3f box, vec3f *x)
 {
-
+    
 }

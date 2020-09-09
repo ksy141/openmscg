@@ -152,49 +152,48 @@ def main(*args, **kwargs):
     if args.names is not None:
         args.top.reset_names(args.names.split(','))
     
-    screen.info("Generate bonds/angles/dihedrals ...")
-    args.top.build_special(True, True, True)
-    
     # prepare lists
     
     screen.info("Build pair and bonding list-based algorithm ...")
-    plist = PairList(args.top)
-    plist.init(cut = args.cut)
-    blist = BondList(args.top)
+    plist = PairList(cut = args.cut)
+    plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
+    blist = BondList(args.top.bond_atoms, args.top.angle_atoms, args.top.dihedral_atoms)
         
     # prepare plots
+    
+    names_atom = args.top.names_atom
 
     if args.pair is not None:
         for pair in args.pair:
             screen.info("Add pair plot: " + pair.name)
-            pair.id = args.top.get_pair_type(pair.types[0], pair.types[1])
+            pair.id = args.top.pair_tid(pair.types[0], pair.types[1])
             
     if args.bond is not None:
         for bond in args.bond:
             screen.info("Add bond plot: " + bond.name)
-            bond.id = args.top.get_bond_type(bond.types[0], bond.types[1])
+            bond.id = args.top.bonding_tid('bond', bond.types)
 
     if args.angle is not None:
         for angle in args.angle:
             screen.info("Add angle plot: " + angle.name)
-            angles.id = args.top.get_angle_type(angle.types[0], angle.types[1], angle.types[2])
+            angles.id = args.top.bonding_tid('angle', angle.types)
 
     # start processing trajectory
     
     TIMER.reset()
     last = TIMER.last
     
-    for reader in TrajBatch(args.traj, natoms = args.top.natoms, cut = plist.cut):
+    for reader in TrajBatch(args.traj, natoms = args.top.n_atom, cut = plist.cut):
 
         if reader.nread == 1:
-            plist.setup_bins(reader.traj)
+            plist.setup_bins(reader.traj.box)
         
         TIMER.click('io')
         
         # process pair styles
         
         if len(args.pair)>0: 
-            plist.build(reader.traj)
+            plist.build(reader.traj.x)
             
             for pair in args.pair:
                 
@@ -207,11 +206,11 @@ def main(*args, **kwargs):
                         pair.n += hist
             
             TIMER.click('pair')
-            
+        
         # process bonding styles
 
         if len(args.bond)>0 or len(args.angle)>0:
-            blist.build(reader.traj)
+            blist.build(reader.traj.box, reader.traj.x)
 
             def process_hist(one, types, vals):
 
@@ -224,15 +223,15 @@ def main(*args, **kwargs):
                     one.n += hist
 
             for one in args.bond:
-                z = blist.get_bonds()
-                types = np.array(z[0])
-                dr = np.array(z[3])
+                z = blist.get_scalar('bond')
+                types = args.top.types_bond
+                dr = z
                 process_hist(one, types, dr)
 
             for one in args.angle:
-                z = blist.get_angles()
-                types = np.array(z[0])
-                dr = np.array(z[4]) * (180.0 / np.pi)
+                z = blist.get_scalar('angle')
+                types = args.top.types_angle
+                dr = z * (180.0 / np.pi)
                 process_hist(one, types, dr)
 
             TIMER.click('bond')

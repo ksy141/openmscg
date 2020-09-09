@@ -1,3 +1,51 @@
+'''Force-matching to construct force tables with B-Spline or other linear models
+
+Description
+-----------
+
+The ``cgfm`` command is used to do the force-matching method with a given CG topology and a set of CG trajectories. It is the main computing engine of the OpenMSCG package. Briefly, it reads in the coordinates and forces from the trajectories, calculating the loadings for a group of user-defined force tables, storing them in a covariance matrix, and finaly solving the linear regression to get the coefficients for each force types. Based on the variational theory, the computed coefficients defines the force function that minimize the force residues between real CG values and models. 
+
+In OpenMSCG, a force table is defined in B-spline function defined by *n* **uniformly** spaced knots. Users can specify the starting value (``min``), ending value (``max``), the interval between adjacent knonts (``resolution``) and the ``order`` of the spline. Finally, the number of knots, which is also the number of computed coefficients, is
+
+``n = (max - min) / resolution + order - 2``
+
+Usage
+-----
+
+Syntax of running ``cgib`` command ::
+
+    usage: cgfm [-h] [-v L] --top file [--names] [--traj file[,args]] [--cut]
+                [--save] [--pair types,args] [--bond types,args]
+                [--angle types,args]
+    
+    General arguments:
+      -h, --help            show this help message and exit
+      -v L, --verbose L     screen verbose level (default: 0)
+
+    Required arguments:
+      --top file            topology file (default: None)
+
+    Optional arguments:
+      --names               comma separated atom names (needed when using LAMMPS
+                            data file for topology) (default: None)
+      --traj file[,args]    reader for a trajectory file, multiple fields
+                            separated by commas, the first field is the file name,
+                            while others define the skip, every and frames
+                            (default args: file,skip=0,every=1,frames=0) (default:
+                            [])
+      --cut                 cut-off for pair interactions (default: 10.0)
+      --save                file name for matrix output (default: matrix)
+      --pair types,args     define new pair table with format: type1,type2,args:
+                            min,max,resolution,order (default: [])
+      --bond types,args     define new bond table with format: type1,type2,args:
+                            min,max,resolution,order (default: [])
+      --angle types,args    define new angle table with format:
+                            type1,type2,type3,args: min,max,resolution,order
+                            (default: [])
+      --ucg [key=value]     settings for UCG modeling (default: None)
+      --ucg-wf [key=value]  define new state-function for UCG (default: [])
+
+'''
 
 from mscg import *
 
@@ -91,8 +139,8 @@ def main(*args, **kwargs):
     AngleAction = BuildTableAction(3,"angle");
     group.add_argument("--angle", metavar='types,args', action=AngleAction, help=AngleAction.help(), default=[])
     
-    group.add_argument("--ucg", action=UCGArgAction, help=UCGArgAction.help, default="")
-    group.add_argument("--ucg-wf", action=WFArgAction, help=WFArgAction.help, default=[])
+    group.add_argument("--ucg", metavar='[key=value]', action=UCGArgAction, help=UCGArgAction.help(), default=None)
+    group.add_argument("--ucg-wf", metavar='[key=value]', action=WFArgAction, help=WFArgAction.help(), default=[])
     
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)

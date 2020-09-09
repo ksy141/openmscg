@@ -2,6 +2,7 @@
 #define TRAJ_H
 
 #include <cstdio>
+#include <map>
 
 typedef float Vec[3];
 
@@ -13,13 +14,13 @@ class Traj
     int natoms;
     int maxatoms;
     int step;
-    bool has_type;
-    bool has_vel;
-    bool has_force;
+    
+    std::map<char, bool> attrs;
     
     Vec box;
     Vec *x, *v, *f;
-    int *type;
+    int *t;
+    float *q;
     
     Traj();
     virtual ~Traj();

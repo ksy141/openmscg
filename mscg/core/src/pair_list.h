@@ -1,10 +1,13 @@
 #ifndef PAIR_LIST_H
 #define PAIR_LIST_H
 
-#include "traj.h"
-#include "topology.h"
+#include "defs.h"
 
-#define MAXPAIR 2000000
+inline int pair_tid(int i, int j)
+{
+    if(i>j) return i * (i + 1) / 2 + j;
+    else return j * (j + 1) / 2 + i;
+}
 
 class Stencil
 {
@@ -25,11 +28,13 @@ class PairList
     
     // settings
     
-    Topology* top;
-    
+    long maxpairs;
+    int* types;
     int natoms;
+    int* exmap;
+    int maxex;
     float cut, cut_sq;
-    Vec box, hbox;
+    vec3f box, hbox;
     
     // verlet list
     
@@ -49,21 +54,20 @@ class PairList
     
     // functions
     
-    PairList(Topology*, int);
+    PairList(float cut, float binsize, long maxpairs = 2000000);
     virtual ~PairList();
+    
+    void allocate();
+    void deallocate();
     
     int offset2bin(int, int, int);
     void bin2offset(int, int*, int*, int*);
-    
-    void init(float, float);
-    void bin_atoms(Vec*);
+    void bin_atoms(vec3f* x);
     
     // api
-    
-    void setup_bins(Traj*);
-    void build(Traj*, bool reset_bins = false);
-    void build_brutal(Traj*);
-    void update_types(int, int*);
+    void init(int *types, int natoms, int* exmap, int maxex);
+    void setup_bins(vec3f box);
+    void build(vec3f *x);
 };
 
 #endif

@@ -1,49 +1,10 @@
 cgfm
 ====
 
-
-The ``cgib`` command is used to do the force-matching method with a given CG topology and a set of CG trajectories. It is the main computing engine of the OpenMSCG package. Briefly, it reads in the coordinates and forces from the trajectories, calculating the loadings for a group of user-defined force tables, storing them in a covariance matrix, and finaly solving the linear regression to get the coefficients for each force types. Based on the variational theory, the computed coefficients defines the force function that minimize the force residues between real CG values and models. 
-
-In OpenMSCG, a force table is defined in B-spline function defined by *n* **uniformly** spaced knots. Users can specify the starting value (``min``), ending value (``max``), the interval between adjacent knonts (``resolution``) and the ``order`` of the spline. Finally, the number of knots, which is also the number of computed coefficients, is
-
-``n = (max - min) / resolution + order - 2``
-
-
-Usage
------
-
-Syntax of running ``cgib`` command ::
-
-    usage: cgfm [-h] [-v L] --top file [--names] [--traj file[,args]] [--cut]
-                [--save] [--pair types,args] [--bond types,args]
-                [--angle types,args]
-    
-    General arguments:
-      -h, --help          show this help message and exit
-      -v L, --verbose L   screen verbose level (default: 0)
-
-    Required arguments:
-      --top file          topology file (default: None)
-
-    Optional arguments:
-      --names             comma separated atom names (needed when using LAMMPS
-                          data file for topology) (default: None)
-      --traj file[,args]  reader for a trajectory file, multiple fields separated
-                          by commas, the first field is the file name, while
-                          others define the skip, every and frames (default args:
-                          file,skip=0,every=1,frames=0) (default: [])
-      --cut               cut-off for pair interactions (default: 10.0)
-      --save              file name for matrix output (default: matrix)
-      --pair types,args   define new pair table with format: type1,type2,args:
-                          min,max,resolution,order (default: [])
-      --bond types,args   define new bond table with format: type1,type2,args:
-                          min,max,resolution,order (default: [])
-      --angle types,args  define new angle table with format:
-                          type1,type2,type3,args: min,max,resolution,order
-                          (default: [])
-
-
 .. include:: common.rst
+
+.. automodule:: mscg.cli.cgfm
+
 
 * |cli-opt-top-name|
 
@@ -51,6 +12,7 @@ Syntax of running ``cgib`` command ::
 
 * Users can use options ``--pair``, ``--bond``, ``--angle`` to add force tables to be computed. These options are followed by multi-field values, which comes first with a number of atom types defining the type of forces and then several optional arguments defining the B-Spline knots as described above.
 
+* For more details about the options ``--ucg`` and ``--ucg-wf``, please read the section for `UCG Method`_.
 
 Notes
 -----
@@ -73,6 +35,29 @@ Notes
 
 * If you have used the old ``MSCGFM`` software, this command is a replacement to the ``newfm`` command in ``MSCGFM``.
 
+
+UCG Method
+----------
+
+Ultra-Coarse-Graining (UCG) is a more powerful methodology that allows chemical and environmental changes to be captured by modulating the interactions between internal states. In a UCG model, the CG sites can be with a mixed types or "colors" depending on its sorroundings on-the-fly. This algorithm is very important when the same group of atoms of a CG site have different (atomic or electronic) conformations in the simulation system.
+
+
+
+The option ``--ucg`` defines the parameters to control the UCG scheme by a comma seperated string with ``key=value`` fields:
+
+  * ``replica=N``, the number of replica to be spawned from a CG frame.
+  * ``seed=N``, the random seed for spwaning states.
+
+The option ``--ucg-wf`` defines the weighting functions that's used to calculate the probabilities of states for a CG type. It is also a comma separated string starting with the weighting function name following by a group of ``key=value`` fields:
+
+  * Rapid Local Equilibrium (RLE) Model: ``--ucg-wf RLE,target=MeOH,high=Near,low=Far,rth=4.5,wth=3.5``
+  
+     * target=[name], the name of the targeted CG type to be spawn.
+     * high=[name],low=[name], the names of the CGs types representing sites high or low local densities.
+     * rth=[float],wth=[float], the two parameters in RLE model used to calculate local coordination numbers.
+
+.. seealso::
+    Jaehyeok Jin and Gregory A. Voth, "Ultra-Coarse-Grained Models Allow for an Accurate and Transferable Treatment of Interfacial Systems", Journal of Chemical Theory and Computation, 14(4), 2180-2197 (2018). doi:10.1021/acs.jctc.7b01173
 
 Examples
 --------

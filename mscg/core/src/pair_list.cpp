@@ -6,12 +6,6 @@
 #undef NDEBUG
 #include <cassert>
 
-inline bool not_special(int *specials, int nspecial, int target)
-{
-    for(int i=0; i<nspecial; i++) if (specials[i] == target) return false;
-    return true;
-}
-
 Stencil::Stencil()
 {
     n_neigh = 0;
@@ -71,47 +65,61 @@ void Stencil::setup(PairList *pair, int me)
                 }
 }
 
-PairList::PairList(Topology *top, int natoms)
+PairList::PairList(float cut, float binsize, long maxpairs)
 {
+    this->cut = cut;
+    this->cut_sq = cut * cut;
+    this->binsize = binsize;
+    this->maxpairs = maxpairs;
+    
     maxbins = 0;
     binhead = links = ibins = 0;
     stencil = 0;
     
-    this->top = top;
-    this->natoms = natoms;
-    
-    links = new int [natoms];
-    ibins = new int [natoms];
-}
-
-void PairList::init(float cut, float binsize)
-{    
-    this->cut = cut;
-    cut_sq = cut * cut;
-    
-    ilist = new int[MAXPAIR];
-    jlist = new int[MAXPAIR];
-    tlist = new int[MAXPAIR];
-    dxlist = new float[MAXPAIR];
-    dylist = new float[MAXPAIR];
-    dzlist = new float[MAXPAIR];
-    drlist = new float[MAXPAIR];
-    
-    this->binsize = binsize;
+    ilist = new int[maxpairs];
+    jlist = new int[maxpairs];
+    tlist = new int[maxpairs];
+    dxlist = new float[maxpairs];
+    dylist = new float[maxpairs];
+    dzlist = new float[maxpairs];
+    drlist = new float[maxpairs];
 }
 
 PairList::~PairList()
 {
-    if(links) delete [] links;
-    if(ibins) delete [] ibins;
-    if(binhead) delete [] binhead;
+    deallocate();
     if(stencil) delete [] stencil;
+    
+    if(binhead) delete [] binhead;
     if(ilist) delete [] ilist;
     if(jlist) delete [] jlist;
     if(tlist) delete [] tlist;
     if(dxlist) delete [] dxlist;
     if(dylist) delete [] dylist;
     if(dzlist) delete [] dzlist;
+}
+
+void PairList::allocate()
+{
+    links = new int [natoms];
+    ibins = new int [natoms];
+}
+
+void PairList::deallocate()
+{
+    if(links) delete [] links;
+    if(ibins) delete [] ibins;
+}
+
+void PairList::init(int* types, int natoms, int* exmap, int maxex)
+{
+    this->types = types;
+    this->natoms = natoms;
+    this->exmap = exmap;
+    this->maxex = maxex;
+    
+    deallocate();
+    allocate();
 }
 
 int PairList::offset2bin(int x, int y, int z)
@@ -128,11 +136,11 @@ void PairList::bin2offset(int b, int *x, int *y, int *z)
     (*z) = b % nbinz;
 }
 
-void PairList::setup_bins(Traj* traj)
+void PairList::setup_bins(vec3f box)
 {
     for(int d=0; d<3; d++) 
     {
-        box[d] = traj->box[d];
+        this->box[d] = box[d];
         hbox[d] = 0.5 * box[d];
     }
     
@@ -168,7 +176,7 @@ void PairList::setup_bins(Traj* traj)
     }
 }
 
-void PairList::bin_atoms(Vec *x)
+void PairList::bin_atoms(vec3f *x)
 {
     for(int i=0; i<nbins; i++) binhead[i] = -1;
     
@@ -187,28 +195,24 @@ void PairList::bin_atoms(Vec *x)
     }
 }
 
-inline int PAIRTYPE(int i, int j, int n)
+inline bool not_excluded(int *ex, int target)
 {
-    return i<j?(i*n+j):(j*n+i);
+    int i=0; while(ex[i]!= -1)
+    {
+        if(ex[i]==target) return false; i += 1;
+    } 
+    return true;
 }
 
-void PairList::build(Traj* traj, bool reset_bins)
+void PairList::build(vec3f *x)
 {
-    if(reset_bins) setup_bins(traj);
-    
-    Vec *x = traj->x;
     bin_atoms(x);
     npairs = 0;
     
-    int ntype = top->ntypes_atom;
-    int *types = top->atom_types;
-    int *nspecials = top->nspecials;
-    int **special_pairs = top->special_pairs;
-    
     for(int i=0; i<natoms; i++)
     {
-        int *specials = special_pairs[i];
-        int nspecial = nspecials[i];
+        int *ex = 0;
+        if (maxex) ex = exmap + maxex * i;
         
         double xi = x[i][0];
         double yi = x[i][1];
@@ -219,7 +223,7 @@ void PairList::build(Traj* traj, bool reset_bins)
         
         while(j>=0)
         {
-            if(j>i && not_special(specials, nspecial, j))
+            if(j>i && (ex==0 || not_excluded(ex, j)))
             {
                 double dx = x[j][0] - xi;
                 double dy = x[j][1] - yi;
@@ -230,7 +234,7 @@ void PairList::build(Traj* traj, bool reset_bins)
                 {
                     ilist[npairs] = i;
                     jlist[npairs] = j;
-                    tlist[npairs] = PAIRTYPE(types[i], types[j], ntype);
+                    tlist[npairs] = pair_tid(types[i], types[j]);
                     dxlist[npairs] = dx;
                     dylist[npairs] = dy;
                     dzlist[npairs] = dz;
@@ -254,7 +258,7 @@ void PairList::build(Traj* traj, bool reset_bins)
             
             while(j>=0)
             {
-                if(not_special(specials, nspecial, j))
+                if(ex==0 || not_excluded(ex, j))
                 {
                     double dx = x[j][0] - xi + sx;
                     double dy = x[j][1] - yi + sy;
@@ -265,7 +269,7 @@ void PairList::build(Traj* traj, bool reset_bins)
                     {
                         ilist[npairs] = i;
                         jlist[npairs] = j;
-                        tlist[npairs] = PAIRTYPE(types[i], types[j], ntype);
+                        tlist[npairs] = pair_tid(types[i], types[j]);
                         dxlist[npairs] = dx;
                         dylist[npairs] = dy;
                         dzlist[npairs] = dz;
@@ -282,52 +286,4 @@ void PairList::build(Traj* traj, bool reset_bins)
     // printf("npairs: %ld\n", npairs);
     // for(int i=0; i<npairs; i++)
     //     printf("%6d %6d %6d %10lf\n", tlist[i], ilist[i], jlist[i], drlist[i]);
-}
-
-void PairList::update_types(int ntype, int * types)
-{
-    for(int i=0; i<npairs; i++)
-        tlist[i] = PAIRTYPE(types[ilist[i]], types[jlist[i]], ntype);
-}
-
-void PairList::build_brutal(Traj* traj)
-{
-    Vec *x = traj->x;
-    int npairs = 0;
-    
-    for(int i=0; i<natoms; i++)
-    {
-        double xi = x[i][0];
-        double yi = x[i][1];
-        double zi = x[i][2];
-        
-        for(int j=i+1; j<natoms; j++)
-        {
-            double dx = x[j][0] - xi;
-            double dy = x[j][1] - yi;
-            double dz = x[j][2] - zi;
-            
-            if(dx<-hbox[0]) dx+= box[0];
-            else if(dx>hbox[0]) dx -= box[0];
-            
-            if(dy<-hbox[1]) dy+= box[1];
-            else if(dy>hbox[1]) dy -= box[1];
-            
-            if(dz<-hbox[2]) dz+= box[2];
-            else if(dz>hbox[2]) dz -= box[2];
-            
-            double r2 = dx*dx + dy*dy + dz*dz;
-
-            if(r2 < cut_sq) 
-            {
-                ilist[npairs] = i;
-                jlist[npairs] = j;
-                dxlist[npairs] = dx;
-                dylist[npairs] = dy;
-                dzlist[npairs] = dz;
-                drlist[npairs] = sqrt(r2);
-                npairs++;
-            }
-        }
-    }
 }

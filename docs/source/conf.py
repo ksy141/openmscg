@@ -223,3 +223,4 @@ html_js_files = [
     'custom.js',
 ]
 
+autodoc_member_order = 'bysource'

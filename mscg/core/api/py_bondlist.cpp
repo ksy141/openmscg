@@ -1,17 +1,42 @@
 #include <Python.h>
+
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/arrayobject.h>
+
 #include "bond_list.h"
-#include "traj.h"
-#include "topology.h"
 
 #define PYAPI(api) PyObject* api(PyObject* self, PyObject* args)
 #define GETPTR() BondList *p; PyArg_ParseTuple(args, "L", &p)
 
 PYAPI(create)
 {
-    Topology *top;
+    PyArrayObject *npBonds, *npAngles, *npDihedrals;
+    PyArg_ParseTuple(args, "OOO", &npBonds, &npAngles, &npDihedrals);
     
-    PyArg_ParseTuple(args, "L", &top);
-    BondList *p = new BondList(top);
+    int nbonds = 0, nangles = 0, ndihedrals = 0;
+    vec2i *bonds = NULL;
+    vec3i *angles = NULL;
+    vec4i *dihedrals = NULL;
+    
+    if(Py_None != (PyObject *)npBonds)
+    {
+        nbonds = PyArray_DIMS(npBonds)[0];
+        bonds = (vec2i*)PyArray_DATA(npBonds);
+    }
+    
+    if(Py_None != (PyObject *)npAngles)
+    {
+        nangles = PyArray_DIMS(npAngles)[0];
+        angles = (vec3i*)PyArray_DATA(npAngles);
+    }
+    
+    if(Py_None != (PyObject *)npDihedrals)
+    {
+        ndihedrals = PyArray_DIMS(npDihedrals)[0];
+        dihedrals = (vec4i*)PyArray_DATA(npDihedrals);
+    }
+    
+    BondList *p = new BondList(nbonds, bonds, nangles, angles, ndihedrals, dihedrals);
     return Py_BuildValue("L", p);
 }
 
@@ -25,61 +50,26 @@ PYAPI(destroy)
 PYAPI(build)
 {
     BondList *p;
-    Traj *traj;
+    PyArrayObject *npBox, *npX;
     
-    PyArg_ParseTuple(args, "LL", &p, &traj);
-    p->build(traj);
+    PyArg_ParseTuple(args, "LOO", &p, &npBox, &npX);
+    p->build((float*)PyArray_DATA(npBox), (vec3f*)PyArray_DATA(npX));
     Py_RETURN_NONE;
 }
 
-PYAPI(get_bonds)
+PYAPI(get_scalar)
 {
-    GETPTR();
-    Topology *top = p->top;
-    int count = top->nbonds;
+    BondList *p;
+    int target;
+    PyArrayObject *npData;
+    PyArg_ParseTuple(args, "LiO", &p, &target, &npData);
     
-    PyObject *tlist = PyList_New(count);
-    PyObject *ilist = PyList_New(count);
-    PyObject *jlist = PyList_New(count);
-    PyObject *rlist = PyList_New(count);
+    int n = (target==0?p->nbonds:(target==1?p->nangles:p->ndihedrals));
+    float *pd = (target==0?p->dr_bond:(target==1?p->theta_angle:p->theta_dihedral));
     
-    for(int i=0; i<count; i++)
-    {
-        PyList_SetItem(tlist, i, Py_BuildValue("i", top->bond_types[i]));
-        PyList_SetItem(ilist, i, Py_BuildValue("i", top->bond_atom1[i]));
-        PyList_SetItem(jlist, i, Py_BuildValue("i", top->bond_atom2[i]));
-        PyList_SetItem(rlist, i, Py_BuildValue("f", p->dr_bond[i]));
-    }
-    
-    PyObject *z = Py_BuildValue("(O,O,O,O)", tlist, ilist, jlist, rlist);
-    Py_XDECREF(tlist); Py_XDECREF(ilist); Py_XDECREF(jlist); Py_XDECREF(rlist);
-    return z;
-}
-
-PYAPI(get_angles)
-{
-    GETPTR();
-    Topology *top = p->top;
-    int count = top->nangls;
-    
-    PyObject *tlist = PyList_New(count);
-    PyObject *ilist = PyList_New(count);
-    PyObject *jlist = PyList_New(count);
-    PyObject *klist = PyList_New(count);
-    PyObject *rlist = PyList_New(count);
-    
-    for(int i=0; i<count; i++)
-    {
-        PyList_SetItem(tlist, i, Py_BuildValue("i", top->angl_types[i]));
-        PyList_SetItem(ilist, i, Py_BuildValue("i", top->angl_atom1[i]));
-        PyList_SetItem(jlist, i, Py_BuildValue("i", top->angl_atom2[i]));
-        PyList_SetItem(klist, i, Py_BuildValue("i", top->angl_atom3[i]));
-        PyList_SetItem(rlist, i, Py_BuildValue("f", p->theta_angl[i]));
-    }
-    
-    PyObject *z = Py_BuildValue("(O,O,O,O,O)", tlist, ilist, jlist, klist, rlist);
-    Py_XDECREF(tlist); Py_XDECREF(ilist); Py_XDECREF(jlist); Py_XDECREF(klist); Py_XDECREF(rlist);
-    return z;
+    float *des = (float*)PyArray_DATA(npData);
+    for(int i=0; i<n; i++) des[i] = pd[i];
+    Py_RETURN_NONE;
 }
 
 static PyMethodDef cModPyMethods[] =
@@ -87,8 +77,7 @@ static PyMethodDef cModPyMethods[] =
     {"create",     create,     METH_VARARGS, "Create pair-list."},
     {"destroy",    destroy,    METH_VARARGS, "Destroy pair-list."},
     {"build",      build,      METH_VARARGS, "Build from frame data."},
-    {"get_bonds",  get_bonds,  METH_VARARGS, "Get bonds data."},
-    {"get_angles", get_angles, METH_VARARGS, "Get angles data."},
+    {"get_scalar", get_scalar, METH_VARARGS, "Get bonding values."},
     {NULL, NULL}
 };
 
@@ -103,5 +92,6 @@ static struct PyModuleDef cModPy =
 
 PyMODINIT_FUNC PyInit_cxx_bondlist(void)
 {
+    import_array();
     return PyModule_Create(&cModPy);
 }

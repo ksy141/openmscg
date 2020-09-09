@@ -10,7 +10,7 @@ def test_slab(datafile):
         'names'   : 'MeOH,Near,Far',
         'cut'     : 8.0,
         'pair'    : ['Near,Near,min=3.0,resolution=0.05', 'Near,Far,min=3.0,resolution=0.05', 'Far,Far,min=3.0,resolution=0.05'],
-        'ucg'     : 'replica=25',
+        'ucg'     : 'replica=25,seed=1234',
         'ucg-wf'  : 'RLE,target=MeOH,high=Near,low=Far,rth=4.5,wth=3.5',
         'verbose' : 0,
         'save'    : 'return'

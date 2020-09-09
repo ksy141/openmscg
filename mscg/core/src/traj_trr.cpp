@@ -28,8 +28,8 @@ TrajTRR::TrajTRR(const char* filename, const char* mode) : Traj()
     rewind();
     
     natoms = header.natoms;
-    has_vel = (header.v_size > 0);
-    has_force = (header.f_size > 0);
+    attrs['v'] = (header.v_size > 0);
+    attrs['f'] = (header.f_size > 0);
     
     allocate();
     status = 0;
@@ -64,8 +64,8 @@ int TrajTRR::read_next_frame()
     for(int i=0; i<natoms; i++)
     {
         x[i][0] *= 10.0; x[i][1] *= 10.0; x[i][2] *= 10.0;
-        if(has_vel) { v[i][0] *= 0.01; v[i][1] *= 0.01; v[i][2] *= 0.01; }
-        if(has_force) { f[i][0] /= 41.82; f[i][1] /= 41.82; f[i][2] /= 41.82; }
+        if(attrs['v']) { v[i][0] *= 0.01; v[i][1] *= 0.01; v[i][2] *= 0.01; }
+        if(attrs['f']) { f[i][0] /= 41.82; f[i][1] /= 41.82; f[i][2] /= 41.82; }
     }
     
     for(int dim=0; dim<3; dim++) box[dim] = _box[dim][dim] * 10.0;
@@ -88,9 +88,9 @@ int TrajTRR::write_frame()
     for(int i=0; i<natoms; i++)
     {
         x[i][0] *= 0.1; x[i][1] *= 0.1; x[i][2] *= 0.1;
-        if(has_vel) { v[i][0] *= 100.0; v[i][1] *= 100.0; v[i][2] *= 100.0; }
-        if(has_force) { f[i][0] *= 41.82; f[i][1] *= 41.82; f[i][2] *= 41.82; }
+        if(attrs['v']) { v[i][0] *= 100.0; v[i][1] *= 100.0; v[i][2] *= 100.0; }
+        if(attrs['f']) { f[i][0] *= 41.82; f[i][1] *= 41.82; f[i][2] *= 41.82; }
     }
     
-    return write_trr(xd, natoms, step, t, lambda, _box, x, has_vel?v:NULL, has_force?f:NULL);
+    return write_trr(xd, natoms, step, t, lambda, _box, x, attrs['v']?v:NULL, attrs['f']?f:NULL);
 }

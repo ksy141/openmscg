@@ -1,4 +1,6 @@
 #include <Python.h>
+
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
 #include "traj_trr.h"
@@ -45,56 +47,61 @@ PyObject* get_natoms(PyObject* self, PyObject* args)
     return z;
 }
 
-template<char ID>
 PyObject* has_attr(PyObject* self, PyObject* args)
 {
-    GETTRR();
-    int value = (ID=='t'?p->has_type:(ID=='v'?p->has_vel:p->has_force));
-    PyObject *z = Py_BuildValue("O", value>0?Py_True:Py_False);
-    return z;
+    Traj* traj;
+    char* attr;
+    PyArg_ParseTuple(args, "Ls", &traj, &attr);
+    return Py_BuildValue("O", traj->attrs[attr[0]]>0?Py_True:Py_False);
 }
 
 PyObject* read_frame(PyObject* self, PyObject* args)
 {
+    GETTRR();
+    int error = p->read_next_frame();
+    return Py_BuildValue("O", error==0?Py_True:Py_False);
+}
+
+#define NOT_NONE(p) (Py_None != (PyObject *)p)
+
+PyObject* get_frame(PyObject* self, PyObject* args)
+{
     Traj* traj;
-    PyArrayObject *box, *type, *x, *v, *f;
+    PyArrayObject *box, *t, *q, *x, *v, *f;
     
-    PyArg_ParseTuple(args, "LOOOOO", &traj, &box, &type, &x, &v, &f);
-    int error = traj->read_next_frame();
+    PyArg_ParseTuple(args, "LOOOOOO", &traj, &box, &t, &q, &x, &v, &f);    
+    memcpy(PyArray_DATA(box), traj->box, sizeof(float)*3);
+    memcpy(PyArray_DATA(x),   traj->x,   sizeof(float)*traj->natoms*3);
+
+    if NOT_NONE(t) memcpy(PyArray_DATA(t), traj->t, sizeof(int)*traj->natoms);
+    if NOT_NONE(q) memcpy(PyArray_DATA(q), traj->q, sizeof(float)*traj->natoms);
+    if NOT_NONE(v) memcpy(PyArray_DATA(v), traj->v, sizeof(float)*traj->natoms*3);
+    if NOT_NONE(f) memcpy(PyArray_DATA(f), traj->f, sizeof(float)*traj->natoms*3);
     
-    if(error == 0)
-    {
-        memcpy(box->data, traj->box, sizeof(float)*3);
-        memcpy(x->data,   traj->x,   sizeof(float)*traj->natoms*3);
-        
-        if(traj->has_type)  memcpy(type->data, traj->type, sizeof(int)*traj->natoms);
-        if(traj->has_vel)   memcpy(v->data,    traj->v,    sizeof(float)*traj->natoms*3);
-        if(traj->has_force) memcpy(f->data,    traj->f,    sizeof(float)*traj->natoms*3);
-    }
-    
-    PyObject *z = Py_BuildValue("O", error==0?Py_True:Py_False);
-    return z;
+    return Py_None;
 }
 
 PyObject* write_frame(PyObject* self, PyObject* args)
 {
     Traj* traj;
-    PyArrayObject *box, *type, *x, *v, *f;
-    PyArg_ParseTuple(args, "LOOOOO", &traj, &box, &type, &x, &v, &f);
+    PyArrayObject *box, *t, *q, *x, *v, *f;
+    PyArg_ParseTuple(args, "LOOOOOO", &traj, &box, &t, &q, &x, &v, &f);
     
-    traj->natoms = x->dimensions[0];
+    traj->natoms = PyArray_DIMS(x)[0];
     traj->allocate();
     
-    memcpy(traj->box, box->data, sizeof(float)*3);
-    memcpy(traj->x,   x->data,   sizeof(float)*traj->natoms*3);
+    memcpy(traj->box, PyArray_DATA(box), sizeof(float)*3);
+    memcpy(traj->x,   PyArray_DATA(x),   sizeof(float)*traj->natoms*3);
     
-    traj->has_type  = Py_None != (PyObject *)type;
-    traj->has_vel   = Py_None != (PyObject *)v;
-    traj->has_force = Py_None != (PyObject *)f;
+    traj->attrs['t'] = NOT_NONE(t);
+    traj->attrs['q'] = NOT_NONE(q);
+    traj->attrs['v'] = NOT_NONE(v);
+    traj->attrs['f'] = NOT_NONE(f);
     
-    if(traj->has_type)  memcpy(traj->type, type->data, sizeof(int)*traj->natoms);
-    if(traj->has_vel)   memcpy(traj->v,    v->data,    sizeof(float)*traj->natoms*3);
-    if(traj->has_force) memcpy(traj->f,    f->data,    sizeof(float)*traj->natoms*3);
+    if(traj->attrs['t']) memcpy(traj->t, PyArray_DATA(t), sizeof(int)*traj->natoms);
+    if(traj->attrs['q']) memcpy(traj->q, PyArray_DATA(q), sizeof(float)*traj->natoms);
+    if(traj->attrs['v']) memcpy(traj->v, PyArray_DATA(v), sizeof(float)*traj->natoms*3);
+    if(traj->attrs['f']) memcpy(traj->f, PyArray_DATA(f), sizeof(float)*traj->natoms*3);
     
     int error = traj->write_frame();
     PyObject *z = Py_BuildValue("O", error==0?Py_True:Py_False);
@@ -105,14 +112,13 @@ static PyMethodDef cModPyMethods[] =
 {
     {"open_trr",    open_traj<TrajTRR>,    METH_VARARGS, "Open Gromacs TRR file."},
     {"open_lmp",    open_traj<TrajLAMMPS>, METH_VARARGS, "Open LAMMPS cumstomized dump file."},
-    {"close",       close,      METH_VARARGS, "Close the opened file."},
-    {"rewind",      rewind,     METH_VARARGS, "Rewind the opened file."},
-    {"get_status",  get_status, METH_VARARGS, "Get trajectory status."},
-    {"get_natoms",  get_natoms, METH_VARARGS, "Return number of atoms."},
-    {"has_type",    has_attr<'t'>, METH_VARARGS, "If trajectory has type data."},
-    {"has_vel",     has_attr<'v'>, METH_VARARGS, "If trajectory has velocity data."},
-    {"has_force",   has_attr<'f'>, METH_VARARGS, "If trajectory has force data."},
-    {"read_frame",  read_frame, METH_VARARGS, "Read a frame."},
+    {"close",       close,       METH_VARARGS, "Close the opened file."},
+    {"rewind",      rewind,      METH_VARARGS, "Rewind the opened file."},
+    {"get_status",  get_status,  METH_VARARGS, "Get trajectory status."},
+    {"get_natoms",  get_natoms,  METH_VARARGS, "Return number of atoms."},
+    {"has_attr",    has_attr,    METH_VARARGS, "If trajectory has the attribute."},
+    {"read_frame",  read_frame,  METH_VARARGS, "Read a frame."},
+    {"get_frame",   get_frame,   METH_VARARGS, "Get a copy of frame data."},
     {"write_frame", write_frame, METH_VARARGS, "Write a frame."},
     {NULL, NULL}
 };
