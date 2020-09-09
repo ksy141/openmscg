@@ -208,7 +208,7 @@ void PairList::build(vec3f *x)
 {
     bin_atoms(x);
     npairs = 0;
-    
+        
     for(int i=0; i<natoms; i++)
     {
         int *ex = 0;

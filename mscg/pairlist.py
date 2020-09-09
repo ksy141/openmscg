@@ -93,7 +93,7 @@ class PairList:
         page : mscg.PageInterator
             An iterator of pages contaning the data of pairs
     """
-    def __init__(self, cut = 10.0, binsize = 5.0, max_pairs = 2000000, page_size = 50000):
+    def __init__(self, cut = 10.0, binsize = 5.0, max_pairs = 2000000, page_size = 1000000):
         """
         Create an object in `PairList` class.
         
@@ -133,7 +133,7 @@ class PairList:
         :type exmap: numpy.ndarray(shape=(N, M))
         '''
         
-        self._types = types_atom.copy()
+        self._types = types_atom.astype(np.int32).copy()
         
         if exmap is not None:
             if type(exmap) != np.ndarray or exmap.ndim!=2 or exmap.shape[0]!=types_atom.shape[0]:
@@ -181,7 +181,7 @@ class PageIterator:
             distance of each pair of atoms
     """
     
-    def __init__(self, h, page_size=50000):
+    def __init__(self, h, page_size=1000000):
         self._h = h
         self.page_size = page_size
         

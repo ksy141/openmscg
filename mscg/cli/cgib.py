@@ -40,7 +40,7 @@ Syntax of running ``cgib`` command ::
       --angle types,args  define new angle analysis with format:
                           type1,type2,type3,args; args and default values are:
                           min=0,max=10,bins=10 (default: [])
-      --plot U or N       plot the results of U (potential) or n (distribition)
+      --plot U or n       plot the results of U (potential) or n (distribition)
                           (default: U)
 
 '''

@@ -3,6 +3,7 @@ dist/
 
 notes.txt
 
+__pycache__
 build/
 run/
 

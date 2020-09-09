@@ -17,4 +17,4 @@ def test_methanol2s(datafile):
     assert pairlist.build(trj.x) == 205863
 
     for page in pairlist.pages(0, scalar=True, vector=True):
-        assert abs(page.r.mean() - 7.592287814753148) < 0.001
+        assert abs(page.r.mean() - 7.589446043880035) < 0.001
