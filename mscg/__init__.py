@@ -19,21 +19,24 @@ __version__ = '0.1.0'
 
 doc_root = "https://software.rcc.uchicago.edu/mscg/docs/"
 
+import os
+for name in ["OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS"]:
+    os.environ[name] = "1"
+
+import numpy as np
+import pandas as pd
+
 from .topology   import *
 from .trajectory import *
 from .pairlist   import *
 from .bondlist   import *
-from .tables     import *
-from .matrix     import *
 from .bspline    import *
 from .mapper     import *
-
+from .table      import *
 from .timer      import *
 from .verbose    import *
 from .cli_parser import *
 from .checkpoint import *
-
-from .tables import tables
 
 from .model import *
 from .ucg import *

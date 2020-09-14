@@ -65,20 +65,20 @@ PyObject* read_frame(PyObject* self, PyObject* args)
 #define NOT_NONE(p) (Py_None != (PyObject *)p)
 
 PyObject* get_frame(PyObject* self, PyObject* args)
-{
+{    
     Traj* traj;
     PyArrayObject *box, *t, *q, *x, *v, *f;
+    PyArg_ParseTuple(args, "LOOOOOO", &traj, &box, &t, &q, &x, &v, &f);
     
-    PyArg_ParseTuple(args, "LOOOOOO", &traj, &box, &t, &q, &x, &v, &f);    
     memcpy(PyArray_DATA(box), traj->box, sizeof(float)*3);
     memcpy(PyArray_DATA(x),   traj->x,   sizeof(float)*traj->natoms*3);
-
+    
     if NOT_NONE(t) memcpy(PyArray_DATA(t), traj->t, sizeof(int)*traj->natoms);
     if NOT_NONE(q) memcpy(PyArray_DATA(q), traj->q, sizeof(float)*traj->natoms);
     if NOT_NONE(v) memcpy(PyArray_DATA(v), traj->v, sizeof(float)*traj->natoms*3);
     if NOT_NONE(f) memcpy(PyArray_DATA(f), traj->f, sizeof(float)*traj->natoms*3);
     
-    return Py_None;
+    Py_RETURN_NONE;
 }
 
 PyObject* write_frame(PyObject* self, PyObject* args)

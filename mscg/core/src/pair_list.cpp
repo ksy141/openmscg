@@ -234,7 +234,6 @@ void PairList::build(vec3f *x)
                 {
                     ilist[npairs] = i;
                     jlist[npairs] = j;
-                    tlist[npairs] = pair_tid(types[i], types[j]);
                     dxlist[npairs] = dx;
                     dylist[npairs] = dy;
                     dzlist[npairs] = dz;
@@ -269,7 +268,6 @@ void PairList::build(vec3f *x)
                     {
                         ilist[npairs] = i;
                         jlist[npairs] = j;
-                        tlist[npairs] = pair_tid(types[i], types[j]);
                         dxlist[npairs] = dx;
                         dylist[npairs] = dy;
                         dzlist[npairs] = dz;
@@ -283,7 +281,12 @@ void PairList::build(vec3f *x)
         }
     }
     
-    // printf("npairs: %ld\n", npairs);
-    // for(int i=0; i<npairs; i++)
-    //     printf("%6d %6d %6d %10lf\n", tlist[i], ilist[i], jlist[i], drlist[i]);
+    update_types(types);
 }
+
+void PairList::update_types(int *types)
+{
+    for(int i=0; i<npairs; i++)
+        tlist[i] = pair_tid(types[ilist[i]], types[jlist[i]]);
+}
+

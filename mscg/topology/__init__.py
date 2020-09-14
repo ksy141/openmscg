@@ -230,7 +230,10 @@ class Topology:
             _list = self.__dict__['_' + k[0]]
             
             if len(k)>1 and k[1] in _list:
-                return _list[k[1]].copy()
+                if k[0] == 'names':
+                    return _list[k[1]].copy()
+                else:
+                    return np.array(_list[k[1]], dtype=np.int32)
         
         elif k[0] == 'n':
             if len(k)>1 and k[1] in type(self).all_types:
@@ -487,7 +490,7 @@ class Topology:
         if atom_types[0] > atom_types[1]:
             atom_types = reversed(atom_types)
         
-        return atom_types[0] * self.ntype_atom + atom_types[1], '-'.join([self._names['atom'][i] for i in atom_types])
+        return '-'.join([self._names['atom'][i] for i in atom_types])
     
     def _add_items_with_types(self, type_name:str, types):
         """

@@ -89,7 +89,7 @@ class UCGSpawner:
         else:
             UCG.top = top
             UCG.traj = traj
-            UCG.weights = [[] for _ in range(top.natoms)]
+            UCG.weights = [[] for _ in range(top.n_atom)]
             UCG.process()
         
     def __iter__(self):
@@ -106,10 +106,10 @@ class UCGSpawner:
             return None
         else:
             
-            r = np.random.random(UCG.top.natoms)
+            r = np.random.random(UCG.top.n_atom)
             types = []
             
-            for i in range(UCG.top.natoms):
+            for i in range(UCG.top.n_atom):
                 p = 0.0
                 
                 for state in UCG.weights[i]:
@@ -121,7 +121,8 @@ class UCGSpawner:
                 if len(types)<=i:
                     types.append(UCG.weights[-1][0])
             
-            return [UCG.top.get_atom_type(t) for t in types]
+            names_atom = UCG.top.names_atom
+            return [names_atom.index(t) for t in types]
 
 
 

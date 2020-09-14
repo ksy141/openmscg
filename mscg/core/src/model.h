@@ -5,17 +5,18 @@ class Model
 {
   public:    
     int nparam;
-    int type_id;
+    int tid;
     void *list;
-    double *dudl;
+
+    double *dU;
+    double *dF;
     
-    Model(void*, int);
+    Model(int, void*, double*, double*);
     virtual ~Model();
     
-    virtual void compute_dfdl() = 0;
-    virtual void compute_dudl() = 0;
-    virtual void compute_etable(double *params, double* in, double* out, int size) = 0;
-    virtual void compute_ftable(double *params, double* in, double* out, int size) = 0;
+    virtual void compute_fm() = 0;
+    virtual void compute_rem() = 0;
+    virtual void get_table(double *params, double* in, double* out, int size) = 0;
 };
 
 #endif

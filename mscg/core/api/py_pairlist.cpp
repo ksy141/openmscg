@@ -105,6 +105,15 @@ PYAPI(fill_page)
     return Py_BuildValue("ii", inext, nfill);
 }
 
+PYAPI(update_types)
+{
+    PairList *pair;
+    PyArrayObject *npTypes;
+    PyArg_ParseTuple(args, "LO", &pair, &npTypes);
+    pair->update_types((int*)PyArray_DATA(npTypes));
+    Py_RETURN_NONE;
+}
+
 PYAPI(get_tid)
 {
     int i, j;
@@ -114,13 +123,14 @@ PYAPI(get_tid)
 
 static PyMethodDef cModPyMethods[] =
 {
-    {"create",     create,     METH_VARARGS, "Create pair-list."},
-    {"destroy",    destroy,    METH_VARARGS, "Destroy pair-list."},
-    {"init",       init,       METH_VARARGS, "Initialize pair-list."},
-    {"setup_bins", setup_bins, METH_VARARGS, "Setup verlet-list bins."},
-    {"build",      build,      METH_VARARGS, "Build from frame data."},
-    {"fill_page",  fill_page,  METH_VARARGS, "Fill a page of pairs."},
-    {"get_tid",    get_tid,    METH_VARARGS, "Get type ID of a pair."},
+    {"create",       create,       METH_VARARGS, "Create pair-list."},
+    {"destroy",      destroy,      METH_VARARGS, "Destroy pair-list."},
+    {"init",         init,         METH_VARARGS, "Initialize pair-list."},
+    {"setup_bins",   setup_bins,   METH_VARARGS, "Setup verlet-list bins."},
+    {"build",        build,        METH_VARARGS, "Build from frame data."},
+    {"fill_page",    fill_page,    METH_VARARGS, "Fill a page of pairs."},
+    {"get_tid",      get_tid,      METH_VARARGS, "Get type ID of a pair."},
+    {"update_types", update_types, METH_VARARGS, "Update pair types."},
     {NULL, NULL}
 };
 

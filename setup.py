@@ -108,15 +108,7 @@ if __name__ == '__main__':
     
     def src_files(api, files):
         return [api_path + api + '.cpp'] + [src_path + file + '.cpp' for file in files]
-    
-    def table_extention(name):
-        return Extension(core_prefix + 'table_' + name + '_bspline',
-            include_dirs = inc_path,
-            sources = src_files('py_table_' + name + '_bspline', ['table', 'bspline', 'table_' + name + '_bspline']),
-            extra_compile_args = setup_args['compile'],
-            extra_link_args = setup_args['gsl_lib'] + setup_args['link'],
-        )
-    
+        
     def model_extention(name, extra_src = [], extra_link = []):
         return Extension(core_prefix + 'model_' + name,
             include_dirs = inc_path,
@@ -124,6 +116,23 @@ if __name__ == '__main__':
             extra_compile_args = setup_args['compile'],
             extra_link_args = extra_link + setup_args['link'],
         )
+    
+    def get_models(model_path):
+        models = []
+        
+        for f in [f for f in os.listdir(model_path) if f.endswith('.cpp') and f.startswith('model_')]:
+            f = f.split('.')[0]
+            
+            models.append(Extension(
+                core_prefix + f,
+                include_dirs = inc_path,
+                sources = src_files('py_' + f, [f, 'model'] + ['bspline'] if 'bspline' in f else []),
+                extra_compile_args = setup_args['compile'],
+                extra_link_args = setup_args['gsl_lib'] if 'bspline' in f else [] + setup_args['link'],
+            ))
+        
+        return models
+        
     
     extensions = [
         Extension(core_prefix + 'topol',
@@ -154,33 +163,18 @@ if __name__ == '__main__':
             extra_link_args = setup_args['link'],
         ),
         
-        Extension(core_prefix + 'matrix',
-            include_dirs = inc_path,
-            sources = src_files('py_matrix', ['matrix']),
-            define_macros = build_defs(setup_args['lapack_def']),
-            extra_compile_args = setup_args['compile'],
-            extra_link_args = setup_args['gsl_lib'] + setup_args['lapack_lib'] + setup_args['link'],
-        ),
-        
         Extension(core_prefix + 'bspline',
             include_dirs = inc_path,
             sources = src_files('py_bspline', ['bspline']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['gsl_lib'] + setup_args['link'],
-        ),
-        
-        table_extention('pair'),
-        table_extention('bond'),
-        table_extention('angle'),
-        
-        model_extention('pair_bspline', extra_src=['bspline'], extra_link=setup_args['gsl_lib'])
-    ]
+        )
+    ] + get_models(src_path)
     
     entry_points = {"console_scripts": [
         f.split('.')[0] + "=" + package_name + ".cli." + f.split('.')[0] + ":main" \
         for f in os.listdir(package_name + "/cli") if f.startswith("cg") and f.endswith(".py")
     ]}
-    
     
     setup(
         version = read_version(package_name + '/__init__.py'),

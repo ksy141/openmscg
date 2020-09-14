@@ -49,7 +49,7 @@ Syntax of running ``cgib`` command ::
 
 from mscg import *
 
-
+'''
 class TableCreator:
     def __init__(self, n, style, args):
         self.ntype = n
@@ -105,10 +105,11 @@ def BuildTableAction(n, arg_name):
             return msg
             
     return TableAction
-
-
-
+'''
+    
 def main(*args, **kwargs):
+    
+    models.empty()
     
     # parse argument
     
@@ -130,15 +131,10 @@ def main(*args, **kwargs):
     group.add_argument("--cut", metavar='', type=float, default=10.0, help="cut-off for pair interactions")
     group.add_argument("--save",  metavar='', type=str, default="matrix", help="file name for matrix output")
     
-    PairAction = BuildTableAction(2,"pair");
-    group.add_argument("--pair", metavar='types,args', action=PairAction, help=PairAction.help(), default=[])
-    
-    BondAction = BuildTableAction(2,"bond");
-    group.add_argument("--bond", metavar='types,args', action=BondAction, help=BondAction.help(), default=[])
-    
-    AngleAction = BuildTableAction(3,"angle");
-    group.add_argument("--angle", metavar='types,args', action=AngleAction, help=AngleAction.help(), default=[])
-    
+    group.add_argument("--pair",  metavar='', action=ModelArgAction, nargs='+', default=[])
+    group.add_argument("--bond",  metavar='', action=ModelArgAction, nargs='+', default=[])
+    group.add_argument("--angle", metavar='', action=ModelArgAction, nargs='+', default=[])
+        
     group.add_argument("--ucg", metavar='[key=value]', action=UCGArgAction, help=UCGArgAction.help(), default=None)
     group.add_argument("--ucg-wf", metavar='[key=value]', action=WFArgAction, help=WFArgAction.help(), default=[])
     
@@ -157,75 +153,81 @@ def main(*args, **kwargs):
     if args.names is not None:
         args.top.reset_names(args.names.split(','))
     
-    screen.info("Generate bonds/angles/dihedrals ...")
-    args.top.build_special(True, True, True)
-    
     # prepare lists
     
     screen.info("Build pair and bonding list-based algorithm ...")
-    plist = PairList(args.top)
-    plist.init(cut = args.cut)
-    blist = BondList(args.top)
+    plist = PairList(cut = args.cut)
+    plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
+    blist = BondList(
+        args.top.types_bond, args.top.bond_atoms, 
+        args.top.types_angle, args.top.angle_atoms, 
+        args.top.types_dihedral, args.top.dihedral_atoms)
     UCG.init(plist, blist)
     
     # build up tables
+        
+    [pair.setup(args.top, plist) for pair in args.pair]
+    [bond.setup(args.top, blist) for bond in args.bond]
+    [angle.setup(args.top, blist) for angle in args.angle]
     
-    tables.empty()
-    
-    [pair.create(args.top, plist) for pair in args.pair]
-    [bond.create(args.top, blist) for bond in args.bond]
-    [angle.create(args.top, blist) for angle in args.angle]
+    for model in models.items:
+        screen.info(" ".join([str(i) for i in 
+            ["Model:", model.style, model.name, "T-" + str(model.tid)]]))
     
     # build up coefficients matrix
     
     screen.info("Build coefficients matrix ...")
-    matrix = Matrix()
-    matrix.add_tables(tables.all)
-    matrix.setup(args.top.natoms)
+    
+    n = sum([model.nparam for model in models.items])
+    matrix_cov = np.zeros(shape=(n, n))
+    vector_cov = np.zeros(n)
+    
+    #matrix = Matrix()
+    #matrix.setup(args.top.n_atom, models.item)
 
     # start processing trajectory
     
     TIMER.reset()
     last = TIMER.last
             
-    for reader in TrajBatch(args.traj, natoms = args.top.natoms, cut = plist.cut):
+    for reader in TrajBatch(args.traj, natoms = args.top.n_atom, cut = plist.cut):
     
         if reader.nread == 1:
-            plist.setup_bins(reader.traj)
-                
-        TIMER.click('io')
-        TIMER.click('pair', plist.build(reader.traj))
-        TIMER.click('bond', blist.build(reader.traj))
+            plist.setup_bins(reader.traj.box)
         
-        if UCG.weighting_funcs != []:
-            saved_atom_types = args.top.atom_types.copy()
+        TIMER.click('io')
+        TIMER.click('pair', plist.build(reader.traj.x))
+        TIMER.click('bond', blist.build(reader.traj.box, reader.traj.x))
         
         for types in UCGSpawner(args.top, args.traj):
             if types is not None:
-                plist.update_types(args.top.ntypes_atom, types)
+                plist.update_types(np.array(types, dtype=np.int32))
                 TIMER.click('ucg')
             
-            TIMER.click('matrix', matrix.reset())
-            TIMER.click('table', tables.compute_all())
-            TIMER.click('matrix', matrix.multiplyadd(reader.traj))
+            TIMER.click('model', models.compute_fm())
+            
+            matrix_coeff = np.hstack([model.dF for model in models.items])
+            matrix_cov += np.matmul(matrix_coeff.T, matrix_coeff)
+            vector_cov += np.matmul(matrix_coeff.T, reader.traj.f.astype(np.float64).flatten())
+            TIMER.click('matrix')
         
     # end of processing trajectories
+    
+    y = np.matmul(np.linalg.inv(matrix_cov), vector_cov)
+    TIMER.click('solver')
         
     if args.save != "return":
-        matrix.save("covariance_" + args.save)
+        pd.to_pickle({
+            'X': matrix_cov,
+            'y': y
+        }, args.save + ".p")
     
-    matrix.solve()
-    
-    if args.save != "return":
-        matrix.save("coeffs_" + args.save)
-    
-    TIMER.click('solver')
     screen.info([""] + TIMER.report(False) + [""])
     
     # end
     
     if args.save == "return":
-        return matrix.cov_y()
+        return y
     
 
 if __name__ == '__main__':

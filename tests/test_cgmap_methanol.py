@@ -24,8 +24,6 @@ def test_mapper(datafile):
     diff = X - np.array([0.56, 0.56, 0.99])
     assert abs(diff.dot(diff.T)[0])<0.0001
 
-
-
 def test_methanol_2s(datafile):
     
     frames = cgmap.main(

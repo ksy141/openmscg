@@ -1,15 +1,16 @@
 #include "model.h"
 
-Model::Model(void* list, int type_id)
+Model::Model(int tid, void* list, double *dF, double *dU)
 {
+    this->tid = tid;
     this->list = list;
-    this->type_id = type_id;
+    this->dF = dF;
+    this->dU = dU;
     
     nparam  = 0;
-    dudl    = 0;
 }
 
 Model::~Model()
 {
-    if(dudl) delete [] dudl;
+    
 }

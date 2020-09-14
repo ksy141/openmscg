@@ -1,6 +1,11 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+
 typedef float vec3f[3];
 typedef int   vec2i[2];
 typedef int   vec3i[3];

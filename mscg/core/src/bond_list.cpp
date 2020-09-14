@@ -4,15 +4,21 @@
 #include <cstdio>
 #include <cassert>
 
-BondList::BondList(int nbonds, vec2i *bonds, int nangles, vec3i *angles, int ndihedrals, vec4i *dihedrals)
+BondList::BondList(
+    int nbonds, int *bond_types, vec2i *bonds, 
+    int nangles, int *angle_types, vec3i *angles,
+    int ndihedrals, int *dihedral_types, vec4i *dihedrals)
 {
     this->nbonds = nbonds;
+    this->bond_types = bond_types;
     this->bond_atoms = bonds;
     
     this->nangles = nangles;
+    this->angle_types = angle_types;
     this->angle_atoms = angles;
     
     this->ndihedrals = ndihedrals;
+    this->dihedral_types = dihedral_types;
     this->dihedral_atoms = dihedrals;
     
     #define _ptr(p) if(nbonds>0) p##_bond = new float[nbonds]; else p##_bond = 0

@@ -1,24 +1,19 @@
 #include "model_pair_bspline.h"
 #include "pair_list.h"
+#include "defs.h"
 
-#include "std.h"
-
-ModelPairBSpline::ModelPairBSpline(PairList *pair, int type_id, int order, double resolution, double xmin) : Model(pair, type_id), BSpline(order, resolution, xmin, pair->cut, 1)
+ModelPairBSpline::ModelPairBSpline(double xmin, double xmax, double resolution, int order, int tid, void *list, double *dF, double *dU) : BSpline(order, resolution, xmin, xmax, 1), Model(tid, list, dF, dU)
 {
     nparam = ncoeff;
-    dudl = new double[nparam];
 }
 
 ModelPairBSpline::~ModelPairBSpline()
 {
-    delete [] dudl;
 }
 
-void ModelPairBSpline::compute_dfdl()
+void ModelPairBSpline::compute_fm()
 {
-    printf("Testing ...\n");
-    /*
-    int natoms = pair->natoms;
+    PairList *pair = (PairList*)(this->list);
     int* ilist = pair->ilist;
     int* jlist = pair->jlist;
     int* tlist = pair->tlist;
@@ -27,7 +22,7 @@ void ModelPairBSpline::compute_dfdl()
     float* dz = pair->dzlist;
     float* dr = pair->drlist;
 
-    for(int p=0; p<pair->npairs; p++) if(tlist[p]==type_id)
+    for(int p=0; p<pair->npairs; p++) if(tlist[p]==tid)
     {
         double *b;
         size_t istart;
@@ -40,8 +35,8 @@ void ModelPairBSpline::compute_dfdl()
 
         double *coeff_i, *coeff_j;
 
-        coeff_i = coeff[atom_i*3];
-        coeff_j = coeff[atom_j*3];
+        coeff_i = dF + atom_i*3 * nparam;
+        coeff_j = dF + atom_j*3 * nparam;
 
         for(int c=0; c<nn; c++)
         {
@@ -51,8 +46,8 @@ void ModelPairBSpline::compute_dfdl()
             coeff_j[pos] -= Bi;
         }
 
-        coeff_i = coeff[atom_i*3+1];
-        coeff_j = coeff[atom_j*3+1];
+        coeff_i = dF + (atom_i*3+1) * nparam;
+        coeff_j = dF + (atom_j*3+1) * nparam;
 
         for(int c=0; c<nn; c++)
         {
@@ -62,8 +57,8 @@ void ModelPairBSpline::compute_dfdl()
             coeff_j[pos] -= Bi;
         }
  
-        coeff_i = coeff[atom_i*3+2];
-        coeff_j = coeff[atom_j*3+2];
+        coeff_i = dF + (atom_i*3+2) * nparam;
+        coeff_j = dF + (atom_j*3+2) * nparam;
 
         for(int c=0; c<nn; c++)
         {
@@ -73,34 +68,28 @@ void ModelPairBSpline::compute_dfdl()
             coeff_j[pos] -= Bi;
         }
     }
-    */
 }
 
-void ModelPairBSpline::compute_dudl()
+void ModelPairBSpline::compute_rem()
 {
-    for(int i=0; i<nparam; i++) dudl[i] = 0.0;
+    for(int i=0; i<nparam; i++) dU[i] = 0.0;
     
     PairList *pair = (PairList*)list;
     int* tlist = pair->tlist;
     float* dr = pair->drlist;
         
-    for(int p=0; p<pair->npairs; p++) if(tlist[p]==type_id)
+    for(int p=0; p<pair->npairs; p++) if(tlist[p]==tid)
     {
         double *b;
         size_t istart;
         int nn;
         
         eval_coeffs(dr[p], &b, &istart, &nn);
-        for(int c=0; c<nn; c++) dudl[istart+c] = b[c];
+        for(int c=0; c<nn; c++) dU[istart+c] = b[c];
     }
 }
 
-void ModelPairBSpline::compute_etable(double *params, double* in, double* out, int size)
-{
-    eval(params, in, out, size);
-}
-
-void ModelPairBSpline::compute_ftable(double *params, double* in, double* out, int size)
+void ModelPairBSpline::get_table(double *params, double* in, double* out, int size)
 {
     eval(params, in, out, size);
 }

@@ -8,13 +8,12 @@ class ModelPairBSpline : public Model, public BSpline
 {
   public:
 
-    ModelPairBSpline(class PairList*, int, int, double, double);
+    ModelPairBSpline(double, double, double, int, int, void*, double*, double*);
     virtual ~ModelPairBSpline();
     
-    virtual void compute_dudl();
-    virtual void compute_dfdl();
-    virtual void compute_etable(double *params, double* in, double* out, int size);
-    virtual void compute_ftable(double *params, double* in, double* out, int size);
+    virtual void compute_rem();
+    virtual void compute_fm();
+    virtual void get_table(double *params, double* in, double* out, int size);
 };
 
 #endif

@@ -16,4 +16,6 @@ class BSpline:
         lib.destroy(self.h)
     
     def interpolate(self, xmin, dx, n, coeffs):
-        return lib.interp(self.h, xmin, dx, n, coeffs)
+        values = lib.interp(self.h, xmin, dx, n, list(coeffs))
+        print(values)
+        return values

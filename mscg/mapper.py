@@ -52,6 +52,7 @@ class Mapper:
                         
             x_aa = x[site_index].copy()
             x_aa = Trajectory.wrap_molecule(x_aa, box)
+            
             x_cg = np.matmul(x_aa.T, self.types[site_name]['x-weight']).T
             x_list.append(x_cg)
         

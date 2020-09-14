@@ -10,10 +10,11 @@
 
 PYAPI(create)
 {
-    PyArrayObject *npBonds, *npAngles, *npDihedrals;
-    PyArg_ParseTuple(args, "OOO", &npBonds, &npAngles, &npDihedrals);
+    PyArrayObject *npBT, *npAT, *npDT, *npBonds, *npAngles, *npDihedrals;
+    PyArg_ParseTuple(args, "OOOOOO", &npBT, &npBonds, &npAT, &npAngles, &npDT, &npDihedrals);
     
     int nbonds = 0, nangles = 0, ndihedrals = 0;
+    int *bt = 0, *at = 0, *dt = 0;
     vec2i *bonds = NULL;
     vec3i *angles = NULL;
     vec4i *dihedrals = NULL;
@@ -21,22 +22,25 @@ PYAPI(create)
     if(Py_None != (PyObject *)npBonds)
     {
         nbonds = PyArray_DIMS(npBonds)[0];
+        bt = (int*)PyArray_DATA(npBT);
         bonds = (vec2i*)PyArray_DATA(npBonds);
     }
     
     if(Py_None != (PyObject *)npAngles)
     {
         nangles = PyArray_DIMS(npAngles)[0];
+        at = (int*)PyArray_DATA(npAT);
         angles = (vec3i*)PyArray_DATA(npAngles);
     }
     
     if(Py_None != (PyObject *)npDihedrals)
     {
         ndihedrals = PyArray_DIMS(npDihedrals)[0];
+        dt = (int*)PyArray_DATA(npDT);
         dihedrals = (vec4i*)PyArray_DATA(npDihedrals);
     }
     
-    BondList *p = new BondList(nbonds, bonds, nangles, angles, ndihedrals, dihedrals);
+    BondList *p = new BondList(nbonds, bt, bonds, nangles, at, angles, ndihedrals, dt, dihedrals);
     return Py_BuildValue("L", p);
 }
 

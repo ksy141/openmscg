@@ -68,6 +68,7 @@ class PairList
     void init(int *types, int natoms, int* exmap, int maxex);
     void setup_bins(vec3f box);
     void build(vec3f *x);
+    void update_types(int*);
 };
 
 #endif

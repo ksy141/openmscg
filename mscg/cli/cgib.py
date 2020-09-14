@@ -157,7 +157,10 @@ def main(*args, **kwargs):
     screen.info("Build pair and bonding list-based algorithm ...")
     plist = PairList(cut = args.cut)
     plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
-    blist = BondList(args.top.bond_atoms, args.top.angle_atoms, args.top.dihedral_atoms)
+    blist = BondList(
+        args.top.types_bond, args.top.bond_atoms, 
+        args.top.types_angle, args.top.angle_atoms, 
+        args.top.types_dihedral, args.top.dihedral_atoms)
         
     # prepare plots
     
@@ -213,7 +216,6 @@ def main(*args, **kwargs):
             blist.build(reader.traj.box, reader.traj.x)
 
             def process_hist(one, types, vals):
-
                 vals = vals[types==one.id]
                 hist, edges = np.histogram(vals, bins=one.bins, range=(one.min, one.max))
 

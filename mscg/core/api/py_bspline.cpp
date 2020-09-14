@@ -42,10 +42,8 @@ PYAPI(interp)
     p->eval(input, output, xmin, dx, n);
     
     PyObject *z = PyList_New(n);
+    for(int i=0; i<n; i++) PyList_SetItem(z, i, Py_BuildValue("f", output[i]));
     
-    for(int i=0; i<n; i++)
-        PyList_SetItem(z, i, Py_BuildValue("f", output[i]));
-            
     delete [] input;
     delete [] output;
     return z;

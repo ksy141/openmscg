@@ -22,6 +22,11 @@ class BSpline
 
     double *table_bvalue;
     int *table_istart, *table_nn;
+    
+    static inline int get_nbreak(double xmin, double xmax, double resolution)
+    {
+        return static_cast<int>(ceil((xmax - xmin)/resolution)) + 1;
+    }
 
     void setup_cache(double dx_factor = 0.001);
     void eval_coeffs(double, double**, size_t*, int*);

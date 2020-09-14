@@ -34,7 +34,7 @@ import numpy as np
 
 class BondList:
         
-    def __init__(self, bonds, angles, dihedrals):
+    def __init__(self, bond_types, bonds, angle_types, angles, dihedral_types, dihedrals):
         """
         Create an object in BondList class.
         
@@ -49,9 +49,16 @@ class BondList:
         """
         self._data = {}
         self._data['bond'] = bonds.transpose().copy()
+        self._data['bond_type'] = bond_types.astype(np.int32)
         self._data['angle'] = angles.transpose().copy()
+        self._data['angle_type'] = angle_types.astype(np.int32)
         self._data['dihedral'] = dihedrals.transpose().copy()
-        self._h = lib.create(self._data['bond'], self._data['angle'], self._data['dihedral'])
+        self._data['dihedral_type'] = dihedral_types.astype(np.int32)
+        
+        self._h = lib.create(
+            self._data['bond_type'], self._data['bond'], 
+            self._data['angle_type'], self._data['angle'], 
+            self._data['dihedral_type'], self._data['dihedral'])
     
     def __del__(self):
         if self._h is not None:

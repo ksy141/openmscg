@@ -132,8 +132,7 @@ class Trajectory:
         if "r" in mode:
             self.natoms = lib.get_natoms(self._h)
             self.box = np.ndarray(shape=(3), dtype=np.float32)
-            self.__allocate__()
-            
+            self.__allocate__()            
     
     def __allocate__(self):
         for attr,defs in type(self)._datadefs.items():
@@ -158,7 +157,8 @@ class Trajectory:
         super().__setattr__(name, value)
         
     def has_attr(self, attr):
-        return lib.has_attr(self._h, attr)
+        attrs = lib.has_attr(self._h, attr)
+        return attrs
     
     def rewind(self):
         """
@@ -182,9 +182,9 @@ class Trajectory:
         
         if lib.get_natoms(self._h) != self.natoms:
             self.__allocate__()
-        
-        lib.get_frame(self._h, self.box, 
-            *[self._data[attr] if attr in self._data else None for attr in type(self)._data_names])
+                
+        attrs = [self._data[attr] for attr in type(self)._data_names]
+        lib.get_frame(self._h, self.box, *attrs)
         
         return True
     
@@ -229,15 +229,15 @@ class Trajectory:
         return x_wrap + x[0]
     
     @classmethod
-    def pbc(cls, x, box):
+    def pbc(cls, box, x):
         """
         Wrap coordinates into the box.
         
-        :param x: a group of coordinates to be wrapped. The first row is the reference.
-        :type x: numpy.array(shape=(,3), dtype=numpy.float32)
-        
         :param box: box dimensions
         :type box: numpy.array(shape=3, dtype=numpy.float32)
+        
+        :param x: a group of coordinates to be wrapped. The first row is the reference.
+        :type x: numpy.array(shape=(,3), dtype=numpy.float32)
         
         :return: wrapped coordinates
         :rtype: numpy.array(shape=3, dtype=numpy.float32)

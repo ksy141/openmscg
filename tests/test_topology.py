@@ -47,7 +47,7 @@ def test_waterbox():
     assert links.shape == (nwater * 3, 3)
     assert (links!=-1).sum() == nwater * 6
     
-    assert top.pair_type([0, 1]) == (1, 'OW-HW')
+    assert top.pair_name([1, 0]) == 'OW-HW'
     
 def test_autogen():
     nmol = 5

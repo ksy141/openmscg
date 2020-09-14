@@ -72,7 +72,7 @@ def main(*args, **kwargs):
     for reader in TrajBatch(args.traj):
         TIMER.click('read')
         
-        X, F = mapper.process(reader.traj.box, reader.traj.x, reader.traj.f if reader.traj.has_force() else None)
+        X, F = mapper.process(reader.traj.box, reader.traj.x, reader.traj.f if reader.traj.has_attr('f') else None)
         TIMER.click('map')
         
         if args.out == 'return':

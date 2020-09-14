@@ -37,7 +37,9 @@ import numpy as np
 class CGDeriv:
     
     def __init__(self, *args, **kwargs):
-
+        
+        models.empty()
+        
         # parse argument
 
         desc = 'Calculate derivatives with respect to parameters in REM.' + doc_root + 'commands/cgderiv.html'
@@ -59,8 +61,7 @@ class CGDeriv:
 
         group.add_argument("--cut", metavar='', type=float, default=10.0, help="cut-off for pair interactions")
 
-        PairAction = BuildModelArgAction(2, "pair");
-        group.add_argument("--pair", metavar='types,args', action=PairAction, help=PairAction.help(), default=[])
+        group.add_argument("--pair",  metavar='', action=ModelArgAction, nargs='+', default=[])
     
         if len(args)>0 or len(kwargs)>0:
             args = parser.parse_inline_args(*args, **kwargs)
@@ -77,36 +78,36 @@ class CGDeriv:
         if args.names is not None:
             args.top.reset_names(args.names.split(','))
 
-        screen.info("Generate bonds/angles/dihedrals ...")
-        args.top.build_special(True, True, True)
-        
         # prepare lists
 
         screen.info("Build pair and bonding list-based algorithm ...")
-        plist = PairList(args.top)
-        plist.init(cut = args.cut)
-        blist = BondList(args.top)
-
-        # build up tables
-        model.empty()
-
-        for pair in args.pair: pair.create(args.top, plist)
-        for m in model.items: m.require('eval_deriv_u')
+        plist = PairList(cut = args.cut)
+        plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
+        
+        """
+        plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
+        blist = BondList(
+            args.top.types_bond, args.top.bond_atoms, 
+            args.top.types_angle, args.top.angle_atoms, 
+            args.top.types_dihedral, args.top.dihedral_atoms)
+        """
+        
+        # setup models
+        
+        [pair.setup(args.top, plist) for pair in args.pair]
         
         # save references
         
         self.args = args
         self.plist = plist
-        self.blist = blist
-        
-        
-    
+        #self.blist = blist
+            
     def process(self):
         
         # init dudl
         dudl_frames = {}
         
-        for m in model.items:
+        for m in models.items:
             dudl_frames[m.name] = []
         
         # start processing trajectory
@@ -114,18 +115,18 @@ class CGDeriv:
         TIMER.reset()
         last = TIMER.last
         
-        for reader in TrajBatch(self.args.traj, natoms = self.args.top.natoms, cut = self.plist.cut):
-
-            if reader.nread == 1:
-                self.plist.setup_bins(reader.traj)
-
-            TIMER.click('io')
-            TIMER.click('pair', self.plist.build(reader.traj))
-            TIMER.click('bond', self.blist.build(reader.traj))
-            TIMER.click('eval', model.call('eval_deriv_u'))
+        for reader in TrajBatch(self.args.traj, natoms = self.args.top.n_atom, cut = self.plist.cut):
             
-            for m in model.items:
-                dudl_frames[m.name].append(m.dudl.copy())
+            if reader.nread == 1:
+                self.plist.setup_bins(reader.traj.box)
+            
+            TIMER.click('io')
+            TIMER.click('pair', self.plist.build(reader.traj.x))
+            #TIMER.click('bond', blist.build(reader.traj.box, reader.traj.x))
+            TIMER.click('model', models.compute_rem())
+            
+            for m in models.items:
+                dudl_frames[m.name].append(m.dU.copy())
 
         # end of processing trajectories
 
@@ -135,7 +136,7 @@ class CGDeriv:
         
         dudl_mean, dudl_var = {}, {}
         
-        for m in model.items:
+        for m in models.items:
             if len(dudl_frames[m.name]) == 0:
                 continue
             
@@ -149,7 +150,7 @@ class CGDeriv:
             return dudl_mean, dudl_var
         else:
             Checkpoint(self.args.save).update({
-                'models'    : model.serialize(),
+                #'models'    : model.serialize(),
                 'dudl_mean' : dudl_mean,
                 'dudl_var'  : dudl_var
             }).dump()

@@ -7,7 +7,7 @@ def test(datafile):
         top     = datafile("unary_lj_fluid.top"),
         traj    = datafile("power_fluid.lammpstrj"),
         cut     = 10.0,
-        pair    = ['1,1,min=3.0,resolution=0.25'],
+        pair    = ['model=BSpline type=1,1 min=3.0 resolution=0.25'],
         verbose = 0,
         save    = 'return'
     )

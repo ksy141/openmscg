@@ -1,20 +1,15 @@
 #include <Python.h>
+
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
 #define PYAPI(api) static PyObject* api(PyObject* self, PyObject* args)
+#define NP_DATA(p) ((Py_None==(PyObject *)p)?0:(double*)PyArray_DATA(p))
 
 template<class T>
 class PyModel
 {
 public:
-    
-    PYAPI(Test)
-    {
-        int value;
-        PyArg_ParseTuple(args, "i", &value);
-        printf("Testing Value = %d\n", value);
-        Py_RETURN_NONE;
-    }
     
     PYAPI(Destroy)
     {
@@ -23,34 +18,30 @@ public:
         delete p;
         Py_RETURN_NONE;
     }
-        
-    PYAPI(ComputeDFDL)
+    
+    PYAPI(ComputeFM)
     {
         T *p;
         PyArg_ParseTuple(args, "L", &p);
-        p->compute_dfdl();
+        p->compute_fm();
         Py_RETURN_NONE;
     }
     
-    
-    PYAPI(ComputeDUDL)
+    PYAPI(ComputeREM)
     {
         T *p;
         PyArg_ParseTuple(args, "L", &p);
-        p->compute_dudl();
-
-        PyObject *dudl = PyList_New(p->nparam);
-        for(int i=0; i<p->nparam; i++) PyList_SetItem(dudl, i, Py_BuildValue("f", p->dudl[i]));
-        return dudl;
+        p->compute_rem();
+        Py_RETURN_NONE;
     }
     
-    PYAPI(ComputeEnergyTable)
+    PYAPI(GetTable)
     {
         T *p;
         PyArrayObject *pars, *in, *out;
         
         PyArg_ParseTuple(args, "LOOO", &p, &pars, &in, &out);
-        p->compute_etable((double*)(pars->data), (double*)(in->data), (double*)(out->data), in->dimensions[0]);
+        p->get_table((double*)PyArray_DATA(pars), (double*)PyArray_DATA(in), (double*)PyArray_DATA(out), PyArray_DIMS(in)[0]);
         Py_RETURN_NONE;
     }
 };
@@ -59,11 +50,10 @@ public:
 
 #define BEGIN_PY_API(class) \
 static PyMethodDef cModPyMethods[] = {\
-    {"test", PyModel<class>::Test, METH_VARARGS, "Just for test."}, \
     {"destroy", PyModel<class>::Destroy, METH_VARARGS, "Destroy model."}, \
-    {"compute_dfdl", PyModel<class>::ComputeDFDL, METH_VARARGS, "Compute dF/dLambda."}, \
-    {"compute_dudl", PyModel<class>::ComputeDUDL, METH_VARARGS, "Compute dU/dLambda."}, \
-    {"compute_etable", PyModel<class>::ComputeEnergyTable, METH_VARARGS, "Compute energy table."},
+    {"compute_rem", PyModel<class>::ComputeREM, METH_VARARGS, "Compute dF/dLambda for REM."}, \
+    {"compute_fm", PyModel<class>::ComputeFM, METH_VARARGS, "Compute dU/dLambda for FM."}, \
+    {"get_table", PyModel<class>::GetTable, METH_VARARGS, "Return the model table."},
 
 #define END_PY_API() {NULL, NULL}};
 

@@ -164,6 +164,12 @@ class PairList:
         '''
         return lib.build(self._h, x)
     
+    def update_types(self, t:np.ndarray):
+        if t.dtype != np.int32:
+            t = t.astype(np.int32)
+        
+        lib.update_types(self._h, t)
+        
     @classmethod
     def get_tid(cls, i:int, j:int):
         return lib.get_tid(i, j)
