@@ -13,7 +13,6 @@ from ..bondlist import BondList
 import numpy as np
 import argparse, importlib
 
-
 class Model:
     styles = {
         'pair': 2,
@@ -55,8 +54,10 @@ class Model:
                 self.tid = getattr(top, 'names_' + self.style).index(self.types[0])
                 self.name = types[0]
         
+        self.name = self.style.capitalize() + '_' + self.name
         self.dF = np.zeros(shape=(top.n_atom * 3, self.nparam))
         self.dU = np.zeros(self.nparam)
+        self.params = np.zeros(self.nparam)
 
 class ModelGroup:
     
@@ -77,6 +78,15 @@ class ModelGroup:
     def compute_rem(self):
         for model in self.items:
             model.compute_rem()
+    
+    def serialize(self):
+        serialized = {}
+        
+        for model in self.items:
+            serialized[model.name] = {name:getattr(model, name) for name in ['style', 'type', 'params'] + model.serialized_names}
+        
+        return serialized
+                
 
 models = ModelGroup()
 

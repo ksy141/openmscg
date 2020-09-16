@@ -8,10 +8,12 @@ class PairBSpline(Model):
         self.min = 2.0
         self.order = 6
         self.resolution = 0.1
+        self.serialized_names = ['min', 'max', 'resolution', 'order']
         super().__init__(**kwargs)
         
     def setup(self, top, pairlist):
-        self.nparam = lib.get_npars(self.min, pairlist.cut, self.resolution, self.order)
+        self.max = pairlist.cut
+        self.nparam = lib.get_npars(self.min, self.max, self.resolution, self.order)
         super().setup(top, pairlist)
         self._h = lib.create(self.min, pairlist.cut, self.resolution, self.order, self.tid, pairlist._h, self.dF, self.dU)
         lib.setup_cache(self._h, self.resolution * 0.01)        
@@ -23,9 +25,7 @@ class PairBSpline(Model):
     def compute_rem(self):
         self.dU.fill(0)
         lib.compute_rem(self._h)
-        print(self.dU)
     
     @classmethod
-    def compute_table(xmin, dx, n, params):
+    def compute_table(**kwargs):
         pass
-        

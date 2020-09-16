@@ -2,7 +2,7 @@
 #include "pair_list.h"
 #include "defs.h"
 
-ModelPairBSpline::ModelPairBSpline(double xmin, double xmax, double resolution, int order, int tid, void *list, double *dF, double *dU) : BSpline(order, resolution, xmin, xmax, 1), Model(tid, list, dF, dU)
+ModelPairBSpline::ModelPairBSpline(double xmin, double xmax, double resolution, int order, int tid, void *list, double *dF, double *dU) : BSpline(order, resolution, xmin, xmax), Model(tid, list, dF, dU)
 {
     nparam = ncoeff;
 }
@@ -29,7 +29,8 @@ void ModelPairBSpline::compute_fm()
         int nn;
         
         eval_coeffs(dr[p], &b, &istart, &nn);
-
+        double inv = -1.0 / dr[p];
+        
         int atom_i = ilist[p];
         int atom_j = jlist[p];
 
@@ -40,7 +41,7 @@ void ModelPairBSpline::compute_fm()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = b[c] * dx[p];
+            double Bi = b[c] * dx[p] * inv;
             int pos = istart + c;
             coeff_i[pos] += Bi;
             coeff_j[pos] -= Bi;
@@ -51,7 +52,7 @@ void ModelPairBSpline::compute_fm()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = b[c] * dy[p];
+            double Bi = b[c] * dy[p] * inv;
             int pos = istart + c;
             coeff_i[pos] += Bi;
             coeff_j[pos] -= Bi;
@@ -62,7 +63,7 @@ void ModelPairBSpline::compute_fm()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = b[c] * dz[p];
+            double Bi = b[c] * dz[p] * inv;
             int pos = istart + c;
             coeff_i[pos] += Bi;
             coeff_j[pos] -= Bi;
@@ -77,7 +78,7 @@ void ModelPairBSpline::compute_rem()
     PairList *pair = (PairList*)list;
     int* tlist = pair->tlist;
     float* dr = pair->drlist;
-        
+    
     for(int p=0; p<pair->npairs; p++) if(tlist[p]==tid)
     {
         double *b;
@@ -85,7 +86,7 @@ void ModelPairBSpline::compute_rem()
         int nn;
         
         eval_coeffs(dr[p], &b, &istart, &nn);
-        for(int c=0; c<nn; c++) dU[istart+c] = b[c];
+        for(int c=0; c<nn; c++) dU[istart+c] += b[c];
     }
 }
 

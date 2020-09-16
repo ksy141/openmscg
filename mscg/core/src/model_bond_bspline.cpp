@@ -2,7 +2,7 @@
 #include "bond_list.h"
 #include "defs.h"
 
-ModelBondBSpline::ModelBondBSpline(double xmin, double xmax, double resolution, int order, int tid, void *list, double *dF, double *dU) : BSpline(order, resolution, xmin, xmax, 1), Model(tid, list, dF, dU)
+ModelBondBSpline::ModelBondBSpline(double xmin, double xmax, double resolution, int order, int tid, void *list, double *dF, double *dU) : BSpline(order, resolution, xmin, xmax), Model(tid, list, dF, dU)
 {
     nparam = ncoeff;
 }
@@ -28,7 +28,8 @@ void ModelBondBSpline::compute_fm()
         int nn;
 
         eval_coeffs(dr[i], &b, &istart, &nn);
-
+        double inv = -1.0 / dr[i];
+        
         int ia = atoms[i][0], ib = atoms[i][1];
         double *coeff_i, *coeff_j;
 
@@ -37,7 +38,7 @@ void ModelBondBSpline::compute_fm()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = b[c] * dx[i];
+            double Bi = b[c] * dx[i] * inv;
             int pos = istart + c;
             coeff_i[pos] += Bi;
             coeff_j[pos] -= Bi;
@@ -48,7 +49,7 @@ void ModelBondBSpline::compute_fm()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = b[c] * dy[i];
+            double Bi = b[c] * dy[i] * inv;
             int pos = istart + c;
             coeff_i[pos] += Bi;
             coeff_j[pos] -= Bi;
@@ -59,7 +60,7 @@ void ModelBondBSpline::compute_fm()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = b[c] * dz[i];
+            double Bi = b[c] * dz[i] * inv;
             int pos = istart + c;
             coeff_i[pos] += Bi;
             coeff_j[pos] -= Bi;

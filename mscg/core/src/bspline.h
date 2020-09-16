@@ -8,7 +8,7 @@ class BSpline
 {
   public:
 
-    BSpline(int, double, double, double, int scale_flag = 0);
+    BSpline(int, double, double, double);
     virtual ~BSpline();
 
     gsl_bspline_workspace *bw;
@@ -17,7 +17,7 @@ class BSpline
     gsl_vector *B0, *B1, *D0, *D1;
     size_t start0, start1, end0, end1;
     
-    int order, nbreak, ncoeff, scale_flag;
+    int order, nbreak, ncoeff;
     double xmin, xmax, ddx, resolution;
 
     double *table_bvalue;

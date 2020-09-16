@@ -1,21 +1,19 @@
 #include "bspline.h"
 
-BSpline::BSpline(int order, double resolution, double xmin, double xmax, int scale_flag)
+BSpline::BSpline(int order, double resolution, double xmin, double xmax)
 {
-    //printf("BSpline %d, %lf, %lf, %lf\n", order, resolution, xmin, xmax);
-    
     this->order = order;
     this->resolution = resolution;
     this->xmin = xmin;
     this->xmax = xmax;
-    this->scale_flag = scale_flag;
+    
     nbreak = get_nbreak(xmin, xmax, resolution);
-
+    
     bw = gsl_bspline_alloc(order, nbreak);
     gsl_bspline_knots_uniform(xmin, xmax, bw);
 
     ncoeff = order + nbreak - 2;
-    B =  gsl_vector_calloc(order);
+    B = gsl_vector_calloc(order);
     
     table_bvalue = 0;
     table_istart = 0;
@@ -83,7 +81,6 @@ void BSpline::setup_cache(double dx_factor)
         table_istart[i] = istart;
         table_nn[i] = nn;
         
-        if(scale_flag == 1) gsl_vector_scale(B, -1.0/dx);
         for(int j=0; j<nn; j++) table_bvalue[i*order+j] = B->data[j];
     }
 }
@@ -95,7 +92,7 @@ void BSpline::eval_coeffs(double x, double **b, size_t *istart, int *nn)
         gsl_vector_memcpy(B, D0);
         gsl_vector_scale(B, (x-xmin));
         gsl_vector_add(B, B0);
-        if(scale_flag) gsl_vector_scale(B, -1.0/x);
+        
         (*istart) = start0;
         (*nn) = order;
         (*b) = B->data;
@@ -105,7 +102,7 @@ void BSpline::eval_coeffs(double x, double **b, size_t *istart, int *nn)
         gsl_vector_memcpy(B, D1);
         gsl_vector_scale(B, (x-xmax));
         gsl_vector_add(B, B1);
-        if(scale_flag) gsl_vector_scale(B, -1.0/x);
+        
         (*istart) = start1;
         (*nn) = order;
         (*b) = B->data;
@@ -121,7 +118,6 @@ void BSpline::eval_coeffs(double x, double **b, size_t *istart, int *nn)
     {
         size_t iend;
         gsl_bspline_eval_nonzero(x, B, istart, &iend, bw);        
-        if(scale_flag==1) gsl_vector_scale(B, -1.0/x);
         
         (*nn) = iend - (*istart) + 1;
         (*b) = B->data;
@@ -146,7 +142,6 @@ void BSpline::eval(double *input, double *output, double xmin, double dx, int n)
         
         gsl_vector_set_zero(Bs);
         for(int c=0; c<nn; c++) Bs->data[istart+c] = b[c];
-        if(scale_flag) gsl_vector_scale(Bs, -x);
         gsl_blas_ddot(Bs, Cs, output++);
     }
 
@@ -172,7 +167,6 @@ void BSpline::eval(double *knots, double *in, double *out, int size)
         
         gsl_vector_set_zero(Bs);
         for(int c=0; c<nn; c++) Bs->data[istart+c] = b[c];
-        if(scale_flag) gsl_vector_scale(Bs, -x);
         gsl_blas_ddot(Bs, Cs, out++);
     }
 

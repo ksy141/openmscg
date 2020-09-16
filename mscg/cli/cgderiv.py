@@ -119,7 +119,7 @@ class CGDeriv:
             
             if reader.nread == 1:
                 self.plist.setup_bins(reader.traj.box)
-            
+                        
             TIMER.click('io')
             TIMER.click('pair', self.plist.build(reader.traj.x))
             #TIMER.click('bond', blist.build(reader.traj.box, reader.traj.x))
@@ -129,31 +129,27 @@ class CGDeriv:
                 dudl_frames[m.name].append(m.dU.copy())
 
         # end of processing trajectories
-
-        screen.info([""] + TIMER.report(False) + [""])
-
-        # end
         
         dudl_mean, dudl_var = {}, {}
         
         for m in models.items:
-            if len(dudl_frames[m.name]) == 0:
-                continue
-            
             dudls = np.stack(dudl_frames[m.name], axis=0);
             dudl_mean[m.name] = dudls.mean(axis=0)
             dudl_var[m.name] = dudls.var(axis=0)
-            
+        
         # collect results
-
+        
         if self.args.save == 'return':
             return dudl_mean, dudl_var
         else:
             Checkpoint(self.args.save).update({
-                #'models'    : model.serialize(),
+                'models'    : models.serialize(),
                 'dudl_mean' : dudl_mean,
                 'dudl_var'  : dudl_var
             }).dump()
+        
+        # end
+        screen.info([""] + TIMER.report(False) + [""])
             
             
         

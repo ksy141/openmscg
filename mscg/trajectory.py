@@ -93,7 +93,9 @@ class Trajectory:
         :return: a `Trajectory` object
         :rtype: Trajectory()
         """
-                
+        
+        self._h = None
+               
         for name in type(self)._data_names:
             setattr(self, "_" + name, None)
         
