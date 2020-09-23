@@ -41,6 +41,7 @@ public:
         PyArrayObject *pars, *in, *out;
         
         PyArg_ParseTuple(args, "LOOO", &p, &pars, &in, &out);
+        //printf("ABC %d %d\n", PyArray_DIMS(pars)[0], p->ncoeff);
         p->get_table((double*)PyArray_DATA(pars), (double*)PyArray_DATA(in), (double*)PyArray_DATA(out), PyArray_DIMS(in)[0]);
         Py_RETURN_NONE;
     }

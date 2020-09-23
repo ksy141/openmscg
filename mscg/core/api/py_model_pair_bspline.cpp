@@ -23,8 +23,6 @@ PYAPI(create)
     return Py_BuildValue("L", p);
 }
 
-
-
 PYAPI(setup_cache)
 {
     ModelPairBSpline *p;
@@ -41,3 +39,6 @@ BEGIN_PY_API(ModelPairBSpline)
 END_PY_API()
 
 DECLARE_PY_MODULE(cxx_model_pair_bspline)
+
+    
+    

@@ -26,6 +26,8 @@ class PairBSpline(Model):
         self.dU.fill(0)
         lib.compute_rem(self._h)
     
-    @classmethod
-    def compute_table(**kwargs):
-        pass
+    def compute_table(self, x):
+        vals = np.zeros(x.shape[0])
+        lib.get_table(self._h, self.params, x, vals)
+        return vals
+        

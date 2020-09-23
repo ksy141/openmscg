@@ -71,6 +71,16 @@ class ModelGroup:
         self.items.append(other)
         return self
     
+    def __getitem__(self, key):
+        if type(key)==int:
+            return self.items[key]
+        elif type(key)==str:
+            for m in self.items:
+                if m.name == key:
+                    return m
+        
+        return None
+    
     def compute_fm(self):
         for model in self.items:
             model.compute_fm()
@@ -83,7 +93,7 @@ class ModelGroup:
         serialized = {}
         
         for model in self.items:
-            serialized[model.name] = {name:getattr(model, name) for name in ['style', 'type', 'params'] + model.serialized_names}
+            serialized[model.name] = {name:getattr(model, name) for name in ['style', 'type', 'params', 'nparam'] + model.serialized_names}
         
         return serialized
                 

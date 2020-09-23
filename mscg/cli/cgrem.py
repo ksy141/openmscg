@@ -31,19 +31,18 @@ Syntax of running ``cgrem`` command ::
 
 from mscg import *
 from mscg.cli.cgderiv import CGDeriv
-from mscg.table import LammpsTable
+from mscg.table import Table
 
 import pickle, os, sys
 
 class OptimizerBuiltin:
-
+    
     def __init__(self, **kwargs):
-
+        
         self.chi = float(kwargs.get('chi', 0.05))
         self.t = float(kwargs.get('t', 298.15))
-        self.beta = 1.0 / (0.001985875 * self.t)
-
-
+        self.beta = 1.0 / (0.001985875 * self.t)        
+        
     def run(self, params, dudl_ref, dudl_mean, dudl_var):
 
         if dudl_mean is None:
@@ -52,21 +51,23 @@ class OptimizerBuiltin:
         for name, dudl_aa in dudl_ref.items():
             dudl_cg = dudl_mean[name].copy()
             dudl_var = dudl_var[name].copy()
-            dudl_var += (dudl_cg<1.0e6)
-
-            step = self.chi * (dudl_cg - dudl_aa) / (self.beta * (-dudl_var))
+            
+            step = self.chi * (dudl_cg - dudl_aa) / (self.beta * dudl_var)
             param_prev = params[name].copy()
-            params[name] = param_prev - step
-
+            params[name] = param_prev + step
+            
             screen.info("")
-            screen.info("<dU/dL>_aa: " + str(dudl_aa))
-            screen.info("<dU/dL>_cg: " + str(dudl_cg))
-            screen.info("Var(dU/dL): " + str(dudl_var))
-            screen.info("")
-
+            screen.info("Beta: " + str(self.beta))
+            screen.info("chi: " + str(self.chi))
+            
+            screen.info("\n=> %15s %15s %15s" % ("<dU/dL>_aa", "<dU/dL>_cg", "Var(dU/dL)_cg"))
             for i in range(params[name].shape[0]):
-                screen.info("=> %15.5e %15.5e %15.5e" % (step[i], param_prev[i], params[name][i]))
-
+                screen.info("=> %15.5e %15.5e %15.5e" % (dudl_aa[i], dudl_cg[i], dudl_var[i]))
+            
+            screen.info("\n=> %15s %15s %15s" % ("param_pre", "param_chg", "param_cur"))
+            for i in range(params[name].shape[0]):
+                screen.info("=> %15.5e %15.5e %15.5e" % (param_prev[i], step[i], params[name][i]))
+            
         return params
 
 
@@ -114,11 +115,12 @@ def main(*args, **kwargs):
     
     group = parser.add_argument_group('Required arguments')
     group.add_argument("--ref",  metavar='file', help="checkpoint file for reference model", required=True)
-    group.add_argument("--cgderiv-arg",  metavar='file', help="file for cgderiv arguments", required=True)
+    group.add_argument("--cgderiv-arg", metavar='file', help="file for cgderiv arguments", required=True)
     group.add_argument("--md",  metavar='file', type=str, help="file containing MD command", required=True)
         
     group = parser.add_argument_group('Optional arguments')
     group.add_argument("--chi", metavar='', type=float, default=1.0, help="Chi-value")
+    group.add_argument("--table", metavar='', type=str, default='', help="prefix of table names")
     group.add_argument("--maxiter", metavar='', type=int, default=20, help="maximum iterations")
     
     group.add_argument("--restart", metavar='file', default="restart", help="restart file")
@@ -148,12 +150,14 @@ def main(*args, **kwargs):
     screen.info("Read reference model ...")
     ref = pickle.load(open(args.ref, 'rb'))
     
-    for m in ref['models'].values():
-        if model.get(m['name']) is None:
-            screen.fatal("Reference model %s is not in targets." % (m['name']))
+    for name, m in ref['models'].items():
+        screen.info(" -> Model: " + name)
+        
+        if models[name] is None:
+            screen.fatal("Reference model [%s] is not in targets." % (name))
             
-        if m['nparam'] != model.get(m['name']).nparam:
-                screen.fatal("Incorrect number of parameters for reference model %s. (%d != %d)" % (m['name'], model.get(m['name']).nparam, m['nparam']))
+        if m['nparam'] != models[name].nparam:
+                screen.fatal("Incorrect number of parameters for reference model %s. (%d != %d)" % (name, models[name].nparam, m['nparam']))
     
     dudl_ref = ref['dudl_mean']
     
@@ -167,7 +171,7 @@ def main(*args, **kwargs):
         for row in rows:
             model_name = row[0]
             model_params = [float(_) for _ in row[4:]]
-            m = model.get(model_name)
+            m = models[model_name]
 
             if m is None:
                 screen.fatal("Model %s is not defined." % (model_name))
@@ -202,7 +206,7 @@ def main(*args, **kwargs):
         params   = {}
         dudl_mean, dudl_var = None, None
         
-        for m in model.items:
+        for m in models.items:
             if m.name not in targets:
                 screen.fatal("Parameters are not initialized for model %s" % (model_name))
         
@@ -218,8 +222,10 @@ def main(*args, **kwargs):
         Checkpoint(args.restart + ".bak").update({'dudl_ref': dudl_ref, 'iterations': iters}).dump()
         params = args.optimizer.run(params.copy(), dudl_ref, dudl_mean, dudl_var)
         
-        for m in model.items:
-            LammpsTable(m.set_params(params[m.name])).dump(
+        for m in models.items:
+            m.params = np.array(params[m.name])
+            
+            Table(m, force=False, prefix=args.table).dump_lammps(
                 xmin = targets[m.name]['min'],
                 xmax = targets[m.name]['max'],
                 xinc = targets[m.name]['inc']
