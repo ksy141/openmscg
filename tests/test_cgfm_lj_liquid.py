@@ -9,7 +9,7 @@ def test_1s(datafile):
         top     = datafile("unary_lj_fluid.top"),
         traj    = datafile("unary_lj_fluid.lammpstrj,frames=20"),
         cut     = 2.50,
-        pair    = ['model=BSpline type=1,1 min=0.9 resolution=0.1'],
+        pair    = ['model=BSpline,type=1:1,min=0.9,resolution=0.1'],
         verbose = 0,
         save    = 'return'
     )
@@ -34,7 +34,7 @@ def test_96(datafile):
         top     = datafile("96_lj_liquid.top"),
         traj    = datafile("96_lj_liquid.lammpstrj,frames=20"),
         cut     = 2.50,
-        pair    = ['model=BSpline type=1,1 min=0.75 resolution=0.1'],
+        pair    = ['model=BSpline,type=1:1,min=0.75,resolution=0.1'],
         verbose = 0,
         save    = 'return'
     )
@@ -70,9 +70,9 @@ def test_2s(datafile):
         top     = datafile("binary_lj_fluid.top"),
         traj    = datafile("binary_lj_fluid.lammpstrj,frames=1000"),
         cut     = 8.50,
-        pair    = ['model=BSpline type=1,1 min=2.9 resolution=0.1', 
-                   'model=BSpline type=1,2 min=2.7 resolution=0.1', 
-                   'model=BSpline type=2,2 min=2.6 resolution=0.1'],
+        pair    = ['model=BSpline,type=1:1,min=2.9,resolution=0.1', 
+                   'model=BSpline,type=1:2,min=2.7,resolution=0.1', 
+                   'model=BSpline,type=2:2,min=2.6,resolution=0.1'],
         verbose = 0,
         save    = 'return'
     )

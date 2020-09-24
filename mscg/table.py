@@ -15,7 +15,12 @@ class Table:
         self.n = self.v.shape[0]
         
         if(self.force):
-            raise Error('Not implemented yet.')
+            self.f = self.v
+            u = np.zeros(self.n)
+            u[:-1] = 0.5 * (self.f[:-1] + self.f[1:])
+            u = np.cumsum(u[::-1])[::-1]
+            self.u = u * xinc
+            
         else:
             self.u = self.v
             f = np.zeros(self.n+1)

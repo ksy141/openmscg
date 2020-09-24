@@ -7,7 +7,7 @@ def test_bond(datafile):
         top     = datafile("4_site.top"),
         traj    = datafile("4_site_d_non_periodic.lammpstrj"),
         cut     = 15.0,
-        bond    = ["model=BSpline type=1,1 min=2.8 max=3.2 resolution=0.05"],
+        bond    = ["model=BSpline,type=1:1,min=2.8,max=3.2,resolution=0.05"],
         verbose = 0,
         save    = 'return'
     )

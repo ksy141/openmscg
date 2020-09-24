@@ -8,7 +8,7 @@ def test_water(datafile):
         traj    = datafile("rem_water/reference.lammpstrj"),
         names   = 'SL',
         cut     = 7.0,
-        pair    = ["model=BSpline type=SL,SL min=2.4 resolution=0.2 order=4"],
+        pair    = ["model=BSpline,type=SL:SL,min=2.4,resolution=0.2,order=4"],
         save    = datafile("rem_water/model_ref"),
         verbose = 0
     )
@@ -21,7 +21,7 @@ def test_water(datafile):
     args = """
 --cut 7.0
 --names SL
---pair model=BSpline type=SL,SL min=2.4 resolution=0.2 order=4
+--pair model=BSpline,type=SL:SL,min=2.4,resolution=0.2,order=4
 --save return
 --verbose 0
 """

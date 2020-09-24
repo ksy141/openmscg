@@ -16,8 +16,8 @@ In OpenMSCG, the following units are used:
 * mass = grams/mole
 
 
-Topology Files
---------------
+Topology
+--------
 
 A topology file defines a group of particles (atoms or CG sites) and their bonding information for the simulated system. Different MD software packages have their own file format to define the topologies. For examples:
 
@@ -50,8 +50,8 @@ Many `CLI commands <commands.html>`_ need to read a topology file for processing
 
 
 
-Trajectory Files
-----------------
+Trajectory
+----------
 
 MD trajectories are collection of particle coordindates (also called as "frames") dumped from simulations. There are also many formats of trajectories from different MD software packages, such as `XYZ <https://en.wikipedia.org/wiki/XYZ_file_format>`_, `DCD <https://www.ks.uiuc.edu/Research/vmd/plugins/molfile/dcdplugin.html>`_, `TRR <http://manual.gromacs.org/archive/5.0.3/online/xtc.html>`_ ...
 
@@ -74,5 +74,26 @@ The following fields are used for processing frames from a trajectory in a loop:
     --traj md.trr,10,100,50
 
 In this example, the file ``md.trr`` will be processed, while the first 10 frames will be skipped, then read a frame for every 100 frames (read one frame and then skip then next 99 frames), and the process loop will end after reading in a total of 50 frames.
+
+
+Model and Table
+---------------
+
+In `molecular modelings <https://en.wikipedia.org/wiki/Force_field_(chemistry)>`_, models are mathematical functions of geometrical variables, i.e., distances or angles, to describe the forces and potential energies of a molecular system. One of the important steps in MSCG is to obtain the optimized parameters for the functions. Four styles of interactions can be specified as runtime options for either FM or REM methods: **--pair, --bond, --angle, --dihedral**.
+
+CLI Option for Model
+""""""""""""""""""""
+
+For example, to fit model parameters for a pair-wise interaction between atom types A and B, one can specify the following option::
+
+    --pair model=BSpline,type=A:B,min=3.0,max=8.0,resolution=0.2
+
+The rumtime argument is followed by multiple ``key-value`` attributes separated by commas. Two attributes are mandatory:
+
+* **model**: define the functional form. Currently only `BSpline` is allowed, but more functional types will be supported in future.
+* **type**: a type name that used to specify the targeted interaction type to be optimized.
+
+Other attributes are optional and depend on the functional form. In the example above, there are three attributes to define a BSpline: **min, max and resolution**.
+
 
 

@@ -10,7 +10,7 @@ cgfm
 
 * |cli-opt-traj|
 
-* Users can use options ``--pair``, ``--bond``, ``--angle`` to add force tables to be computed. These options are followed by multi-field values, which comes first with a number of atom types defining the type of forces and then several optional arguments defining the B-Spline knots as described above.
+* |cli-opt-model|
 
 * For more details about the options ``--ucg`` and ``--ucg-wf``, please read the section for `UCG Method`_.
 

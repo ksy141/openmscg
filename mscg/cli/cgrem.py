@@ -3,7 +3,7 @@
 Description
 -----------
 
-*To be added*
+The ``cgrem`` command the main engine that drives the REM approach. It applies the iterative approch to minimize the differences of ensemble averages of between derivatives from the reference model and trial models. Therefore, this command calls the ``cgderiv`` command and an MD engine (currently only LAMMPS is supported) in loops.
 
 Usage
 -----
@@ -21,11 +21,11 @@ Syntax of running ``cgrem`` command ::
 
     Optional arguments:
       --chi                 Chi-value (default: 1.0)
+      --table               prefix of table names (default: )
       --maxiter             maximum iterations (default: 20)
       --restart file        restart file (default: restart)
       --models file         target models (default: model.txt)
-      --optimizer name,args
-                            Define optimizer (default: [])
+      --optimizer name,args Define optimizer (default: [])
 
 '''
 
@@ -73,7 +73,7 @@ class OptimizerBuiltin:
 
 class OptimizerAction(argparse.Action):
     
-    help = "Define optimizer"
+    help = "Name and parameters for the optimizer"
     
     def __call__(self, parser, namespace, values, option_string=None):
         
@@ -119,13 +119,12 @@ def main(*args, **kwargs):
     group.add_argument("--md",  metavar='file', type=str, help="file containing MD command", required=True)
         
     group = parser.add_argument_group('Optional arguments')
-    group.add_argument("--chi", metavar='', type=float, default=1.0, help="Chi-value")
     group.add_argument("--table", metavar='', type=str, default='', help="prefix of table names")
     group.add_argument("--maxiter", metavar='', type=int, default=20, help="maximum iterations")
     
     group.add_argument("--restart", metavar='file', default="restart", help="restart file")
     group.add_argument("--models", metavar='file', default="model.txt", help="target models")
-    group.add_argument("--optimizer", metavar='name,args', action=OptimizerAction, help=OptimizerAction.help, default=[])
+    group.add_argument("--optimizer", metavar='name,[key=value]', action=OptimizerAction, help=OptimizerAction.help, default=[])
     
     # parse args
     

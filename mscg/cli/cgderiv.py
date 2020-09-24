@@ -3,17 +3,19 @@
 Description
 -----------
 
-*To be added*
+The ``cgderiv`` command is used to calculate the derivates of potential energies on model parameters (*Lambdas*) from give trajectories, as well as corresponding variances. This is the key step for the relative-entroy method (REM), because REM is aimed to minimize the differences the means of such derivates between the reference trajectory (usually from the all-atom simulations) and trial trajectory from the models.
 
 Usage
 -----
 
 Syntax of running ``cgderiv`` command ::
 
+    usage: cgderiv.py [-h] [-v L] [--save] --top file [--names]
+                      [--traj file[,args]] [--cut] [--pair [key=value]]
+
     General arguments:
       -h, --help          show this help message and exit
       -v L, --verbose L   screen verbose level (default: 0)
-      --save              file name for model output (default: model)
 
     Required arguments:
       --top file          topology file (default: None)
@@ -26,8 +28,9 @@ Syntax of running ``cgderiv`` command ::
                           others define the skip, every and frames (default args:
                           file,skip=0,every=1,frames=0) (default: [])
       --cut               cut-off for pair interactions (default: 10.0)
-      --pair types,args   define new pair model with format:
-                          style,type1,style,type2,kwargs (default: [])
+      --pair [key=value]  add a model declaration for pair-style interactions.
+                          (default: [])
+      --save              file name for model output (default: model)
 
 '''
 
@@ -49,9 +52,7 @@ class CGDeriv:
         group = parser.add_argument_group('General arguments')
         group.add_argument("-h", "--help", action="help", help="show this help message and exit")
         group.add_argument("-v", "--verbose", metavar='L', type=int, default=0, help="screen verbose level")
-
-        group.add_argument("--save",  metavar='', type=str, default="model", help="file name for model output")
-
+        
         group = parser.add_argument_group('Required arguments')
         group.add_argument("--top",  metavar='file', action=TopAction, help="topology file", required=True)
 
@@ -61,7 +62,9 @@ class CGDeriv:
 
         group.add_argument("--cut", metavar='', type=float, default=10.0, help="cut-off for pair interactions")
 
-        group.add_argument("--pair",  metavar='', action=ModelArgAction, nargs='+', default=[])
+        group.add_argument("--pair",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('pair'), default=[])
+        
+        group.add_argument("--save",  metavar='', type=str, default="model", help="file name for model output")
     
         if len(args)>0 or len(kwargs)>0:
             args = parser.parse_inline_args(*args, **kwargs)
@@ -83,14 +86,6 @@ class CGDeriv:
         screen.info("Build pair and bonding list-based algorithm ...")
         plist = PairList(cut = args.cut)
         plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
-        
-        """
-        plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
-        blist = BondList(
-            args.top.types_bond, args.top.bond_atoms, 
-            args.top.types_angle, args.top.angle_atoms, 
-            args.top.types_dihedral, args.top.dihedral_atoms)
-        """
         
         # setup models
         

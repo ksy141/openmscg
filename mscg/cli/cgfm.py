@@ -14,10 +14,11 @@ Usage
 
 Syntax of running ``cgib`` command ::
 
-    usage: cgfm [-h] [-v L] --top file [--names] [--traj file[,args]] [--cut]
-                [--save] [--pair types,args] [--bond types,args]
-                [--angle types,args]
-    
+    usage: cgfm.py [-h] [-v L] --top file [--names] [--traj file[,args]] [--cut]
+                   [--save] [--pair [key=value]] [--bond [key=value]]
+                   [--angle [key=value]] [--ucg [key=value]]
+                   [--ucg-wf [key=value]]
+
     General arguments:
       -h, --help            show this help message and exit
       -v L, --verbose L     screen verbose level (default: 0)
@@ -35,12 +36,11 @@ Syntax of running ``cgib`` command ::
                             [])
       --cut                 cut-off for pair interactions (default: 10.0)
       --save                file name for matrix output (default: matrix)
-      --pair types,args     define new pair table with format: type1,type2,args:
-                            min,max,resolution,order (default: [])
-      --bond types,args     define new bond table with format: type1,type2,args:
-                            min,max,resolution,order (default: [])
-      --angle types,args    define new angle table with format:
-                            type1,type2,type3,args: min,max,resolution,order
+      --pair [key=value]    add a model declaration for pair-style interactions.
+                            (default: [])
+      --bond [key=value]    add a model declaration for bond-style interactions.
+                            (default: [])
+      --angle [key=value]   add a model declaration for angle-style interactions.
                             (default: [])
       --ucg [key=value]     settings for UCG modeling (default: None)
       --ucg-wf [key=value]  define new state-function for UCG (default: [])
@@ -48,64 +48,6 @@ Syntax of running ``cgib`` command ::
 '''
 
 from mscg import *
-
-'''
-class TableCreator:
-    def __init__(self, n, style, args):
-        self.ntype = n
-        self.style = style
-        
-        segs = args.split(",")
-        
-        if len(segs) < self.ntype:
-            raise Exception('incorrect number of fields for option --' + self.style + ' ' + args)
-        
-        self.types = segs[:n]
-        self.name = "_".join(self.types)
-        
-        self.kwargs = {}
-        
-        for i in range(n, len(segs)):
-            w = segs[i].split('=')
-            if w[0] in ["min", "resolution"]:
-                self.kwargs[w[0]] = float(w[1])
-            elif w[0] == "max":
-                if self.style != "pair":
-                    self.kwargs[w[0]] = float(w[1])
-            elif w[0] == "order":
-                self.kwargs[w[0]] = int(w[1])
-            else:
-                raise Exception('incorrect format of value for option --' + self.style + ' ' + segs[i])
-    
-    def create(self, top, vlist):
-        screen.info("Add %s coefficients table: %s" % (self.style, self.name))
-        
-        get_type = getattr(top, "get_" + self.style + "_type")
-        args = (vlist, self.name, get_type(*(self.types)))
-        
-        table_spline = globals()["Table" + self.style.capitalize() + "BSpline"]
-        table_spline(*args, **(self.kwargs)).setup_cache()
-
-
-
-def BuildTableAction(n, arg_name):
-    class TableAction(argparse.Action):
-        nbody = n
-        name = arg_name
-        
-        def __call__(self, parser, namespace, values, option_string=None):
-            
-            getattr(namespace, self.dest).append(TableCreator(TableAction.nbody, TableAction.name, values))
-            return
-        
-        def help():
-            msg = "define new " + TableAction.name + " table with format: "
-            msg += ",".join(["type" + str(i+1) for i in range(TableAction.nbody)]) 
-            msg += ",args: min,max,resolution,order"
-            return msg
-            
-    return TableAction
-'''
     
 def main(*args, **kwargs):
     
@@ -131,9 +73,9 @@ def main(*args, **kwargs):
     group.add_argument("--cut", metavar='', type=float, default=10.0, help="cut-off for pair interactions")
     group.add_argument("--save",  metavar='', type=str, default="matrix", help="file name for matrix output")
     
-    group.add_argument("--pair",  metavar='', action=ModelArgAction, nargs='+', default=[])
-    group.add_argument("--bond",  metavar='', action=ModelArgAction, nargs='+', default=[])
-    group.add_argument("--angle", metavar='', action=ModelArgAction, nargs='+', default=[])
+    group.add_argument("--pair",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('pair'), default=[])
+    group.add_argument("--bond",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('bond'), default=[])
+    group.add_argument("--angle", metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('angle'), default=[])
         
     group.add_argument("--ucg", metavar='[key=value]', action=UCGArgAction, help=UCGArgAction.help(), default=None)
     group.add_argument("--ucg-wf", metavar='[key=value]', action=WFArgAction, help=WFArgAction.help(), default=[])

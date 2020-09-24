@@ -8,7 +8,7 @@ def test_1frame(datafile):
         traj    = datafile("water_512_cg.lammpstrj"),
         names   = 'SL',
         cut     = 7.0,
-        pair    = ["model=BSpline type=SL,SL min=2.4 resolution=0.2 order=4"],
+        pair    = ["model=BSpline,type=SL:SL,min=2.4,resolution=0.2,order=4"],
         verbose = 0,
         save    = 'return'
     )
