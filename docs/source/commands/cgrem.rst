@@ -31,7 +31,35 @@ For the first iteration of REM, the input model & tables will be generated using
 Customized Optimizer
 --------------------
 
-*To be added*
+A cumtomized optimizer can be developed by Python in a file under the working directory. In this Python code, a class named `Optimizer` is designed as in the example below::
+
+    class Optimizer:
+
+        def __init__(self, **kwargs):
+
+            # the code to parse the initialize the parameters.
+            pass
+
+        def run(self, params, dudl_ref, dudl_mean, dudl_var):
+            
+            # the code the give back the model parameters for the next iteration
+            pass
+
+* When using a customized optimizer provided in a Python file, i.e., **custom.py**, the file name should be the first segment of the option ``--optimizer``::
+    
+    --optmizer custom,key=value,...
+
+* The other segments in the option ``--optimizer`` should be in ``key=value`` format, which will be converted to a Python dictionary provided as the ``kwargs`` argument for the constructor of the optimizer class.
+
+* The customized optimizer class must have a member function named as ``run``, which accept four arguments, which are all Python dictionaries, in which the keys are the names of the targeted models and values are following:
+
+  1. **params**: an array of parameters for the models,
+  2. **dudl_ref**: an array of the <dU/dL> derivatives calculated from the reference trajectory.
+  3. **dudl_mean**: an array of the mean values of derivates calculated from the trial trajctories.
+  4. **dudl_var**: an array of the variances of derivatives from the trial trajectories.
+
+* The function should return a Python dictionary containing the new parameters for targeted models, in which the keys are names of the models and the values are model parameters in NumPy arrays.
+
 
 Examples
 --------

@@ -2,7 +2,11 @@
 Class modules in this sub-package serve as the potential or force functions
 to model the CG force-field. They can be used in all procedures developed
 in this software, such as the **force-matching** and **relative-entroy** 
-methods.
+methods. A model supported in MSCG usually provide three interfaces:
+
+1. Calculate the force loadings on the parameters, which is used in FM.
+2. Calculate the energy derivatives to the parameters, which is used in REM.
+3. Generate tables by a given set of parameters.
 
 """
 
@@ -14,6 +18,32 @@ import numpy as np
 import argparse, importlib
 
 class Model:
+    """
+    Base class for models.
+    
+    Attributes:
+        style: str
+            name of the style, `pair`, `bond`, `angle`, or `dihedral`
+        type : str
+            name of the targeted interaction type
+        tid : int
+            type ID of the targeted interaction defined in the topology referenced by `self.top`
+        top : mscg.Topology
+            associated topology object for this model
+        list : mscg.PairList or mscg.BondList
+            listing object for this model. If this model is for the `pair` style, this will be an object of `mscg.PairList`, otherwise `mscg.BondList`
+        nparam: int
+            number of parameters for this model
+        params: numpy.array
+            1-D array of parameters
+        dU: numpy.array
+            1-D array to store energy derivatives on parameters, with the shape of (1, self.nparam)
+        dF: numpy.array
+            2-D array to store force loadings of parameters on each dimension of atoms, with the shape of (self.top.n_atom x 3, self.nparam)
+        serialized_names: [str]
+            names of member attributes that are needed to stored during serialization
+    """
+    
     styles = {
         'pair': 2,
         'bond': 2,
@@ -22,6 +52,16 @@ class Model:
     }
     
     def __init__(self, **kwargs):
+        """
+        Constructor of the model class. This function is used to parse the input
+        argument ``**kwargs`` by extracting the values to set class attributes.
+        
+        The function will check the name and corresponding type is matched with
+        existing member attribute in this class. So, this function is usually called
+        at the end of the constructor in a child class, after declaring and setting
+        default values of the attributes in the child class.
+        """
+        
         self.type = ""
         
         for k,v in kwargs.items():
@@ -37,7 +77,13 @@ class Model:
         
         self.nparam = 0
     
-    def setup(self, top, itemlist):
+    def setup(self, top:Topology, itemlist):
+        """
+        Setup the model class, after receving the topology and listing objects. The model objects are constructed when parsing the runtime options, when the topology and listings may not be ready yet. Therefore, there need to be another function to setup the object after the topology and listing is created.
+        
+        One of the important role of this function is to allocate memory spaces (NumPy arrays) after receiving the number of atoms from the topology.        
+        """
+        
         self.top = top
         self.list = itemlist
         
@@ -58,6 +104,31 @@ class Model:
         self.dF = np.zeros(shape=(top.n_atom * 3, self.nparam))
         self.dU = np.zeros(self.nparam)
         self.params = np.zeros(self.nparam)
+    
+    def compute_fm(self):
+        """
+        Compute force loadings for the Force-Matching method, and stores the result in the attribute `self.dF`.
+        """
+        raise Error('Abstract method is not instantiated yet.')
+    
+    def compute_rem(self):
+        """
+        Compute energy derivatives for the Relative-Entropy method, and stores the result in the attribute `self.dU`.
+        """
+        raise Error('Abstract method is not instantiated yet.')
+    
+    def compute_table(self, x, force=True) -> np.array:
+        """
+        Compute tabulated values by given variable values.
+        
+        :param x: variable values for computing the table
+        :type x: numpy.array
+        
+        :return: energy or force values
+        :rtype: numpy.array
+        """
+        raise Error('Abstract method is not instantiated yet.')
+
 
 class ModelGroup:
     
