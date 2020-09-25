@@ -14,7 +14,7 @@ Conda package and environment management tool: `Anaconda` or `Miniconda`.
 **2. Install package from Anaconda Cloud**
 
 ```
-conda install openmscg
+conda install -c vothgroup openmscg
 ```
 
 **4. Test the installation**
