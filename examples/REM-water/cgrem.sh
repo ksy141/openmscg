@@ -1,0 +1,6 @@
+--ref model_ref.p
+--cgderiv-arg cgderiv.sh
+--optimizer builtin,chi=0.5,t=298.15
+--maxiter 500
+--md md.inp
+--verbose 1

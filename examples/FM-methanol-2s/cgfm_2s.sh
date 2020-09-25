@@ -1,0 +1,9 @@
+--top methanol_1728_2s.data
+--traj methanol_1728_2s.trr
+--cut 8.0
+--names CH3,OH
+--pair model=BSpline,type=CH3:CH3,min=2.9,resolution=0.1,order=6
+--pair model=BSpline,type=CH3:OH,min=2.8,resolution=0.1,order=6
+--pair model=BSpline,type=OH:OH,min=2.5,resolution=0.1,order=6
+--bond model=BSpline,type=CH3:OH,min=1.35,max=1.65,resolution=0.01,order=4
+--verbose 1

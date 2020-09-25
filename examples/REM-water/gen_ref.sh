@@ -1,0 +1,7 @@
+--top system.data
+--traj reference.lammpstrj
+--cut 7.0
+--names SL
+--pair model=BSpline,type=SL:SL,min=2.4,resolution=0.2,order=4
+--save model_ref
+--verbose 1

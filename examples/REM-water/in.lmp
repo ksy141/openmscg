@@ -1,0 +1,31 @@
+
+units          real
+atom_style     full
+
+pair_style     table linear 1400
+pair_modify    mix arithmetic
+
+neighbor       3.0 bin
+neigh_modify   every 1 delay 1 check yes
+special_bonds  lj 0.0 1.0 1.0
+
+read_data system.data
+pair_coeff     1 1 Pair_SL-SL.table SL-SL
+
+minimize 1e-4 1e-6 100 1000
+reset_timestep 0
+
+timestep 5.0
+
+velocity all create 300.0 92013 mom yes rot yes dist gaussian
+fix 1 all nvt temp 300.0 300.0 2000.0 
+
+thermo 20000
+thermo_style custom step spcpu temp ke pe etotal lx ly lz pxx pyy pzz density vol 
+
+run 200000
+
+dump 1 all custom 100 dump.lammpstrj id x y z
+dump_modify 1 sort id
+
+run 200000

@@ -1,0 +1,10 @@
+--top methanol_ucg.data
+--traj methanol_slab_cg.trr,every=5
+--cut 8.0
+--names MeOH,Near,Far
+--ucg replica=25,seed=1234
+--ucg-wf RLE,target=MeOH,high=Near,low=Far,rth=4.5,wth=3.5
+--pair model=BSpline,type=Near:Near,min=3.0,resolution=0.05
+--pair model=BSpline,type=Near:Far,min=3.0,resolution=0.05
+--pair model=BSpline,type=Far:Far,min=3.0,resolution=0.05
+--verbose 1

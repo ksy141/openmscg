@@ -1,0 +1,7 @@
+--top system.data
+--traj reference.lammpstrj
+--cut 7.0
+--names SL
+--pair SL,SL,min=2.375,max=7.0,bins=93
+--temp 298.15
+--plot U
