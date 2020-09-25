@@ -35,9 +35,9 @@ For the OpenMSCG package, we also have a self-customized file format to define t
 CLI Option for Topology
 """""""""""""""""""""""
 
-Many `CLI commands <commands.html>`_ need to read a topology file for processing. A unified pattern for the option is as ``--top file-name,file-format``. The option value is consist of two fields separated by a comma.
+Many `CLI commands <commands.html>`_ need to read a topology file for processing. A unified pattern for the option is as ``--top file``.
 
-* The first field is the path and name of the file, while the second field is the format of the file. The second field is required because it's hard to determine the format of the file automatically. (There's no universal standard for the file suffix name yet)
+* The file format is automatically determined based on the content of the file.
 
 * At this moment, only two different formats are supported by OpenMSCG, ``lammps`` and ``cgtop``. But more formats will be supported in future.
 
@@ -45,9 +45,8 @@ Many `CLI commands <commands.html>`_ need to read a topology file for processing
 
 **Examples**::
     
-    --top system.data,lammps
-    --top system.top,cgtop
-
+    --top system.data
+    --top system.top
 
 
 Trajectory
@@ -59,19 +58,19 @@ MD trajectories are collection of particle coordindates (also called as "frames"
 CLI Option for Trajectory
 """""""""""""""""""""""""
 
-Many `CLI commands <commands.html>`_ need to read a trajectory file for processing. A unified pattern for the option is as ``--traj file-name,skip,every,count``. The option value is consist of four fields separated by commas.
+Many `CLI commands <commands.html>`_ need to read a trajectory file for processing. A unified pattern for the option is as ``--traj file,[skip=n],[every=n],[frames=]``. The option value is consist of four fields separated by commas.
 
-* ``file-name``: the path and name of the trajectory file.
+* ``file``: the path and name of the trajectory file.
 
-The following fields are used for processing frames from a trajectory in a loop:
+The following optional fields are used for processing frames from a trajectory in a loop:
 
 * ``skip``: skip over the first n frames for processing defined by ``skip``.
 * ``every``: read a frame for every n frames defined by ``every``.
-* ``count``: read until n frames are read defined by ``count``.
+* ``frames``: read until n frames are read defined by ``frames``.
 
 **Examples**::
     
-    --traj md.trr,10,100,50
+    --traj md.trr,skip=10,every=100,frames=50
 
 In this example, the file ``md.trr`` will be processed, while the first 10 frames will be skipped, then read a frame for every 100 frames (read one frame and then skip then next 99 frames), and the process loop will end after reading in a total of 50 frames.
 
@@ -91,7 +90,7 @@ For example, to fit model parameters for a pair-wise interaction between atom ty
 The rumtime argument is followed by multiple ``key-value`` attributes separated by commas. Two attributes are mandatory:
 
 * **model**: define the functional form. Currently only `BSpline` is allowed, but more functional types will be supported in future.
-* **type**: a type name that used to specify the targeted interaction type to be optimized.
+* **type**: a type name that used to specify the targeted interaction type to be optimized. In the example above, `A:B` indicates the pair-type that is formed by two atoms with types `A` and `B`.
 
 Other attributes are optional and depend on the functional form. In the example above, there are three attributes to define a BSpline: **min, max and resolution**.
 

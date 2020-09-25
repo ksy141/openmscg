@@ -4,39 +4,19 @@ Quick Start Guide
 .. contents:: :local:
 
 Prerequisites
-*************
+-------------
 
-1. `Python>=3.6 <https://www.python.org/downloads/release/python-360/>`_
-2. `PIP>=20.0 <https://pip.pypa.io/en/stable/installing/>`_
-3. `numpy>=1.15 <https://pypi.org/project/numpy/>`_
-4. `matplotlib>=3.0 <https://pypi.org/project/matplotlib/>`_
-
-Download Precompiled Distributions
-**********************************
-
-* For Python 3.6.x users: `wheel-py36 <https://software.rcc.uchicago.edu/download/OpenMSCG-0.1.0-cp36-cp36m-linux_x86_64.whl>`_
-* For Python 3.7.x users: `wheel-py37 <https://software.rcc.uchicago.edu/download/OpenMSCG-0.1.0-cp37-cp37m-linux_x86_64.whl>`_
-* For Python 3.8.x users: `wheel-py38 <https://software.rcc.uchicago.edu/download/OpenMSCG-0.1.0-cp38-cp38-linux_x86_64.whl>`_
+``Conda`` package and environment management tool, `Anaconda <https://www.anaconda.com/products/individual>`_ or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`.
 
 Quick Install
-*************
+-------------
 
-This package is distributed for all 64-bit Linux platforms. If you're a Microsoft Windows user, please install the simulated Linux environment `cygwin <https://www.cygwin.com/>`_ ::
+With `conda` setup in the environment, install the software simply by::
 
-    pip install OpenMSCG-*.whl
-
-
-If you don't have the write permission to the folder for Python site-packages, you can install it in your local home directory by using the option ``--user`` ::
-
-    pip install OpenMSCG-*.whl --user
-
-If the package is installed in user's home directory, please export the path for executable scripts to the Linux environment ::
-
-    export PATH=${HOME}/.local/bin:${PATH}
-
+    conda install -c vothgroup openmscg
 
 Test the Installtion
-********************
+--------------------
 
 Simply run the following command to check the package information ::
 
@@ -89,3 +69,4 @@ Example output ::
 
 
     Congratulations! The package is successfully installed.
+
