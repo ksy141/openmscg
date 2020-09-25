@@ -70,7 +70,21 @@ void ModelBondBSpline::compute_fm()
 
 void ModelBondBSpline::compute_rem()
 {
+    for(int i=0; i<nparam; i++) dU[i] = 0.0;
     
+    BondList *lst = (BondList*)(this->list);
+    int* types = lst->bond_types;
+    float *dr = lst->dr_bond;
+    
+    for(int i=0; i<lst->nbonds; i++) if(types[i] == tid)
+    {
+        double *b;
+        size_t istart;
+        int nn;
+        
+        eval_coeffs(dr[i], &b, &istart, &nn);
+        for(int c=0; c<nn; c++) dU[istart+c] += b[c];
+    }
 }
 
 void ModelBondBSpline::get_table(double *params, double* in, double* out, int size)

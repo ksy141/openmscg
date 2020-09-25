@@ -22,4 +22,10 @@ class BondBSpline(Model):
         lib.compute_fm(self._h)
         
     def compute_rem(self):
-        raise Error('not impletmented')
+        self.dU.fill(0)
+        lib.compute_rem(self._h)
+    
+    def compute_table(self, x, force=True):
+        vals = np.zeros(x.shape[0])
+        lib.get_table(self._h, self.params, x, vals)
+        return vals
