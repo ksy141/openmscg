@@ -7,12 +7,12 @@ def test_3site(datafile):
         top     = datafile("toy_3site.top"),
         traj    = datafile("toy_3site.lammpstrj"),
         cut     = 15.0,
-        pair    = ["model=BSpline,type=A:A,min=3.9,resolution=0.3,order=4",
-                   "model=BSpline,type=A:B,min=3.9,resolution=0.3,order=4",
-                   "model=BSpline,type=A:C,min=3.9,resolution=0.3,order=4",
-                   "model=BSpline,type=B:B,min=3.9,resolution=0.3,order=4",
-                   "model=BSpline,type=B:C,min=3.9,resolution=0.3,order=4",
-                   "model=BSpline,type=C:C,min=3.9,resolution=0.3,order=4"
+        pair    = ["model=BSpline,type=A:A,min=3.9,max=15.0,resolution=0.3,order=4",
+                   "model=BSpline,type=A:B,min=3.9,max=15.0,resolution=0.3,order=4",
+                   "model=BSpline,type=A:C,min=3.9,max=15.0,resolution=0.3,order=4",
+                   "model=BSpline,type=B:B,min=3.9,max=15.0,resolution=0.3,order=4",
+                   "model=BSpline,type=B:C,min=3.9,max=15.0,resolution=0.3,order=4",
+                   "model=BSpline,type=C:C,min=3.9,max=15.0,resolution=0.3,order=4"
                   ],
         verbose = 0,
         save    = 'return'

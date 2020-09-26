@@ -16,6 +16,7 @@ from ..bondlist import BondList
 
 import numpy as np
 import argparse, importlib
+import os
 
 class Model:
     """
@@ -75,6 +76,8 @@ class Model:
             except:
                 raise TypeError('unmatched type for argument: ' + k + ' ' + str(arg_type))
         
+        self.module_name = type(self).__module__
+        self.class_name = type(self).__name__
         self.nparam = 0
     
     def setup(self, top:Topology, itemlist):
@@ -164,12 +167,9 @@ class ModelGroup:
         serialized = {}
         
         for model in self.items:
-            serialized[model.name] = {name:getattr(model, name) for name in ['style', 'type', 'params', 'nparam'] + model.serialized_names}
-        
+            serialized[model.name] = {name:getattr(model, name) for name in ['module_name', 'class_name', 'style', 'type', 'params', 'nparam'] + model.serialized_names}
+            
         return serialized
-                
-
-models = ModelGroup()
 
 class ModelArgAction(argparse.Action):
     
@@ -203,3 +203,6 @@ class ModelArgAction(argparse.Action):
     @classmethod
     def help(cls, style):
         return "add a model declaration for %s-style interactions." % (style)
+
+
+models = ModelGroup()

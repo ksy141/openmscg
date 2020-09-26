@@ -10,12 +10,13 @@ class BondBSpline(Model):
         self.order = 6
         self.resolution = 0.1
         super().__init__(**kwargs)
+        self._h = lib.create(self.min, self.max, self.resolution, self.order)
+        lib.setup_cache(self._h, self.resolution * 0.01)
         
     def setup(self, top, bondlist):
         self.nparam = lib.get_npars(self.min, self.max, self.resolution, self.order)
         super().setup(top, bondlist)
-        self._h = lib.create(self.min, self.max, self.resolution, self.order, self.tid, bondlist._h, self.dF, self.dU)
-        lib.setup_cache(self._h, self.resolution * 0.01)
+        lib.setup(self._h, self.tid, bondlist._h, self.dF, self.dU)
     
     def compute_fm(self):
         self.dF.fill(0)

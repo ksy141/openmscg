@@ -10,7 +10,7 @@ def test_1s(datafile):
         traj    = datafile("methanol_1728_cg.trr"),
         names   = 'MeOH',
         cut     = 8.0,
-        pair    = ['model=BSpline,type=MeOH:MeOH,min=2.8,resolution=0.2'],
+        pair    = ['model=BSpline,type=MeOH:MeOH,min=2.8,max=8.0,resolution=0.2'],
         verbose = 0,
         save    = 'return'
     )
@@ -33,7 +33,7 @@ def test_2s(datafile):
         traj    = datafile("methanol_1728_2s.trr,frames=500"),
         names   = 'CH3,OH',
         cut     = 8.0,
-        pair    = ['model=BSpline,type=CH3:CH3,min=2.9', 'model=BSpline,type=CH3:OH,min=2.8', 'model=BSpline,type=OH:OH,min=2.5'],
+        pair    = ['model=BSpline,type=CH3:CH3,min=2.9,max=8.0', 'model=BSpline,type=CH3:OH,min=2.8,max=8.0', 'model=BSpline,type=OH:OH,min=2.5,max=8.0'],
         bond    = ['model=BSpline,type=CH3:OH,min=1.35,max=1.65,resolution=0.01'],
         verbose = 0,
         save    = 'return'

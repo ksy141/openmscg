@@ -7,10 +7,10 @@ class Table:
     def __init__(self, model, force=True, prefix=''):
         self.model = model
         self.force = force
-        self.prefix = ''
+        self.prefix = prefix
     
     def compute(self, xmin, xmax, xinc):
-        self.x = np.arange(xmin, xmax, xinc)
+        self.x = np.arange(xmin, xmax+xinc, xinc)
         self.v = self.model.compute_table(self.x)
         self.n = self.v.shape[0]
         
@@ -29,8 +29,9 @@ class Table:
             f[-1] = 2.0 * f[-2] - 2.0 * f[-3]
             self.f = 0.5 * (f[:-1] + f[1:])
                 
-    def dump_lammps(self, xmin, xmax, xinc):
-        self.compute(xmin, xmax, xinc)
+    def dump_lammps(self, xmin=None, xmax=None, xinc=None):
+        if xmin is not None:
+            self.compute(xmin, xmax, xinc)
         
         txt = "# Table %s: id, r, potential, force\n\n" % (self.model.name)
         txt += self.model.name.split("_")[1] + "\n"
@@ -38,6 +39,6 @@ class Table:
         
         for i in range(self.n):
             txt += "%d %f %f %f\n" % (i+1, self.x[i], self.u[i], self.f[i])
-
-        with open(self.model.name + ".table", "w") as f:
-            f.write(self.prefix + txt)
+        
+        with open(self.prefix + self.model.name + ".table", "w") as f:
+            f.write(txt)

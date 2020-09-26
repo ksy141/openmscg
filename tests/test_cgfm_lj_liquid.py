@@ -8,8 +8,8 @@ def test_1s(datafile):
     coeffs = cgfm.main(
         top     = datafile("unary_lj_fluid.top"),
         traj    = datafile("unary_lj_fluid.lammpstrj,frames=20"),
-        cut     = 2.50,
-        pair    = ['model=BSpline,type=1:1,min=0.9,resolution=0.1'],
+        cut     = 2.5,
+        pair    = ['model=BSpline,type=1:1,min=0.9,max=2.5,resolution=0.1'],
         verbose = 0,
         save    = 'return'
     )
@@ -33,8 +33,8 @@ def test_96(datafile):
     coeffs = cgfm.main(
         top     = datafile("96_lj_liquid.top"),
         traj    = datafile("96_lj_liquid.lammpstrj,frames=20"),
-        cut     = 2.50,
-        pair    = ['model=BSpline,type=1:1,min=0.75,resolution=0.1'],
+        cut     = 2.5,
+        pair    = ['model=BSpline,type=1:1,min=0.75,max=2.5,resolution=0.1'],
         verbose = 0,
         save    = 'return'
     )
@@ -69,10 +69,10 @@ def test_2s(datafile):
     coeffs = cgfm.main(
         top     = datafile("binary_lj_fluid.top"),
         traj    = datafile("binary_lj_fluid.lammpstrj,frames=1000"),
-        cut     = 8.50,
-        pair    = ['model=BSpline,type=1:1,min=2.9,resolution=0.1', 
-                   'model=BSpline,type=1:2,min=2.7,resolution=0.1', 
-                   'model=BSpline,type=2:2,min=2.6,resolution=0.1'],
+        cut     = 8.5,
+        pair    = ['model=BSpline,type=1:1,min=2.9,max=8.5,resolution=0.1', 
+                   'model=BSpline,type=1:2,min=2.7,max=8.5,resolution=0.1', 
+                   'model=BSpline,type=2:2,min=2.6,max=8.5,resolution=0.1'],
         verbose = 0,
         save    = 'return'
     )
@@ -89,7 +89,6 @@ def test_2s(datafile):
         diff = (F[i] - benchmark1[i]) / benchmark1[i]
         print("X=%3d, Y0=%10.3e, Y=%10.3e, dY/Y0=%5.2f%%" %(i+1, benchmark1[i], F[i], diff*100))
         assert abs(diff)<0.01
-    
     
     xmin = 2.7
     sp = BSpline(order, dx, xmin, xmax)

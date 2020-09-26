@@ -223,6 +223,7 @@ def main(*args, **kwargs):
         
         for m in models.items:
             m.params = np.array(params[m.name])
+            screen.info("Generate table [%s] to [%s]" % (m.name, args.table + m.name + '.table'))
             
             Table(m, force=False, prefix=args.table).dump_lammps(
                 xmin = targets[m.name]['min'],

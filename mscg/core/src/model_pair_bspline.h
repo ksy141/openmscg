@@ -8,7 +8,7 @@ class ModelPairBSpline : public Model, public BSpline
 {
   public:
 
-    ModelPairBSpline(double, double, double, int, int, void*, double*, double*);
+    ModelPairBSpline(double, double, double, int);
     virtual ~ModelPairBSpline();
     
     virtual void compute_rem();

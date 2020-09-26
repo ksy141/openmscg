@@ -1,24 +1,22 @@
 from mscg import *
 import numpy as np
-from ..core import cxx_model_pair_bspline as lib
+from ..core import cxx_model_angle_bspline as lib
 
-class PairBSpline(Model):
+class BondBSpline(Model):
     
     def __init__(self, **kwargs):
-        self.min = 2.0
-        self.max = 6.0
+        self.min = 0.0
+        self.max = np.pi
         self.order = 6
         self.resolution = 0.1
-        self.serialized_names = ['min', 'max', 'resolution', 'order']
         super().__init__(**kwargs)
         self._h = lib.create(self.min, self.max, self.resolution, self.order)
-        lib.setup_cache(self._h, self.resolution * 0.01)        
+        lib.setup_cache(self._h, self.resolution * 0.01)
         
-    def setup(self, top, pairlist):
-        assert self.max <= pairlist.cut
+    def setup(self, top, bondlist):
         self.nparam = lib.get_npars(self.min, self.max, self.resolution, self.order)
-        super().setup(top, pairlist)
-        lib.setup(self._h, self.tid, pairlist._h, self.dF, self.dU)
+        super().setup(top, bondlist)
+        self.setup(self._h, self.tid, bondlist._h, self.dF, self.dU)
     
     def compute_fm(self):
         self.dF.fill(0)
@@ -32,4 +30,3 @@ class PairBSpline(Model):
         vals = np.zeros(x.shape[0])
         lib.get_table(self._h, self.params, x, vals)
         return vals
-        

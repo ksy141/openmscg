@@ -2,13 +2,14 @@
 #include "pair_list.h"
 #include "defs.h"
 
-ModelPairBSpline::ModelPairBSpline(double xmin, double xmax, double resolution, int order, int tid, void *list, double *dF, double *dU) : BSpline(order, resolution, xmin, xmax), Model(tid, list, dF, dU)
+ModelPairBSpline::ModelPairBSpline(double xmin, double xmax, double resolution, int order) : BSpline(order, resolution, xmin, xmax)
 {
     nparam = ncoeff;
 }
 
 ModelPairBSpline::~ModelPairBSpline()
 {
+    
 }
 
 void ModelPairBSpline::compute_fm()

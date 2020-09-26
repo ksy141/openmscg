@@ -10,13 +10,23 @@ PYAPI(get_npars)
 PYAPI(create)
 {
     double xmin, xmax, resolution;
-    int order, tid;
+    int order;
+    
+    PyArg_ParseTuple(args, "dddi", &xmin, &xmax, &resolution, &order);
+    MODEL_CLASS *p = new MODEL_CLASS(xmin, xmax, resolution, order);
+    return Py_BuildValue("L", p);
+}
+
+PYAPI(setup)
+{
+    MODEL_CLASS *p;
+    int tid;
     void *plist;
     PyArrayObject *dF, *dU;
     
-    PyArg_ParseTuple(args, "dddiiLOO", &xmin, &xmax, &resolution, &order, &tid, &plist, &dF, &dU);
-    MODEL_CLASS *p = new MODEL_CLASS(xmin, xmax, resolution, order, tid, plist, NP_DATA(dF), NP_DATA(dU));
-    return Py_BuildValue("L", p);
+    PyArg_ParseTuple(args, "LiLOO", &p, &tid, &plist, &dF, &dU);
+    p->setup(tid, plist, NP_DATA(dF), NP_DATA(dU));
+    Py_RETURN_NONE;
 }
 
 PYAPI(setup_cache)
@@ -31,5 +41,6 @@ PYAPI(setup_cache)
 BEGIN_PY_API(MODEL_CLASS)
     DECLARE_API(get_npars,   get_npars,   "Get count of parameters.")
     DECLARE_API(create,      create,      "Create table object.")
+    DECLARE_API(setup,       setup,       "Setup model attributes.")
     DECLARE_API(setup_cache, setup_cache, "Setup cache acceleration.")
 END_PY_API()

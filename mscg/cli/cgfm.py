@@ -35,7 +35,7 @@ Syntax of running ``cgib`` command ::
                             (default args: file,skip=0,every=1,frames=0) (default:
                             [])
       --cut                 cut-off for pair interactions (default: 10.0)
-      --save                file name for matrix output (default: matrix)
+      --save                file name for matrix output (default: result)
       --pair [key=value]    add a model declaration for pair-style interactions.
                             (default: [])
       --bond [key=value]    add a model declaration for bond-style interactions.
@@ -48,7 +48,7 @@ Syntax of running ``cgib`` command ::
 '''
 
 from mscg import *
-    
+
 def main(*args, **kwargs):
     
     models.empty()
@@ -71,7 +71,7 @@ def main(*args, **kwargs):
     group.add_argument("--traj", metavar='file[,args]', action=TrajReaderAction, help=TrajReaderAction.help, default=[])
     
     group.add_argument("--cut", metavar='', type=float, default=10.0, help="cut-off for pair interactions")
-    group.add_argument("--save",  metavar='', type=str, default="matrix", help="file name for matrix output")
+    group.add_argument("--save",  metavar='', type=str, default="result", help="file name for matrix output")
     
     group.add_argument("--pair",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('pair'), default=[])
     group.add_argument("--bond",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('bond'), default=[])
@@ -124,9 +124,6 @@ def main(*args, **kwargs):
     matrix_cov = np.zeros(shape=(n, n))
     vector_cov = np.zeros(n)
     
-    #matrix = Matrix()
-    #matrix.setup(args.top.n_atom, models.item)
-
     # start processing trajectory
     
     TIMER.reset()
@@ -155,21 +152,24 @@ def main(*args, **kwargs):
         
     # end of processing trajectories
     
-    y = np.matmul(np.linalg.inv(matrix_cov), vector_cov)
+    c = np.matmul(np.linalg.inv(matrix_cov), vector_cov)
     TIMER.click('solver')
         
     if args.save != "return":
-        pd.to_pickle({
-            'X': matrix_cov,
-            'y': y
-        }, args.save + ".p")
+        offset = 0
+        
+        for m in models.items:
+            m.params[:] = c[offset:offset + m.nparam]
+            offset += m.nparam
+        
+        Checkpoint(args.save).update({'models': models.serialize(), 'X': matrix_cov, 'c': c}).dump()
     
     screen.info([""] + TIMER.report(False) + [""])
     
     # end
     
     if args.save == "return":
-        return y
+        return c
     
 
 if __name__ == '__main__':

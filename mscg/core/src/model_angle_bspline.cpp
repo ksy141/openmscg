@@ -2,7 +2,7 @@
 #include "bond_list.h"
 #include "defs.h"
 
-ModelAngleBSpline::ModelAngleBSpline(double xmin, double xmax, double resolution, int order, int tid, void *list, double *dF, double *dU) : BSpline(order, resolution, xmin, xmax), Model(tid, list, dF, dU)
+ModelAngleBSpline::ModelAngleBSpline(double xmin, double xmax, double resolution, int order) : BSpline(order, resolution, xmin, xmax)
 {
     nparam = ncoeff;
 }

@@ -11,8 +11,9 @@ class Model
     double *dU;
     double *dF;
     
-    Model(int, void*, double*, double*);
+    Model();
     virtual ~Model();
+    void setup(int tid, void *list, double *dF, double *dU);
     
     virtual void compute_fm() = 0;
     virtual void compute_rem() = 0;

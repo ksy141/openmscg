@@ -24,7 +24,6 @@ for name in ["OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VECL
     os.environ[name] = "1"
 
 import numpy as np
-import pandas as pd
 
 from .topology   import *
 from .trajectory import *

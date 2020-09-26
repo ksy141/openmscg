@@ -8,7 +8,7 @@ class ModelAngleBSpline : public Model, public BSpline
 {
   public:
     
-    ModelAngleBSpline(double, double, double, int, int, void*, double*, double*);
+    ModelAngleBSpline(double, double, double, int);
     virtual ~ModelAngleBSpline();
 
     virtual void compute_rem();
