@@ -4,20 +4,20 @@ Introduction
 The multiscale coarse-graining (MSCG) methodology provides a systematic,
 bottom-up way to calculate effective CG interactions based on rigorous
 statistical mechanics. It seeks to approximate the many-body potential of
-mean force by variationally minimizing the difference between CG forces at
-the mapped fine-grained reference forces (a.k.a, "force matching"). This
+mean force by variationally minimizing the difference between CG forces and
+the mapped fine-grained forces (a.k.a, "force matching"). This
 method is related to liquid state theory and the Yvon-Born-Green equation.
 
 This project is funded by NSF/SSE (No.5-27425), and focused on the sustainable
 development of a cutting-edge CG/UCG molecular simulation platform with broad
-applicability to the fields of chemistry, biology and the materials sciences
+applicability to the fields of chemistry, biology, and materials science
 in accordance with the National Strategic Supercomputing Initiative (e.g.
 Principle 1, Objective 2), and the Vision and Strategy for Software for
 Science, Engineering, and Education (NSF 12-113, Strategies 1-4).
 
-The OpenMSCG package provides an implementation of the algorithms described in this
-reference. Please read this paper before using the code to understand the terminology of
-this manual and the comments in the source code.
+The OpenMSCG package provides an implementation of the algorithms described in the following
+references. Reading these papers before using the code will facilitate understanding of the
+terminology throughout this manual and the comments throughout the source code.
 
 .. seealso::
     L. Lu, S. Izvekov, A. Das, H. C. Andersen, and G. A. Voth, "Efficient, Regularized, and

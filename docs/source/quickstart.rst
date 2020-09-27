@@ -6,19 +6,19 @@ Quick Start Guide
 Prerequisites
 -------------
 
-``Conda`` package and environment management tool, `Anaconda <https://www.anaconda.com/products/individual>`_ or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`.
+``Conda`` package and environment management tool, `Anaconda <https://www.anaconda.com/products/individual>`_ or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_.
 
 Quick Install
 -------------
 
-With `conda` setup in the environment, install the software simply by::
+Using `conda`, install the software by running the following command ::
 
     conda install -c vothgroup openmscg
 
-Test the Installtion
+Test the Installation
 --------------------
 
-Simply run the following command to check the package information ::
+Run the following command to check the package information ::
 
     cginfo
 
