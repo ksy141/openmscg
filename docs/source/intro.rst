@@ -32,7 +32,7 @@ for these methods, which include:**
 
 
 Funding
-=======
+#######
 
 This project is funded by NSF/SSE (No.5-27425), and focuses on the sustainable
 development of a contemporary CG/UCG molecular simulation platform with broad
