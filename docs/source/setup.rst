@@ -37,6 +37,8 @@ in your computer system:
 3. GSL library (version>=2.1)
 4. LAPACK library
 
+**IMPORTANT**: Python 2 is not supported.
+
 **IMPORTANT**: If you're working on HPC systems, these packages have likely been 
 installed by the system administrators already. Please read the system manual 
 or contact your support staff for instructions on how to use them.
@@ -45,24 +47,16 @@ or contact your support staff for instructions on how to use them.
 1. Python3
 ^^^^^^^^^^
 
-To faciliate installation, configuration, and use of the MSCG software for users, 
-we created a set of Python scripts to provide a simple and friendly 
-interface. As Python2 will not be officially supported after 2020, the 
-Python3 environment is used to build up this package. There are three 
-options that are recommended to install it.
-
-Quickly check the Python version by command::
-
-    $ python -V
-    Python 3.6.5 :: Anaconda, Inc.
+There are three installation options for the Python libraries needed by the
+package. We recommend using Anaconda3.
 
 **Option 1: Anaconda3**
 
-``Anaconda3`` can be easily downloaded and installed from the website::
+``Anaconda3`` can be downloaded and installed from the website::
 
     https://www.anaconda.com/distribution/#download-section
 
-Please choose the distribute with ``Python 3.7 version``
+Please choose the distribution with ``Python 3.7 version``
 
 **Option 2: Miniconda3**
 
@@ -81,7 +75,9 @@ The software can be downloaded from the website::
 
     https://www.python.org/downloads/
 
-But the installation requires a little more technical effort.
+But the installation requires more effort.
+
+.. note:: If you are using Anaconda, you do not need to worry about installing anything else and simply use the quick start guide. If not, continue.
 
 
 2. C++ Compiler
@@ -91,7 +87,7 @@ But the installation requires a little more technical effort.
 
 On HPC Linux systems, GCC is always provided. Please check with the system 
 manual or contact assistance to initialize the GCC environment. If you're 
-using Linux or MacOS on a personal computer (laptop, workstation, ...), you 
+using Linux or MacOS on a local machine, you 
 can follow the instructions below to install it:
 
 * `Ubuntu <https://linuxconfig.org/how-to-install-gcc-the-c-compiler-on-ubuntu-18-04-bionic-beaver-linux>`_
@@ -104,12 +100,9 @@ can follow the instructions below to install it:
 
 Intel compiler usually gives better performance on an Intel processor, 
 however, it's not free. You need to buy licenses to install and use it. 
-On HPC Linux systems using Intel processors, the Intel compiler is usually 
+On HPC Linux systems using Intel processors the Intel compiler is usually 
 provided. Please check with the system manual or contact assistance 
 to initialize the ICC/ICPC environment.
-
-**Other options:** <http://www.stroustrup.com/compilers.html>
-
 
 3. GSL Library
 ^^^^^^^^^^^^^^
@@ -139,8 +132,8 @@ is written in Fortran 90 and provides routines for solving systems of
 simultaneous linear equations, least-squares solutions of linear systems of 
 equations, eigenvalue problems, and singular value problems."
 
-On most Linux systems, LAPACK is alreay installed as a built-in library by 
-default. Therefore, there's no need to manually set it up. In case it is not 
+On most Linux systems, LAPACK is already installed as a built-in library.
+Therefore, there's often no need to manually set it up. In case it is not 
 found, you can follow the instructions from the following website to install 
 it::
 
