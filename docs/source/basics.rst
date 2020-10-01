@@ -1,26 +1,25 @@
 Basic Concepts
 ==============
 
-Introduction to basic concepts used in OpenMSCG.
+This chapter provides a basic outline of the objects and ideas used by openMSCG.
 
 
 Units
 -----
 
-In OpenMSCG, the following units are used:
+openMSCG uses the following units:
 
 * distance = Angstroms
 * angle = Degrees
-* force = Kcal/mole/Angstrom
+* force = Kcal/mol/Angstrom
 * temperature = Kelvin
-* mass = grams/mole
+* mass = grams/mol
 
 
 Topology
 --------
 
-A topology file defines a group of particles (atoms or CG sites) and their molecular bonding information. 
-Different MD software packages have their own file format to define topologies. For examples:
+A topology file defines a group of particles (atoms or CG sites) and their molecular bonding information.  Different MD software packages have their own file format to define topologies. For example:
 
 * LAMMPS - `LAMMPS Data Format <https://lammps.sandia.gov/doc/2001/data_format.html>`_
 
@@ -30,7 +29,7 @@ Different MD software packages have their own file format to define topologies. 
 
 * AMBER - `PRMTOP File <https://ambermd.org/FileFormats.php#topology>`_
 
-For the OpenMSCG package, we offer a package-specific file format to define the topologies of CG systems, named **CGTOP**. Please read the detailed description of the `CGTOP file format <cgtop.html>`_.
+For the openMSCG package, we offer a package-specific file format to define the topologies of CG systems, named **CGTOP**. The format description can be found `here <cgtop.html>`_.
 
 
 Command Line Interface (CLI) Option for Topology
@@ -38,11 +37,11 @@ Command Line Interface (CLI) Option for Topology
 
 Many `CLI commands <commands.html>`_ need to read a topology file for processing, and use the option flag ``--top file``.
 
-* The file format (e.g. LAMMPS, CGTOP, ...) is automatically determined based on the content of the file.
+* The file format (e.g. LAMMPS or CGTOP) is automatically determined based on the content of the file.
 
-* At this moment, only two formats are supported by OpenMSCG, ``lammps`` and ``cgtop``. But more formats will be supported in the future.
+* At this moment, only two formats are supported by openMSCG, ``lammps`` and ``cgtop``. But more formats will be supported in the future.
 
-* In LAMMPS, the atom types are named using digital IDs (1, 2, ...). To be more user-friendly, the option ``--names`` can be used to define the list of atom types by character-string-based names.
+* In LAMMPS, the atom types are named using numeric IDs (1, 2, ...). To be more user-friendly, the option ``--names`` can be used to define the list of atom types by character-string-based names.
 
 **Examples**::
     
@@ -53,7 +52,7 @@ Many `CLI commands <commands.html>`_ need to read a topology file for processing
 Trajectory
 ----------
 
-MD trajectories are collections of particle coordindates (also called "frames") dumped from simulations. There are also many formats of trajectories from different MD software packages, such as `XYZ <https://en.wikipedia.org/wiki/XYZ_file_format>`_, `DCD <https://www.ks.uiuc.edu/Research/vmd/plugins/molfile/dcdplugin.html>`_, `TRR <http://manual.gromacs.org/archive/5.0.3/online/xtc.html>`_ , ...
+MD trajectories are collections of particle coordinates (also called "frames") dumped from simulations. There are also many formats of trajectories from different MD software packages, such as `XYZ <https://en.wikipedia.org/wiki/XYZ_file_format>`_, `DCD <https://www.ks.uiuc.edu/Research/vmd/plugins/molfile/dcdplugin.html>`_, `TRR <http://manual.gromacs.org/archive/5.0.3/online/xtc.html>`_.
 
 
 CLI Option for Trajectory
@@ -79,7 +78,7 @@ In this example, the file ``md.trr`` will be processed. First, the first 10 fram
 Tabulated Models (Force-Field)
 ---------------
 
-In `molecular modeling <https://en.wikipedia.org/wiki/Force_field_(chemistry)>`_, models (or force-fields) are mathematical functions of variables (often configurational, i.e., distances or angles) to describe the forces and potential energies of a molecular system. One of the important outcomes in openMSCG is to obtain optimized parameters for the force-field. Four styles of interactions can be specified as runtime options for either FM or REM methods: **--pair, --bond, --angle, --dihedral**.
+In molecular modeling, models (or force-fields) are mathematical functions of variables (e.g. distances or angles) to describe the forces and potential energies of a molecular system. One of the important outcomes in openMSCG is to obtain optimized parameters for the force-field. Four styles of interactions can be specified as runtime options for either FM or REM methods: **--pair, --bond, --angle, --dihedral**.
 
 CLI Option for Model
 """"""""""""""""""""
@@ -88,7 +87,7 @@ For example, to fit model parameters for a pairwise interaction using B-splines 
 
     --pair model=BSpline,type=A:B,min=3.0,max=8.0,resolution=0.2
 
-The rumtime argument is followed by multiple ``key-value`` attributes separated by commas. Two attributes are mandatory:
+The runtime argument is followed by multiple ``key-value`` attributes separated by commas. Two attributes are mandatory:
 
 * **model**: define the functional form. Currently only `BSpline` is allowed, but more functional types will be supported in the future.
 * **type**: name that is used to specify the targeted interaction types to be optimized. In the example above, `A:B` indicates a pair interaction between atoms of type `A` and `B`.
