@@ -3,12 +3,12 @@
 CGTOP File Format
 =================
 
-Provide a Gromacs-style topology file for the CG system with filename 'top.in'. The
-bonding described in this file is the bonding that will be used to set up all bonded
-interaction potential basis sets. Bond types are automatically inferred from site types
+This file outlines Gromacs-style topology for CG systems, and is usually named 'top.in'. The
+topology described in this file is the bonding that will be used to set up all bonded
+basis sets. Bond types are automatically inferred from site types
 and cannot be specified any other way.
 
-Example inputs can be found in the subdirectory of the example directory. The general
+Example inputs can be found in a subdirectory of the example directory. The general
 format of the topology is outlined below::
 
     cgsites Ncg (* Ncg =Total number of coarse-grained sites)
