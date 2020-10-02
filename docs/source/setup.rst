@@ -173,7 +173,7 @@ repository::
 
 Enter the repository directory::
 
-    cd MSCG-py
+    cd OpenMSCG
 
 
 Configure
