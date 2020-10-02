@@ -1,15 +1,13 @@
 # OpenMSCG
 
-An open-source package for multi-scale coarse-graining (MSCG) modeling in computational chemistry and biology
+An open-source python package for systematic coarse-graining (including
+MSCG/force-matching) in computational chemistry and biology. 
 
-
-
-
-### Quick Guide
+## Quick Guide
 
 **1. Prerequisites**
 
-Conda package and environment management tool: `Anaconda` or `Miniconda`.
+Install a conda package manager/environment: `Anaconda` or `Miniconda`.
 
 **2. Install package from Anaconda Cloud**
 
@@ -22,5 +20,9 @@ conda install -c vothgroup openmscg
 ```
 cginfo
 ```
+
+## Documentation
+
+See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 

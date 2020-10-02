@@ -1,6 +1,10 @@
 cgmap
 =====
 
+The `cgmap` command maps atomistic trajectories to the coarse-grained
+resolution. For example, it maps a trajectory of water molecules to their
+centers of mass.
+
 .. include:: common.rst
 
 .. automodule:: mscg.cli.cgmap
@@ -13,7 +17,10 @@ cgmap
 CG Mapping File
 ---------------
 
-The CG mapping file defines the rules of constructing CG coordinates from AA trajectories. The file should be written in YAML format (`More information about YAML <https://yaml.org/start.html>`__). An example of the CG mapping file is below:
+The CG mapping file defines the rules of constructing CG coordinates from
+all-atom (AA) trajectories. The file should be written in `YAML
+<https://yaml.org/start.html>`__ format. An example of the CG mapping file is
+below:
 
 .. code-block::
    :caption: Table 1: CG mapping of the water box
@@ -25,13 +32,15 @@ The CG mapping file defines the rules of constructing CG coordinates from AA tra
        x-weight: [16.0, 1.0, 1.0]
        f-weight: [ 1.0, 1.0, 1.0]
    system:
-     - anchor: 0
+       anchor: 0
        repeat: 256
        offset: 3
        sites:
          - [WAT, 0]
 
-This example demostrates the CG mapping from a three-body water box into an one-site topology. The all-atom configurations should have 768 atoms as following:
+
+This example demonstrates the CG mapping from a three-body water box to an
+one-site topology. We assume that the AA configuration has 768 atoms as follows:
 
 .. code-block::
    :caption: Table 2: AA configuration of the water box
@@ -44,49 +53,65 @@ This example demostrates the CG mapping from a three-body water box into an one-
    5   HW    ... ... ...
    6   HW    ... ... ...
    ... ..    ... ... ...
+
     
-The content in the mapping YAML file is parsed by Python as a `dictionary` from key-value pairs. The dictionary contains two top-level sections: `site-types` and `system`.
+The content in the mapping YAML file is parsed by Python as key-value pairs
+(like a python dictionary). The CG mapping file should have two top-level
+sections: `site-types` and `system`, which are described below.
 
 Site Types
 ^^^^^^^^^^
 
-The `site-types` section is a dictionary, in which each item defines the mapping rule from muliple atoms into a single CG site named by its key. In the example above, there's only one CG type `WAT`, each site of which will be mapped from three atoms.
+Each entry in the `site-types` section defines mapping from multiple atoms to a single CG site labeled by the name of the entry. In the example above, there's only one CG type (`WAT`), each site of which will be mapped from three atoms.
 
-Each CG site type is a dictionary of three list, `index`, `x-weight`, and `f-weight`, which must be in the same size as the number of atoms to be used to map to a CG site.
+Each CG site entry has three sub-entries, `index`, `x-weight`, and `f-weight`, which must be in the same size as the number of atoms mapping to the CG site.
 
-* The `index` list defines the index atoms to be used. The index are the `offsets` to an **anchor** atom, which will be described later. In this example, three atoms in a sequence (0, 1 an 2) relative to the anchor atom will be used for mapping.
+* The `index` list defines the index atoms to be used. The index are the `offsets` to an **anchor** atom, which will be described later. In this example, three atoms in a sequence (0, 1 and 2) relative to the anchor atom will be used for mapping.
 
-* The `x-weight` list defines the weiginting factors to map the CG **coordinates** by the equation below, in which the subscript *i* goes over all involved atoms for this CG site. Please note that a normalization factor is applied automatically. In this example, the center-of-mass mapping scheme is used, so the weighting factors for coordinates are defined as the atomic masses.
+* The `x-weight` list defines the weighting factors to map the CG **coordinates** by the equation below, in which the subscript *i* goes over all involved atoms for this CG site. Please note that a normalization factor is applied automatically. In this example, the center-of-mass mapping scheme is used, so the weighting factors for coordinates are defined as the atomic masses.
 
 .. math::
 
    X_{I,CG} = \frac{ \sum_{i}w_{x,i}x_{i,AA} }{\sum_{i} w_i}
 
 
-* The `f-weight` list defines the weiginting factors to map the CG **forces** in a similar way. The only difference is that there's no automatical normalization when mapping CG forces.
+* The `f-weight` list defines the weighting factors to map the CG **forces** in a similar way. The only difference is that there's no automatic normalization when mapping CG forces.
 
 .. math::
 
    F_{I,CG} = \sum_{i}w_{f,i}f_{i,AA}
 
-In all, the definition of a CG types gives two equations that how to use a subset of atom coordinates or forces to construct the coordinates or forces for CG sites, while the `index` list serves as a mask that slides over the all atom configurations to select the sets of atoms for each CG site.
+In all, the definition of CG types gives two equations that define how to use a
+subset of atom coordinates or forces to construct the coordinates or forces for
+CG sites, while the `index` list selects the specific atoms that contribute.
 
 
 CG System
 ^^^^^^^^^
 
-The `system` section is a list of dictionaries, each of which defines a group of CG sites with a repeated pattern. Each item in the list must have the following four sections:
+The `system` section is a list of entries, each of which defines a group of CG sites with a repeated pattern. Each entry in the list must have the following four sections:
 
-* `anchor`: defines the starting index in AA confuguration to construct the group of CG sites.
-* `repeat`: the count of CG sites defined in this group by repeating the pattern defined.
-* `offset`: the offset of index of atoms (`anchor`) for each CG site.
-* `sites` or `groups`: the pattern to define the CG sites in this group. In the example of water box, the `site` section is used. For a more complicated CG topology, the `group` section can be used, which will be described later.
+* `anchor`: defines the starting index in AA configuration to construct the group of CG sites.
+* `repeat`: the number of CG sites defined in this group (e.g., the number of times to repeat the mapping pattern).
+* `offset`: the index offset (`anchor`) for each CG site (often the number of
+  atoms mapping to the CG bead).
+* `sites` or `groups`: the pattern to define the CG sites in this group. In the example of the water box, the `site` section is used. For a more complicated CG topology, the `group` section can be used, which will be described later. Each entry in `sites` is a list of length 2, with the first entry being the site type name and the second entry being the offset in the group where the `site-type` rules are applied.
 
-In the example of water box, the CG mapping is defined to use every three atoms in a sequence to build a CG site. Therefore, the `repeat` is defined as **256** here for 256 CG sites, while `offset` is defined here as **3**. Please note that the field `anchor` is define as **0**, so the index of anchor atoms during the mapping are 0, 3, 6, 9 ...
+In the case of the water box, the CG mapping is defined to use three atoms in a
+sequence to build a CG site. Therefore, `repeat` is defined as **256** here
+for 256 CG sites, while `offset` is defined here as **3**. Please note that the
+field `anchor` is define as **0**, so the effective index of anchor atoms during
+the mapping are 0, 3, 6, etc.
 
-To map each CG site, the atom indice 0 defined by the CG-site type will be aligned with the anchor atoms. In this example, the CG mapping of WAT will be aligned with the first atom (index 0) in the AA configuration to build up the first WAT site. Then, it will slide for 3 atoms, and the atom of index 3 will be used as the anchor (0 in the CG-site type index) to build up the second WAT site, and so on. 
+To map each CG site, the atom index 0 defined by the CG-site type will be
+aligned with the anchor atoms. In this example, the CG mapping of WAT will be
+aligned with the first atom (index 0) in the AA configuration to build up the
+first WAT site. Then, it will slide for 3 atoms, and the atom of index 3 will be
+used as the anchor (0 in the CG-site type index) to build up the second WAT
+site, and so on. 
 
-Note, there could be more than one scheme of defining the CG mapping equavalently. For example,
+Note that there could be more than one scheme of defining a CG mapping.  For
+example,
 
 .. code-block::
    :caption: Table 3: Another CG mapping of the water box
@@ -97,21 +122,21 @@ Note, there could be more than one scheme of defining the CG mapping equavalentl
        x-weight: [16.0, 1.0, 1.0]
        f-weight: [ 1.0, 1.0, 1.0]
    system:
-     - anchor: 1
+       anchor: 1
        repeat: 256
        offset: 3
        sites:
          - [WAT, 0]
 
-This mapping rule is equavalent to the content in Table 1, while the only difference is that the anchors atoms are the atoms of index 1, 4, 7 ... in the all-atom configurations. However, in the CG-site type, the index are defined as -1, 0 and 1, so it is still the same groups of atoms, i.e. (0, 1, 2) and (3, 4, 5) are used to construct the CG sites.
+This mapping rule is equivalent to the content in Table 1, while the only difference is that the anchor atoms are the indices 1, 4, 7 ... in the AA configurations. However, in the CG-site type, the indices are defined as -1, 0 and 1, so it is still the same groups of atoms, e.g. (0, 1, 2) and (3, 4, 5) are used to construct the CG sites.
 
-Another usage of anchor atoms is for the periodic-boundary-condition (PBC) corrections. In the mapping of CG coordinates, it is assumed that the distances between all atoms that are used for the same CG site and the anchor atom will be corrected to the value less than half of the PBC box. Therefore, the anchors also serve as the anchors for PBC corrections. However, after mapping to CG, the coordinates of CG sites will be corrected by PBC again to ensure all sites are in the range of PBC. Therefore, using different but equavalent CG mapping rules will always give the identical CG trajectory eventually.
+Another usage of anchor atoms is for the periodic-boundary-condition (PBC) corrections. When mapping CG coordinates it is assumed that the distances between all atoms that are used for the same CG site and the anchor atom will be corrected to a value less than half of the PBC box. Therefore, the anchors also serve as the anchors for PBC corrections. However, after mapping to CG, the coordinates of CG sites will be corrected using the PBC again to ensure all sites are in the range of the simulation box. Therefore, using different but equivalent CG mapping rules will always give the identical CG trajectory eventually.
 
 
 Sites Section
 ^^^^^^^^^^^^^
 
-In the `sites` sections, there is a list of sites defined as in the format of **[name, offset]**, where the offset updates the anchor atom index when mapping to each site in the list. The example below defines the mapping all-atom methanol into a two-site CG model.
+Each `sites` has a list of sites in the form **[name, offset]**, where the offset updates the anchor atom index when mapping to each site in the list. The example below defines mapping AA methanol into a two-site CG model.
 
 .. code-block::
    :caption: Table 4: CG mapping for two-site methanol
@@ -150,18 +175,18 @@ Multiple groups of mapping can be defined in the system as well. For example,
        x-weight: [16.0, 1.0]
        f-weight: [ 1.0, 1.0]
    system:
-     - anchor: 0
+       anchor: 0
        repeat: 10
        offset: 6
        sites:
          - [CH3, 0]
-     - anchor: 4
+       anchor: 4
        repeat: 10
        offset: 6
        sites:
          - [OH, 0]
 
-This mapping is equavalent as the previoius one, in which all 10 CH3 sites will be mapped first and then all 10 OH sites will be mapped. From the mapping in Table 4, the resulting CG configuration looks like:
+This mapping is equivalent as the previous one, in which all 10 CH3 sites will be mapped first and then all 10 OH sites will be mapped. From the mapping in Table 4, the resulting CG configuration looks like:
 
 .. code-block::
    :caption: CG configuration
@@ -189,13 +214,10 @@ While from the mapping in Table 5 the resulting CG configuration looks like:
    12  OH    ... ... ...
    13  OH    ... ... ...
    
-Although this pattern of defining molecules are not common, but it's still feasible. In reality, multiple mapping groups are usually used for mixed models with multiple components., i.e. proteins, membrane lipids and water.
-
-
 Groups Section
 ^^^^^^^^^^^^^^
 
-In a mapping group, the `sites` section can be replaced by `groups`, which defines a list of sub mapping groups to be repeated. Therefore, the definition of a mapping group can be recursive. It can largely simplify the mapping definitions for complex models with lots of repeated atom groups. Actually, the top-level `system` section can be also considered as the top-level mapping group. The example below show the CG mapping for an ion-liquid system:
+In a mapping group, the `sites` section can be replaced by `groups`, which defines a list of sub mapping groups to be repeated. Therefore, the definition of a mapping group can be recursive. It can largely simplify the mapping definitions for complex models with lots of repeated atom groups. The top-level `system` section can be considered the top-level mapping group. The example below show the CG mapping for an ion-liquid system:
 
 .. admonition:: output
 
@@ -225,7 +247,7 @@ The CG mapping can be defined as:
        x-weight: [14.0, 16.0, 16.0, 16.0]
        f-weight: [ 1.0,  1.0,  1.0,  1.0]
    system:
-     - anchor: 0
+       anchor: 0
        repeat: 16
        offset: 25
        sites:
@@ -235,13 +257,13 @@ The CG mapping can be defined as:
          - [CH2, 15]
          - [CH2, 18]
          - [CH3, 21]
-     - anchor: 400
+       anchor: 400
        repeat: 16
        offset: 4
        sites:
          - [NO3,  0]
 
-In this example, there are 16 pairs of 1-Butyl-3-methylimidazolium cation (25 atoms) and nitrate anion (4 atoms). The atoms of the cation are mapped to 6 CG sites and atoms in the anion are mapped to 1 CG site. As there are three repeated CH3 sites in the cation CG molecule, the following definition for the cation with recursive mapping groups is equavalent:
+In this example, there are 16 pairs of comprised of a 1-Butyl-3-methylimidazolium cation (25 atoms) and a nitrate anion (4 atoms). The atoms of the cation are mapped to 6 CG sites and atoms in the anion are mapped to 1 CG site. As there are three repeated CH3 sites in the cation CG molecule, the following definition for the cation with recursive mapping groups is equivalent to the previous mapping:
 
 .. code-block::
    :caption: Recursive CG mapping
@@ -250,27 +272,27 @@ In this example, there are 16 pairs of 1-Butyl-3-methylimidazolium cation (25 at
      ...
      ...
    system:
-     - anchor: 0
+       anchor: 0
        repeat: 16
        offset: 25
        groups:
-         - anchor: 0
+           anchor: 0
            repeat: 1
            offset: 12
            sites:
              - [CH3,  0]
              - [IMI,  4]
-         - anchor: 12
+           anchor: 12
            repeat: 3
            offset: 3
            sites:
              - [CH2, 0]
-         - anchor: 21
+           anchor: 21
            repeat: 1
            offset: 4
            sites:
              - [CH3,  0]
-     - anchor: 400
+       anchor: 400
        repeat: 16
        offset: 4
        sites:

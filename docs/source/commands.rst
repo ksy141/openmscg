@@ -13,7 +13,6 @@ List of Commands
    cgrem
 
 .. toctree::
-   :hidden:
 
    commands/cgib
    commands/cgmap

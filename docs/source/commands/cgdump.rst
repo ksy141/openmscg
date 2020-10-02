@@ -6,7 +6,7 @@ cgdump
 Notes
 -----
 
-This commands supports only the LAMMPS tabulated potential at the moment, but supports to other MD software packages will added in future.
+This commands only supports LAMMPS tabulated potential at the moment, but support for other MD software packages will added in future.
 
 
 Examples

@@ -1,6 +1,9 @@
 cgfm
 ====
 
+This command performs multiscale coarse-graining (i.e. force-matching) on a
+mapped atomistic trajectory.
+
 .. include:: common.rst
 
 .. automodule:: mscg.cli.cgfm
@@ -12,18 +15,18 @@ cgfm
 
 * |cli-opt-model|
 
-* For more details about the options ``--ucg`` and ``--ucg-wf``, please read the section for `UCG Method`_.
+* For more details about the options ``--ucg`` and ``--ucg-wf``, please read the subsection below for `Ultra Coarse-Graining`_.
 
 Notes
 -----
 
-* The script ``cgfm`` doesn't dump the force or coefficient table in the plain-text format. Instead, there are two binary output files, in the `Python pickle <https://docs.python.org/3/library/pickle.html>`_ format, named by the option ``--save``. By default, they are *covariance_matrix.p* and *coeffs_matrix.p*.
+* The script ``cgfm`` doesn't dump the force or coefficient table in the plain-text format. Instead, there are two binary output files (`they are pickle files <https://docs.python.org/3/library/pickle.html>`_),  named by the option ``--save``. By default, they are named *covariance_matrix.p* and *coeffs_matrix.p*.
 
-  * **coeffs_matrix.p** stores the coeffients of B-Spline for each force table after solving the regression problem. Users can use the command `cgdump <cgdump.html>`_ to dump the readable force tables from it.
-  
   * **covariance_matrix.p** stores the covariance matrix for the regression problem before solving it. It can be used as intermediate results for debugging or other purposes.
 
-* If this command is `called with in another Python script <../commands.html#call-command-in-python>`_, users may want to access the results after call its main function. In this case, users can pass the value *"return"* to the ``--save`` function, and the coefficient matrix will be returned to the wrapper script as lists. Example::
+  * **coeffs_matrix.p** stores the coefficients of B-Spline for each force table after solving the regression problem. Users can use the command `cgdump <cgdump.html>`_ to dump the readable force tables from it.
+  
+* If this command is `called with in another Python script <../commands.html#call-command-in-python>`_, users may want to access these results directly. In this case, users can pass the value *"return"* to the ``--save`` argument and the coefficient matrix will be returned to the wrapper script as lists. For example::
     
     coeffs = cgfm.main(
         top     = datafile("unary_lj_fluid.top"),
@@ -36,25 +39,24 @@ Notes
 * If you have used the old ``MSCGFM`` software, this command is a replacement to the ``newfm`` command in ``MSCGFM``.
 
 
-UCG Method
-----------
+Ultra Coarse-Graining
+---------------------
 
-Ultra-Coarse-Graining (UCG) is a more powerful methodology that allows chemical and environmental changes to be captured by modulating the interactions between internal states. In a UCG model, the CG sites can be with a mixed types or "colors" depending on its sorroundings on-the-fly. This algorithm is very important when the same group of atoms of a CG site have different (atomic or electronic) conformations in the simulation system.
+Ultra Coarse-Graining (UCG) is a methodology that allows chemical and environmental changes to be captured by modulating the interactions between coarse-grained sites (often as a function of their environment). In a UCG model, the CG sites can comprised of multiple types depending on its surroundings. This algorithm is useful when the group of atoms in a CG site acts differently in different chemical environments. The current implementation primarily support rapid local equilibrium UCG.
 
-
-
-The option ``--ucg`` defines the parameters to control the UCG scheme by a comma seperated string with ``key=value`` fields:
+The option ``--ucg`` defines the parameters to control the UCG scheme using a comma separated string with the following ``key=value`` fields:
 
   * ``replica=N``, the number of replica to be spawned from a CG frame.
-  * ``seed=N``, the random seed for spwaning states.
+  * ``seed=N``, the random seed for spawning states.
 
-The option ``--ucg-wf`` defines the weighting functions that's used to calculate the probabilities of states for a CG type. It is also a comma separated string starting with the weighting function name following by a group of ``key=value`` fields:
+The option ``--ucg-wf`` defines the weighting functions that's used to calculate the probabilities of states for a CG type. It is also a comma separated string starting with the weighting function name following by a group of ``key=value`` fields. For example:
 
-  * Rapid Local Equilibrium (RLE) Model: ``--ucg-wf RLE,target=MeOH,high=Near,low=Far,rth=4.5,wth=3.5``
-  
-     * target=[name], the name of the targeted CG type to be spawn.
-     * high=[name],low=[name], the names of the CGs types representing sites high or low local densities.
-     * rth=[float],wth=[float], the two parameters in RLE model used to calculate local coordination numbers.
+
+  * A sample rapid methanol model: ``--ucg-wf RLE,target=MeOH,high=Near,low=Far,rth=4.5,wth=3.5``
+
+     * target=[name], the name of the targeted CG type to spawn.
+     * high=[name],low=[name], the names of the CG types representing sites of high or low local densities.
+     * rth=[float],wth=[float], the two parameters in the UCG model used to calculate local coordination numbers.
 
 .. seealso::
     Jaehyeok Jin and Gregory A. Voth, "Ultra-Coarse-Grained Models Allow for an Accurate and Transferable Treatment of Interfacial Systems", Journal of Chemical Theory and Computation, 14(4), 2180-2197 (2018). doi:10.1021/acs.jctc.7b01173
