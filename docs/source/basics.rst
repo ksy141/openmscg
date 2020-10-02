@@ -33,7 +33,7 @@ For the openMSCG package, we offer a package-specific file format to define the 
 
 
 Command Line Interface (CLI) Option for Topology
-"""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""
 
 Many `CLI commands <commands.html>`_ need to read a topology file for processing, and use the option flag ``--top file``.
 
@@ -76,7 +76,7 @@ In this example, the file ``md.trr`` will be processed. First, the first 10 fram
 
 
 Tabulated Models (Force-Field)
----------------
+------------------------------
 
 In molecular modeling, models (or force-fields) are mathematical functions of variables (e.g. distances or angles) to describe the forces and potential energies of a molecular system. One of the important outcomes in openMSCG is to obtain optimized parameters for the force-field. Four styles of interactions can be specified as runtime options for either FM or REM methods: **--pair, --bond, --angle, --dihedral**.
 
