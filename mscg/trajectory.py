@@ -101,8 +101,8 @@ class Trajectory:
         
         self._file = filename
         self._mode = mode
-        self._data = {}
-        
+        self._data = {k:None for k in type(self)._datadefs}
+
         if mode not in ["r", "w", "a"]:
             raise Exception('Unsupported mode: ' + mode)
                 
@@ -129,7 +129,7 @@ class Trajectory:
                 "Invalid header or format",
                 "No frame data"
             ]
-            raise Exception('Error: ' + err_msg[st])
+            raise Exception('Error: ' + err_msg[self._status])
         
         if "r" in mode:
             self.natoms = lib.get_natoms(self._h)
@@ -153,7 +153,7 @@ class Trajectory:
         
     def __setattr__(self, name, value):
         if name in type(self)._data_names:
-            self._data[name] = value
+            self._data[name] = None if value is None else value.astype(type(self)._datadefs[name]['dtype'])
             return
         
         super().__setattr__(name, value)
@@ -200,7 +200,7 @@ class Trajectory:
         :rtype: bool
         """
         
-        if self.mode not in ["w", "a"]:
+        if self._mode not in ["w", "a"]:
             raise Exception("File is not in writing mode.")
         
         return lib.write_frame(self._h, self.box.astype(np.float32), 

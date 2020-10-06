@@ -191,7 +191,7 @@ int TrajLAMMPS::write_frame()
     
     for(int i=0; i<natoms; i++)
     {
-        fprintf(fp, "%d", i);
+        fprintf(fp, "%d", i+1);
         if(attrs['t']) fprintf(fp, " %d", t[i]);
         if(attrs['q']) fprintf(fp, " %f", q[i]);
         fprintf(fp, " %f %f %f", x[i][0], x[i][1], x[i][2]);
