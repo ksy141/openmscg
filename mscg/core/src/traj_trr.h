@@ -2,7 +2,7 @@
 #define TRAJ_TRR_H
 
 #include "traj.h"
-#include "xdrfile_trr.h"
+#include "gmx/xdrfile_trr.h"
 
 class TrajTRR : public Traj
 {

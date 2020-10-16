@@ -9,6 +9,7 @@ class BondBSpline(Model):
         self.max = 1.6
         self.order = 6
         self.resolution = 0.1
+        self.serialized_names = ['min', 'max', 'resolution', 'order']
         super().__init__(**kwargs)
         self._h = lib.create(self.min, self.max, self.resolution, self.order)
         lib.setup_cache(self._h, self.resolution * 0.01)

@@ -6,10 +6,10 @@ import __main__
 
 class Checkpoint:
     
-    def __init__(self, filename):
+    def __init__(self, filename, script):
         
         self.data = {
-            'script': __main__.__file__,
+            'script': script,
             'command': " ".join(sys.argv),
             'os': sys.platform,
             'host': socket.gethostname(),

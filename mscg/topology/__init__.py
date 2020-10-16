@@ -671,11 +671,26 @@ class Topology:
             if hasattr(formatters[name]['module'], 'inspect'):
                 formatters[name]['inspector'] = getattr(formatters[name]['module'], 'inspect')
             
-            if hasattr(formatters[name]['module'], 'load'):
-                formatters[name]['loader'] = getattr(formatters[name]['module'], 'load')
+            if hasattr(formatters[name]['module'], 'read'):
+                formatters[name]['reader'] = getattr(formatters[name]['module'], 'read')
+            
+            if hasattr(formatters[name]['module'], 'write'):
+                formatters[name]['writer'] = getattr(formatters[name]['module'], 'write')
         
         return formatters
+    
+    def save(self, formatter, **kwargs):
+        formatters = Topology.search_formatters()
         
+        if formatter is None or formatter not in formatters:
+            raise Exception("Unknown topology format.")
+        
+        if 'writer' not in formatters[formatter]:
+            raise Exception("Cannot find a writer for the format: " + formatter)
+        
+        formatters[formatter]['writer'](self, **kwargs)
+        
+            
     @classmethod
     def read_file(cls, file:str, formatter=None):
         '''
@@ -709,10 +724,10 @@ class Topology:
         if formatter is None:
             raise Exception("Unknown topology format.")
         
-        if 'loader' not in formatters[formatter]:
-            raise Exception("Cannot find a loader for the format: " + formatter)
+        if 'reader' not in formatters[formatter]:
+            raise Exception("Cannot find a reader for the format: " + formatter)
         
-        return formatters[formatter]['loader'](rows)
+        return formatters[formatter]['reader'](rows)
     
    
         

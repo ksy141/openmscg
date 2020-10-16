@@ -78,6 +78,12 @@ class Trajectory:
     
     _data_names = 'tqxvf'
     
+    supported_formats = {
+        'trr': 'trr',
+        'dcd': 'dcd',
+        'lammpstrj': 'lmp'
+    }
+    
     def __init__(self, filename, mode='r', fmt=''):
         """Create a Trajectory object. In read-mode, an exception will be raised up if the file doesn't exist.
         
@@ -113,11 +119,11 @@ class Trajectory:
         
         if ("r" in mode) and (not os.path.isfile(filename)):
             raise Exception('File not found: ' + filename)
-        
-        if self.fmt == 'trr':    
-            self._h = lib.open_trr(filename, mode)
-        elif self.fmt == 'lammpstrj':
-            self._h = lib.open_lmp(filename, mode)
+                
+        if self.fmt in Trajectory.supported_formats:
+            func_name = 'open_' + Trajectory.supported_formats[self.fmt]
+            func_open = getattr(lib, func_name)
+            self._h = func_open(filename, mode)
         else:
             raise Exception('Unsupported file format: ' + self.fmt)
         

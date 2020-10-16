@@ -162,7 +162,7 @@ def main(*args, **kwargs):
             m.params[:] = c[offset:offset + m.nparam]
             offset += m.nparam
         
-        Checkpoint(args.save).update({'models': models.serialize(), 'X': matrix_cov, 'c': c}).dump()
+        Checkpoint(args.save, __file__).update({'models': models.serialize(), 'X': matrix_cov, 'c': c}).dump()
     
     screen.info([""] + TIMER.report(False) + [""])
     

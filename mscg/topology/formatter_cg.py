@@ -63,7 +63,7 @@ def inspect(rows):
     
     return False
     
-def load(rows):
+def read(rows):
     top = Topology()
     ir = 0
     

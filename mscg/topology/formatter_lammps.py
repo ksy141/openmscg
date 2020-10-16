@@ -17,7 +17,7 @@ def inspect(rows):
     
     return False
 
-def load(rows):
+def read(rows, **kwargs):
     
     def find_section(rows, header):
         try:
@@ -46,3 +46,58 @@ def load(rows):
         top.add_bondings(t, ['?'] * len(atoms[0]), atoms, autotype=True)
     
     return top
+
+def write(top, **kwargs):
+    
+    box = kwargs['box']
+    masses = kwargs['masses']
+    x = kwargs['x']
+    
+    with open(top.system_name + '.data', 'w') as f:
+        f.write("%s\n\n" % (top.system_name))
+        
+        for t in Topology.all_types:
+            n = len(top._names[t])
+            if n>0: f.write("%d %s types\n" % (n, t))
+        
+        f.write("\n")
+        
+        for t in Topology.all_types:
+            n = len(top._types[t])
+            if n>0: f.write("%d %ss\n" % (n, t))
+            
+        
+        f.write("\n%f %f xlo xhi" % (box[0][0], box[0][1]))
+        f.write("\n%f %f ylo yhi" % (box[1][0], box[1][1]))
+        f.write("\n%f %f zlo zhi" % (box[2][0], box[2][1]))
+        f.write("\n")
+                
+        f.write("\nMasses\n\n")
+        
+        for i in range(top.ntype_atom):
+            f.write("%d %f # %s\n" % (i+1, masses[i], top.names_atom[i]))
+
+        f.write("\nAtoms\n\n")
+        types_atom = top.types_atom
+        
+        for i in range(top.n_atom):
+            f.write("%d %s %d %s %f %f %f\n" % (i+1, 
+                str(kwargs['molecule'][i]) if 'molecule' in kwargs else '', 
+                types_atom[i] + 1,
+                str(kwargs['charge'][i]) if 'charge' in kwargs else '', 
+                x[i][0], x[i][1], x[i][2]))
+        
+        for t in Topology.bonded_types:
+            n = len(top._types[t])
+            
+            if n>0:
+                f.write("\n%ss\n\n" % (t.capitalize()))
+                bonded_atoms = top._bonded_atoms[t]
+                
+                for i in range(n):
+                    atom_index = ' '.join([str(bonded_atoms[d, i] + 1) for d in range(Topology.bonded_natoms[t])])
+                    f.write("%d %d %s\n" % (i+1, top._types[t][i]+1, atom_index))
+
+    
+    
+    

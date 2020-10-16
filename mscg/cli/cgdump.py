@@ -67,6 +67,8 @@ def main(*args, **kwargs):
     screen.info('Working path: %s' % (matrix['path']))
     screen.info('The file contains %d models:' % (len(matrix['models'])))
     
+    model_kwargs = {}
+    
     for name, model in matrix['models'].items():
         info = ' * %-16s:' % (name)
         class_kwargs = {}
@@ -75,7 +77,8 @@ def main(*args, **kwargs):
             if k not in ['module_name', 'class_name', 'style', 'type', 'params', 'nparam']:
                 info += ' %s=%s' % (k, str(model[k]))
                 class_kwargs[k] = model[k]
-                
+        
+        model_kwargs[name] = class_kwargs
         screen.info(info)
     
     # dump LAMMPS table file
@@ -98,11 +101,16 @@ def main(*args, **kwargs):
         
         model_module = importlib.import_module(model['module_name'])
         model_class = getattr(model_module, model['class_name'])
-        m = model_class(**class_kwargs)
+        
+        m = model_class(**model_kwargs[mname])
         m.params = model['params']
         setattr(m, 'name', mname)
         tbl = Table(m)
         tbl.compute(xmin, xmax, dx)
+        
+        if not mname.startswith('Pair_'):
+            tbl.u = tbl.u - tbl.u.min()
+        
         return tbl
     
     if args.dump is not None:

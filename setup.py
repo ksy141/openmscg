@@ -143,8 +143,11 @@ if __name__ == '__main__':
         ),
 
         Extension(core_prefix + 'traj',
-            include_dirs = inc_path,
-            sources = src_files('py_traj', ['traj','traj_lammps','traj_trr','xdrfile','xdrfile_trr']),
+            include_dirs = inc_path + [src_path + 'gmx', src_path + 'dcd'],
+            sources = src_files('py_traj', ['traj','traj_lammps',
+                                            'traj_trr','gmx/xdrfile','gmx/xdrfile_trr', 
+                                            'traj_dcd','dcd/dcdplugin'
+                                           ]),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
         ),

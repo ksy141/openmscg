@@ -3,8 +3,9 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 
-#include "traj_trr.h"
 #include "traj_lammps.h"
+#include "traj_trr.h"
+#include "traj_dcd.h"
 #include <string.h>
 
 #define PYAPI(api) PyObject* api(PyObject* self, PyObject* args)
@@ -110,8 +111,9 @@ PyObject* write_frame(PyObject* self, PyObject* args)
 
 static PyMethodDef cModPyMethods[] =
 {
-    {"open_trr",    open_traj<TrajTRR>,    METH_VARARGS, "Open Gromacs TRR file."},
     {"open_lmp",    open_traj<TrajLAMMPS>, METH_VARARGS, "Open LAMMPS cumstomized dump file."},
+    {"open_trr",    open_traj<TrajTRR>,    METH_VARARGS, "Open Gromacs TRR file."},
+    {"open_dcd",    open_traj<TrajDCD>,    METH_VARARGS, "Open CHARMM/NAMD DCD file."},
     {"close",       close,       METH_VARARGS, "Close the opened file."},
     {"rewind",      rewind,      METH_VARARGS, "Rewind the opened file."},
     {"get_status",  get_status,  METH_VARARGS, "Get trajectory status."},

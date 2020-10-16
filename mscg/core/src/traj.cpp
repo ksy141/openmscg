@@ -24,7 +24,7 @@ void Traj::allocate()
 {
     if(natoms>maxatoms) 
     {
-        deallocate(); printf("Allocate ...\n");
+        deallocate();
         maxatoms = natoms;
         t = new int[maxatoms];
         q = new float[maxatoms];
@@ -36,7 +36,6 @@ void Traj::allocate()
 
 void Traj::deallocate()
 {
-printf("Deallocate ...\n");
     if(t) delete [] t;
     if(q) delete [] q;
     if(x) delete [] x;
