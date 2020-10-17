@@ -6,7 +6,7 @@ package:
   version: "{{ version }}"
 
 source:
-  url: https://software.rcc.uchicago.edu/download/OpenMSCG-0.1.0.tar.gz
+  url: https://software.rcc.uchicago.edu/mscg/downloads/OpenMSCG-0.1.0.tar.gz
 
 build:
   number: 0
