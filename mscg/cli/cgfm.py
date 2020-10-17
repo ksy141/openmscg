@@ -170,7 +170,7 @@ def main(*args, **kwargs):
         clf.fit(XtX, XtY)
         c = clf.coef_
     else:
-        screen.info["Solver => OLS"]
+        screen.info(["Solver => OLS"])
         c = np.matmul(np.linalg.inv(XtX), XtY)
     
     screen.info(["Model coefficients:", c])

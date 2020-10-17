@@ -6,7 +6,7 @@ import __main__
 
 class Checkpoint:
     
-    def __init__(self, filename, script):
+    def __init__(self, filename, script='__undefined__'):
         
         self.data = {
             'script': script,

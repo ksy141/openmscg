@@ -103,8 +103,9 @@ if __name__ == '__main__':
     src_path    = core_root + 'src/'
     inc_path    = [src_path, np.get_include()]
     
-    if 'PREFIX' in os.environ:
-        inc_path.append(os.environ['PREFIX'] + '/include')
+    for prefix in ['CONDA_PREFIX', 'PREFIX']:
+        if prefix in os.environ:
+            inc_path.append(os.environ[prefix] + '/include')
     
     def src_files(api, files):
         return [api_path + api + '.cpp'] + [src_path + file + '.cpp' for file in files]

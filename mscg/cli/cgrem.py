@@ -218,7 +218,7 @@ def main(*args, **kwargs):
         
         # generate tables
         
-        Checkpoint(args.restart + ".bak").update({'dudl_ref': dudl_ref, 'iterations': iters}).dump()
+        Checkpoint(args.restart + ".bak", __file__).update({'dudl_ref': dudl_ref, 'iterations': iters}).dump()
         params = args.optimizer.run(params.copy(), dudl_ref, dudl_mean, dudl_var)
         
         for m in models.items:
@@ -248,7 +248,7 @@ def main(*args, **kwargs):
             'dudl_var': dudl_var,
         })
         
-        Checkpoint(args.restart).update({ 'dudl_ref': dudl_ref, 'iterations': iters}).dump()
+        Checkpoint(args.restart, __file__).update({ 'dudl_ref': dudl_ref, 'iterations': iters}).dump()
 
     
 

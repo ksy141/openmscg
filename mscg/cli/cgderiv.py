@@ -137,7 +137,7 @@ class CGDeriv:
         if self.args.save == 'return':
             return dudl_mean, dudl_var
         else:
-            Checkpoint(self.args.save).update({
+            Checkpoint(self.args.save, __file__).update({
                 'models'    : models.serialize(),
                 'dudl_mean' : dudl_mean,
                 'dudl_var'  : dudl_var
