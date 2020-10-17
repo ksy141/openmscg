@@ -12,4 +12,10 @@ This commands only supports LAMMPS tabulated potential at the moment, but suppor
 Examples
 --------
 
-*To be added*
+::
+    
+    cgdump --file result.p --dump Pair_MeOH-MeOH,2.5,8.0,0.1
+
+::
+    
+    cgdump --file result.p --plot Pair_MeOH-MeOH,2.5,8.0,0.1

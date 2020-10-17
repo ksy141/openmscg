@@ -34,7 +34,7 @@ in your computer system:
 
 1. Python (version>=3.6)
 2. C++ compiler (support C++11 standard)
-3. GSL library (version>=2.1)
+3. GSL library (version>=2.1 & <=2.4)
 4. LAPACK library
 
 **IMPORTANT**: Python 2 is not supported.

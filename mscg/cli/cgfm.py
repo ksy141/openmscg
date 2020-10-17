@@ -35,6 +35,7 @@ Syntax of running ``cgib`` command ::
                             (default args: file,skip=0,every=1,frames=0) (default:
                             [])
       --cut                 cut-off for pair interactions (default: 10.0)
+      --lasso               lambda value for Lasso regularizer (default: 0.0)
       --save                file name for matrix output (default: result)
       --pair [key=value]    add a model declaration for pair-style interactions.
                             (default: [])
@@ -72,6 +73,8 @@ def main(*args, **kwargs):
     
     group.add_argument("--cut", metavar='', type=float, default=10.0, help="cut-off for pair interactions")
     group.add_argument("--save",  metavar='', type=str, default="result", help="file name for matrix output")
+    
+    group.add_argument("--lasso",  metavar='', type=float, default=0.0, help="lambda value for Lasso regularizer")
     
     group.add_argument("--pair",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('pair'), default=[])
     group.add_argument("--bond",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('bond'), default=[])
@@ -152,7 +155,26 @@ def main(*args, **kwargs):
         
     # end of processing trajectories
     
-    c = np.matmul(np.linalg.inv(matrix_cov), vector_cov)
+    XtX = matrix_cov
+    XtY = vector_cov
+    
+    if args.lasso > 1.0e-32:
+        screen.info(["Solver => LASSO_LARS"])
+        
+        try:
+            from sklearn import linear_model
+            clf = linear_model.LassoLars(alpha=args.lasso, fit_intercept=False, max_iter=50000)
+        except:
+            screen.fatal("Package [sklearn] is required when using the LASSO estimator. (See https://scikit-learn.org/stable/install.html)")
+            
+        clf.fit(XtX, XtY)
+        c = clf.coef_
+    else:
+        screen.info["Solver => OLS"]
+        c = np.matmul(np.linalg.inv(XtX), XtY)
+    
+    screen.info(["Model coefficients:", c])
+    
     TIMER.click('solver')
         
     if args.save != "return":

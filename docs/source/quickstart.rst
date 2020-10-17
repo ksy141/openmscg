@@ -16,7 +16,7 @@ Using `conda`, install the software by running the following command ::
     conda install -c vothgroup openmscg
 
 Test the Installation
---------------------
+---------------------
 
 Run the following command to check the package information ::
 

@@ -298,3 +298,11 @@ In this example, there are 16 pairs of comprised of a 1-Butyl-3-methylimidazoliu
        sites:
          - [NO3,  0]
 
+Examples
+--------
+
+::
+    
+    cgmap --traj tests/data/methanol_1728_aa.trr \
+          --map tests/data/methanol_1728_2s_map.yaml \
+          --out cg.trr

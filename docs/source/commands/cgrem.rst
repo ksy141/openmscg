@@ -67,5 +67,12 @@ A customized optimizer can be developed in Python in a file placed in the workin
 Examples
 --------
 
-*To be added*
+::
+    
+    cgrem --ref model_ref.p --model model.txt \
+          --cgderiv-arg cgderiv.sh --md md.inp \
+          --restart restart --table ./ \
+          --optimizer builtin,chi=0.5,t=298.15 \
+          --maxiter 1000
+
 

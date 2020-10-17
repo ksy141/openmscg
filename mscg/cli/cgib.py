@@ -179,7 +179,7 @@ def main(*args, **kwargs):
     if args.angle is not None:
         for angle in args.angle:
             screen.info("Add angle plot: " + angle.name)
-            angles.id = args.top.bonding_tid('angle', angle.types)
+            angle.id = args.top.bonding_tid('angle', angle.types)
 
     # start processing trajectory
     

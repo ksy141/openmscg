@@ -2,7 +2,7 @@ from mscg import *
 import numpy as np
 from ..core import cxx_model_angle_bspline as lib
 
-class BondBSpline(Model):
+class AngleBSpline(Model):
     
     def __init__(self, **kwargs):
         self.min = 0.0
@@ -17,7 +17,7 @@ class BondBSpline(Model):
     def setup(self, top, bondlist):
         self.nparam = lib.get_npars(self.min, self.max, self.resolution, self.order)
         super().setup(top, bondlist)
-        self.setup(self._h, self.tid, bondlist._h, self.dF, self.dU)
+        lib.setup(self._h, self.tid, bondlist._h, self.dF, self.dU)
     
     def compute_fm(self):
         self.dF.fill(0)

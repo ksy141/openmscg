@@ -31,4 +31,22 @@ Notes
 Examples
 --------
 
-*To be added*
+::
+    
+    cgib --top tests/data/methanol_1728.data \
+         --traj tests/data/methanol_1728_cg.trr \
+         --names MeOH --cut 10.0 --temp 298.15 \
+         --pair MeOH,MeOH,min=2.4,max=10.0,bins=200
+
+::
+    
+    cgib --top tests/data/methanol_1728_2s.data \
+         --traj tests/data/methanol_1728_2s.trr \
+         --names CH3,OH --cut 10.0 --temp 298.15 \
+         --pair CH3,CH3,min=2.4,max=10.0,bins=200 \
+         --pair CH3,OH,min=2.4,max=10.0,bins=200 \
+         --pair OH,OH,min=2.0,max=10.0,bins=200 \
+         --bond CH3,OH,min=1.35,max=1.65,bins=60 \
+         --plot n
+
+    

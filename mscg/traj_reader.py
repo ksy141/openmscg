@@ -138,6 +138,15 @@ class TrajReader:
             self.close()
             return False
     
+    def __iter__(self):
+        self.close()
+        return self
+    
+    def __next__(self):
+        if self.next_frame():
+            return self.traj
+        else:
+            raise StopIteration
 
 
 

@@ -1,0 +1,48 @@
+{% set name = "OpenMSCG" %}
+{% set version = "0.1.0" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  url: https://software.rcc.uchicago.edu/download/OpenMSCG-0.1.0.tar.gz
+
+build:
+  number: 0
+  script: "pip install ."
+  script_env:
+    - CC
+    - CXX
+  preserve_egg_dir: True
+
+requirements:
+  build:
+    - pip
+    - python
+    - numpy
+    - mkl
+    - mkl-devel
+    - mkl-include
+    - gsl
+  run:
+    - python
+    - numpy
+    - mkl
+    - gsl
+    - pyyaml
+
+about:
+  home: "https://software.rcc.uchicago.edu/mscg/"
+  license: GPLv3
+  license_family: GPL
+  license_file: 
+  summary: "OpenMSCG"
+  doc_url: "https://software.rcc.uchicago.edu/mscg/docs"
+  dev_url: "https://software.rcc.uchicago.edu/mscg/docs/module.html"
+
+extra:
+  recipe-maintainers:
+    - "Yuxing Peng @VothGroup <yuxing@uchicago.edu>"
+    - "Alexander Pak @VothGroup <ajpak@uchicago.edu>"
+    - "Aleksander Durumeric @VothGroup <aleksander@uchicago.edu>"

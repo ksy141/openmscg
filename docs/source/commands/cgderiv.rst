@@ -23,5 +23,10 @@ Notes
 Examples
 --------
 
-*To be added*
+::
+
+    cgderiv --top water_512_cg.data \
+            --traj water_512_cg.lammpstrj \
+            --names SL --cut 7.0 \
+            --pair model=BSpline,type=SL:SL,min=2.4,max=7.0,resolution=0.2,order=4
 

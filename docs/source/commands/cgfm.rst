@@ -64,4 +64,26 @@ The option ``--ucg-wf`` defines the weighting functions that's used to calculate
 Examples
 --------
 
-*To be added*
+::
+    
+    cgfm --top ../tests/data/methanol_1728.data \
+         --traj ../tests/data/methanol_1728_cg.trr \
+         --cut 8.0 --names MeOH --lasso 1.0 \
+         --pair model=BSpline,type=MeOH:MeOH,min=2.8,resolution=0.2
+
+::
+    
+    cgfm --top tests/data/methanol_1728_2s.data \
+         --traj tests/data/methanol_1728_2s.trr \
+         --cut 8.0 --names CH3,OH \
+         --pair model=BSpline type=CH3,CH3 min=2.9 resolution=0.1 order=6 \
+         --pair model=BSpline type=CH3,OH min=2.8 resolution=0.1 order=6 \
+         --pair model=BSpline type=OH,OH min=2.5 resolution=0.1 order=6 \
+         --bond model=BSpline type=CH3,OH min=1.35 max=1.65 resolution=0.01 order=4
+
+::
+    
+    cgfm --top tests/data/methanol_1728.data \
+         --traj run/methanol_slab_cg.trr \
+         --cut 8.0 --names MeOH \
+         --ucg RLE,type=MeOH
