@@ -154,7 +154,7 @@ class PairList:
         :type box: numpy.array(shape=(3,), dtype=float)
         '''
         lib.setup_bins(self._h, box)
-    
+        
     def build(self, x:np.ndarray):
         '''
         Build the pair-list.

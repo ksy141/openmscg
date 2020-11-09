@@ -27,7 +27,12 @@ class BondList
     int ndihedrals;
     vec4i *dihedral_atoms;
     int *dihedral_types;
-    float *theta_dihedral;
+    float *phi_dihedral;
+    
+    float *dpd1x_dihedral, *dpd1y_dihedral, *dpd1z_dihedral;
+    float *dpd2x_dihedral, *dpd2y_dihedral, *dpd2z_dihedral;
+    float *dpd3x_dihedral, *dpd3y_dihedral, *dpd3z_dihedral;
+    float *dpd4x_dihedral, *dpd4y_dihedral, *dpd4z_dihedral;
     
     // functions
     

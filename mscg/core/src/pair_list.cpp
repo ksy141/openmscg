@@ -22,7 +22,14 @@ Stencil::~Stencil()
 
 void Stencil::setup(PairList *pair, int me)
 {
-    int max_neigh = pair->nbins<27?27:pair->nbins;
+    int nx = static_cast<int>(ceil(pair->cut / pair->binsizex));
+    int ny = static_cast<int>(ceil(pair->cut / pair->binsizey));
+    int nz = static_cast<int>(ceil(pair->cut / pair->binsizez));
+    
+    
+    
+    int max_neigh = (nx*2+1) * (ny*2+1) * (nz*2+1);
+    if(max_neigh<27) max_neigh = 27;
     
     neigh_bins = new int[max_neigh];
     sx = new int[max_neigh];
@@ -31,11 +38,6 @@ void Stencil::setup(PairList *pair, int me)
     
     int xme, yme, zme;
     pair->bin2offset(me, &xme, &yme, &zme);
-    
-    int nx = static_cast<int>(ceil(pair->cut / pair->binsizex));
-    int ny = static_cast<int>(ceil(pair->cut / pair->binsizey));
-    int nz = static_cast<int>(ceil(pair->cut / pair->binsizez));
-    
     n_neigh = 0;
     
     for(int ix=xme; ix<=xme+nx; ix++)

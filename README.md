@@ -25,4 +25,16 @@ cginfo
 
 See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
+## Notes of Updates & Changes
 
+**0.1.1**
+
+1. The unit of input values for CGFM angular models is changed from radius to degrees.
+2. Add calculation of dihedral angles in CGIB.
+3. Add new GaussCut model for the REM method.
+4. Change the matrix inversion in CGFM to allow for the singular matrix.
+5. Fix a bug in PairList to reduce the need of memory in verlet-list.
+
+**0.1.0**
+
+1. All basic features are released

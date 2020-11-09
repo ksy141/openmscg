@@ -84,7 +84,7 @@ class CGDeriv:
         # prepare lists
 
         screen.info("Build pair and bonding list-based algorithm ...")
-        plist = PairList(cut = args.cut)
+        plist = PairList(cut = args.cut, binsize = args.cut * 0.5)
         plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
         
         # setup models
@@ -114,7 +114,7 @@ class CGDeriv:
             
             if reader.nread == 1:
                 self.plist.setup_bins(reader.traj.box)
-                        
+            
             TIMER.click('io')
             TIMER.click('pair', self.plist.build(reader.traj.x))
             #TIMER.click('bond', blist.build(reader.traj.box, reader.traj.x))

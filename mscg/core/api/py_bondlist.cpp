@@ -69,7 +69,7 @@ PYAPI(get_scalar)
     PyArg_ParseTuple(args, "LiO", &p, &target, &npData);
     
     int n = (target==0?p->nbonds:(target==1?p->nangles:p->ndihedrals));
-    float *pd = (target==0?p->dr_bond:(target==1?p->theta_angle:p->theta_dihedral));
+    float *pd = (target==0?p->dr_bond:(target==1?p->theta_angle:p->phi_dihedral));
     
     float *des = (float*)PyArray_DATA(npData);
     for(int i=0; i<n; i++) des[i] = pd[i];

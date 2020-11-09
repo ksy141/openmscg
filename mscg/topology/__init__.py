@@ -651,7 +651,7 @@ class Topology:
         elif name2 in self._names[item]:
             return self._names[item].index(name2)
         
-        raise Exception('Unknown bonding type:', str(atom_names), 'in', item)
+        raise Exception('Unknown bonding type: ' + str(atom_names) + 'in' + item)
     
     @classmethod
     def search_formatters(cls):

@@ -29,8 +29,6 @@ void ModelAngleBSpline::compute_fm()
     float *a22 = lst->a22_angle;
     float *theta = lst->theta_angle;
     
-    float r2d = 180 / 3.14159265359;
-    
     for(int i=0; i<lst->nangles; i++) if(types[i] == tid)
     {         
         double *b;
@@ -55,7 +53,7 @@ void ModelAngleBSpline::compute_fm()
         
         for(int c=0; c<nn; c++)
         {
-            double Bi = b[c] * r2d;
+            double Bi = b[c];
             int pos = istart + c;
             coeff_i[pos] += Bi * f1x;
             coeff_j[pos] -= Bi * (f1x + f3x);
@@ -68,7 +66,7 @@ void ModelAngleBSpline::compute_fm()
         
         for(int c=0; c<nn; c++)
         {
-            double Bi = b[c] * r2d;
+            double Bi = b[c];
             int pos = istart + c;
             coeff_i[pos] += Bi * f1y;
             coeff_j[pos] -= Bi * (f1y + f3y);
@@ -81,7 +79,7 @@ void ModelAngleBSpline::compute_fm()
 
         for(int c=0; c<nn; c++)
         {
-            double Bi = b[c] * r2d;
+            double Bi = b[c];
             int pos = istart + c;
             coeff_i[pos] += Bi * f1z;
             coeff_j[pos] -= Bi * (f1z + f3z);

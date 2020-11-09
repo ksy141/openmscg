@@ -1,8 +1,8 @@
 from mscg import *
 import numpy as np
-from ..core import cxx_model_angle_bspline as lib
+from ..core import cxx_model_dihedral_bspline as lib
 
-class AngleBSpline(Model):
+class DihedralBSpline(Model):
     
     def __init__(self, **kwargs):
         self.min = 0.0
@@ -25,6 +25,7 @@ class AngleBSpline(Model):
         self.dF *= R2D
         
     def compute_rem(self):
+        raise Exception("Method not implemented yet!")
         self.dU.fill(0)
         lib.compute_rem(self._h)
     

@@ -40,6 +40,9 @@ Syntax of running ``cgib`` command ::
       --angle types,args  define new angle analysis with format:
                           type1,type2,type3,args; args and default values are:
                           min=0,max=10,bins=10 (default: [])
+      --dihed types,args  define new dihedral torsion analysis with format:
+                          type1,type2,type3,type4,args; args and default values are:
+                          min=0,max=10,bins=10 (default: [])
       --plot U or n       plot the results of U (potential) or n (distribition)
                           (default: U)
 
@@ -133,6 +136,9 @@ def main(*args, **kwargs):
     AngleAction = BuildHistAction(3, "angle")
     group.add_argument("--angle", metavar='types,args', action=AngleAction, help=AngleAction.help(), default=[])
     
+    DihedAction = BuildHistAction(4, "dihedral")
+    group.add_argument("--dihedral", metavar='types,args', action=DihedAction, help=DihedAction.help(), default=[])
+    
     group.add_argument("--plot", metavar='U or N', type=str, default='U', help="plot the results of U (potential) or n (distribition)")
     
     group.add_argument("--save", metavar='prefix or return', default='noname', type=str)
@@ -155,7 +161,7 @@ def main(*args, **kwargs):
     # prepare lists
     
     screen.info("Build pair and bonding list-based algorithm ...")
-    plist = PairList(cut = args.cut)
+    plist = PairList(cut = args.cut, binsize = args.cut * 0.5)
     plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
     blist = BondList(
         args.top.types_bond, args.top.bond_atoms, 
@@ -180,7 +186,12 @@ def main(*args, **kwargs):
         for angle in args.angle:
             screen.info("Add angle plot: " + angle.name)
             angle.id = args.top.bonding_tid('angle', angle.types)
-
+    
+    if args.dihedral is not None:
+        for dihed in args.dihedral:
+            screen.info("Add dihedral plot: " + dihed.name)
+            dihed.id = args.top.bonding_tid('dihedral', dihed.types)
+    
     # start processing trajectory
     
     TIMER.reset()
@@ -212,9 +223,9 @@ def main(*args, **kwargs):
         
         # process bonding styles
 
-        if len(args.bond)>0 or len(args.angle)>0:
+        if len(args.bond)>0 or len(args.angle)>0 or len(args.dihedral)>0:
             blist.build(reader.traj.box, reader.traj.x)
-
+            
             def process_hist(one, types, vals):
                 vals = vals[types==one.id]
                 hist, edges = np.histogram(vals, bins=one.bins, range=(one.min, one.max))
@@ -227,14 +238,17 @@ def main(*args, **kwargs):
             for one in args.bond:
                 z = blist.get_scalar('bond')
                 types = args.top.types_bond
-                dr = z
-                process_hist(one, types, dr)
+                process_hist(one, types, z)
 
             for one in args.angle:
-                z = blist.get_scalar('angle')
+                z = blist.get_scalar('angle') * (180.0/np.pi)
                 types = args.top.types_angle
-                dr = z * (180.0 / np.pi)
-                process_hist(one, types, dr)
+                process_hist(one, types, z)
+            
+            for one in args.dihedral:
+                z = blist.get_scalar('dihedral') * (180.0/np.pi)
+                types = args.top.types_dihedral
+                process_hist(one, types, z)
 
             TIMER.click('bond')
         
@@ -273,6 +287,10 @@ def main(*args, **kwargs):
         angle.n = np.divide(angle.n, angle.n.max())
         results.append(post_process(angle, 'Angle'))
     
+    for dihed in args.dihedral:
+        dihed.n = np.divide(dihed.n, dihed.n.max())
+        results.append(post_process(dihed, 'Dihderal'))
+        
     if args.save == 'return':
         return results
     else:
@@ -290,6 +308,9 @@ def main(*args, **kwargs):
         
         for angle in args.angle:
             plt.plot(angle.x, getattr(angle, args.plot), label='Angle ' + angle.name)
+        
+        for dihed in args.dihedral:
+            plt.plot(dihed.x, getattr(dihed, args.plot), label='Dihedral ' + dihed.name)
             
         plt.legend(loc='upper right')
         plt.show()

@@ -22,19 +22,19 @@ def test_bond(datafile):
         print("X=%3d, Y0=%10.3e, Y=%10.3e, dY/Y0=%5.2f%%" %(i+1, benchmark[i], coeffs[i], diff*100))
         assert abs(diff)<0.01
 
-'''
+
 def test_angle(datafile):
     
     coeffs = cgfm.main(
         top     = datafile("4_site.top"),
         traj    = datafile("4_site_d_non_periodic.lammpstrj"),
         cut     = 15.0,
-        angle   = ["model=BSpline type=1,1,1 min=80 max=100 resolution=5"],
+        angle   = ["model=BSpline,type=1:1:1,min=80,max=100,resolution=5"],
         verbose = 0,
         save    = 'return'
     )
     
-    benchmark = [0.6033390997989966, 0.5425583878460605, 0.3859922844497738, 0.1386004570285362, -0.10970664721238348, -0.339993126801044, -0.5268646865879502, -0.583997298766073]
+    benchmark = [0.59065808, 0.5332647, 0.51386409, 0.31500864, 0.15369519, -0.12284413, -0.28469427, -0.45104363, -0.5593834, -0.58713964]
     
     print(coeffs)
     print("")
@@ -43,7 +43,6 @@ def test_angle(datafile):
         diff = (coeffs[i] - benchmark[i]) / benchmark[i]
         print("X=%3d, Y0=%10.3e, Y=%10.3e, dY/Y0=%5.2f%%" %(i+1, benchmark[i], coeffs[i], diff*100))
         assert abs(diff)<0.01
-
 
 def test_bond_angle(datafile):
     
@@ -51,19 +50,18 @@ def test_bond_angle(datafile):
         top     = datafile("4_site.top"),
         traj    = datafile("4_site_d_non_periodic.lammpstrj"),
         cut     = 15.0,
-        bond    = ["model=BSpline type=1,1 min=2.75 max=3.25 resolution=0.05"],
-        angle   = ["model=BSpline type=1,1,1 min=79 max=104 resolution=5"],
+        bond    = ["model=BSpline,type=1:1,min=2.75,max=3.25,resolution=0.05"],
+        angle   = ["model=BSpline,type=1:1:1,min=79,max=104,resolution=5"],
         verbose = 0,
         save    = 'return'
     )
     
-    benchmark = [49.947571180460216, 46.57210091106926, 39.54644052444978, 30.325632914443283, 19.919855607160105, 10.114742565610829, 0.006338842257520952, -9.960716011681885, -19.977724701152578, -29.928635480479418, -40.79061530818936, -43.76065295897743, -51.48860803678937, 0.6651218666501006, 0.567848816733788, 0.37448211834472905, 0.06522166052678713, -0.23563017657869229, -0.5428967383628124, -0.760938588359891, -0.7783228220824304]
+    benchmark = [51.95082208296276, 50.746028061110565, 41.720861268243425, 38.39308071446055, 30.26278804868963, 19.860813277824406, 10.173976336889353, -0.036132367084263706, -9.931535050591954, -20.00493926124949, -29.888470122092315, -38.37831464880469, -44.49624483740308, -42.946177289001525, -51.50452873124365, 0.6634766557253255, 0.609532860111007, 0.526643592082018, 0.367746155922438, 0.172700862490772, -0.09024431519117204, -0.331366243035184, -0.544056478083025, -0.7332084784523047, -0.650113855350348, -1.077520884421709]
     
-    print(coeffs)
+    print(", ".join([str(c) for c in coeffs]))
     print("")
     
     for i in range(len(benchmark)):
         diff = (coeffs[i] - benchmark[i]) / benchmark[i]
         print("X=%3d, Y0=%10.3e, Y=%10.3e, dY/Y0=%5.2f%%" %(i+1, benchmark[i], coeffs[i], diff*100))
         assert abs(diff)<0.01
-'''

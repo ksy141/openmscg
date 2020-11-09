@@ -79,6 +79,7 @@ def main(*args, **kwargs):
     group.add_argument("--pair",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('pair'), default=[])
     group.add_argument("--bond",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('bond'), default=[])
     group.add_argument("--angle", metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('angle'), default=[])
+    group.add_argument("--dihedral", metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('dihedral'), default=[])
         
     group.add_argument("--ucg", metavar='[key=value]', action=UCGArgAction, help=UCGArgAction.help(), default=None)
     group.add_argument("--ucg-wf", metavar='[key=value]', action=WFArgAction, help=WFArgAction.help(), default=[])
@@ -101,7 +102,7 @@ def main(*args, **kwargs):
     # prepare lists
     
     screen.info("Build pair and bonding list-based algorithm ...")
-    plist = PairList(cut = args.cut)
+    plist = PairList(cut = args.cut, binsize = args.cut * 0.5)
     plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
     blist = BondList(
         args.top.types_bond, args.top.bond_atoms, 
@@ -114,6 +115,7 @@ def main(*args, **kwargs):
     [pair.setup(args.top, plist) for pair in args.pair]
     [bond.setup(args.top, blist) for bond in args.bond]
     [angle.setup(args.top, blist) for angle in args.angle]
+    [dihedral.setup(args.top, blist) for dihedral in args.dihedral]
     
     for model in models.items:
         screen.info(" ".join([str(i) for i in 
@@ -171,7 +173,7 @@ def main(*args, **kwargs):
         c = clf.coef_
     else:
         screen.info(["Solver => OLS"])
-        c = np.matmul(np.linalg.inv(XtX), XtY)
+        c = np.matmul(np.linalg.pinv(XtX), XtY)
     
     screen.info(["Model coefficients:", c])
     

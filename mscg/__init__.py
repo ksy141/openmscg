@@ -25,6 +25,9 @@ for name in ["OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VECL
 
 import numpy as np
 
+D2R = np.pi / 180.0
+R2D = 180.0 / np.pi
+
 from .topology   import *
 from .trajectory import *
 from .pairlist   import *
