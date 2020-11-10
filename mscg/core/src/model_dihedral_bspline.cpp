@@ -83,7 +83,21 @@ void ModelDihedralBSpline::compute_fm()
 
 void ModelDihedralBSpline::compute_rem()
 {
+    for(int i=0; i<nparam; i++) dU[i] = 0.0;
     
+    BondList *lst = (BondList*)(this->list);
+    int* types = lst->dihedral_types;
+    float *phi = lst->phi_dihedral;
+    
+    for(int i=0; i<lst->ndihedrals; i++) if(types[i] == tid)
+    {
+        double *b;
+        size_t istart;
+        int nn;
+        
+        eval_coeffs(phi[i], &b, &istart, &nn);
+        for(int c=0; c<nn; c++) dU[istart+c] += b[c];
+    }
 }
 
 void ModelDihedralBSpline::get_table(double *params, double* in, double* out, int size)

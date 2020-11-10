@@ -12,12 +12,15 @@ In OpenMSCG, a force table is defined in B-spline function defined by *n* **unif
 Usage
 -----
 
-Syntax of running ``cgib`` command ::
+Syntax of running ``cgfm`` command ::
 
-    usage: cgfm.py [-h] [-v L] --top file [--names] [--traj file[,args]] [--cut]
-                   [--save] [--pair [key=value]] [--bond [key=value]]
-                   [--angle [key=value]] [--ucg [key=value]]
-                   [--ucg-wf [key=value]]
+    usage: cgfm [-h] [-v L] --top file [--names] [--traj file[,args]] [--cut]
+                [--save] [--lasso] [--pair [key=value]] [--bond [key=value]]
+                [--angle [key=value]] [--dihedral [key=value]] [--ucg [key=value]]
+                [--ucg-wf [key=value]]
+
+    Run MSCG force-matching method. For detailed instructions please read
+    https://software.rcc.uchicago.edu/mscg/docs/commands/cgfm.html
 
     General arguments:
       -h, --help            show this help message and exit
@@ -35,14 +38,17 @@ Syntax of running ``cgib`` command ::
                             (default args: file,skip=0,every=1,frames=0) (default:
                             [])
       --cut                 cut-off for pair interactions (default: 10.0)
-      --lasso               lambda value for Lasso regularizer (default: 0.0)
       --save                file name for matrix output (default: result)
+      --lasso               lambda value for Lasso regularizer (default: 0.0)
       --pair [key=value]    add a model declaration for pair-style interactions.
                             (default: [])
       --bond [key=value]    add a model declaration for bond-style interactions.
                             (default: [])
       --angle [key=value]   add a model declaration for angle-style interactions.
                             (default: [])
+      --dihedral [key=value]
+                            add a model declaration for dihedral-style
+                            interactions. (default: [])
       --ucg [key=value]     settings for UCG modeling (default: None)
       --ucg-wf [key=value]  define new state-function for UCG (default: [])
 

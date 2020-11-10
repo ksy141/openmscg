@@ -11,7 +11,7 @@ class Table:
     
     def compute(self, xmin, xmax, xinc):
         self.x = np.arange(xmin, xmax+xinc, xinc)
-        self.v = self.model.compute_table(self.x)
+        self.v = self.model.compute_table(self.x, self.force)
         self.n = self.v.shape[0]
         
         if(self.force):

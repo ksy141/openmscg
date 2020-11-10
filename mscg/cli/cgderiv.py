@@ -32,6 +32,8 @@ Syntax of running ``cgderiv`` command ::
                           (default: [])
       --save              file name for model output (default: model)
 
+**Note**: modeling of bonded interactions hasn't been implemented yet.
+
 '''
 
 from mscg import *

@@ -10,7 +10,7 @@ Units
 openMSCG uses the following units:
 
 * distance = Angstroms
-* angle = Degrees
+* angle = Degrees (for 3-body angles and 4-body dihedral torsions)
 * force = Kcal/mol/Angstrom
 * temperature = Kelvin
 * mass = grams/mol
@@ -80,6 +80,8 @@ Tabulated Models (Force-Field)
 
 In molecular modeling, models (or force-fields) are mathematical functions of variables (e.g. distances or angles) to describe the forces and potential energies of a molecular system. One of the important outcomes in openMSCG is to obtain optimized parameters for the force-field. Four styles of interactions can be specified as runtime options for either FM or REM methods: **--pair, --bond, --angle, --dihedral**.
 
+
+
 CLI Option for Model
 """"""""""""""""""""
 
@@ -89,10 +91,32 @@ For example, to fit model parameters for a pairwise interaction using B-splines 
 
 The runtime argument is followed by multiple ``key-value`` attributes separated by commas. Two attributes are mandatory:
 
-* **model**: define the functional form. Currently only `BSpline` is allowed, but more functional types will be supported in the future.
+* **model**: define the functional form. `BSpline` is the highlighted choice for multi-scale modeling, but new functional types are easy to be extended in **OpenMSCG**.
 * **type**: name that is used to specify the targeted interaction types to be optimized. In the example above, `A:B` indicates a pair interaction between atoms of type `A` and `B`.
 
 Other attributes are optional and depend on the functional form. In the example above, there are three attributes to define a BSpline: **min, max and resolution**.
+
+
+
+List of Supported Models
+""""""""""""""""""""""""
+
++----------+------------+--------------+---------------+
+| Style    | Function   | FM supported | REM supported |
++==========+============+==============+===============+
+| Pair     | BSpline    | Yes          | Yes           |
+|          +------------+--------------+---------------+
+|          | GaussCut   | No           | Yes           |
++----------+------------+--------------+---------------+
+| Bond     | BSpline    | Yes          | Yes           |
++----------+------------+--------------+---------------+
+| Angle    | BSpline    | Yes          | Yes           |
++----------+------------+--------------+---------------+
+| Dihedral | BSpline    | Yes          | Yes           |
++----------+------------+--------------+---------------+
+
+
+
 
 
 

@@ -8,7 +8,7 @@ class AngleBSpline(Model):
         self.min = 0.0
         self.max = 180.0
         self.order = 6
-        self.resolution = 0.1
+        self.resolution = 5.0
         self.serialized_names = ['min', 'max', 'resolution', 'order']
         super().__init__(**kwargs)
         self._h = lib.create(self.min * D2R, self.max * D2R, self.resolution * D2R, self.order)

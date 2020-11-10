@@ -147,50 +147,61 @@ void BondList::build_dihedrals(vec3f box, vec3f *x)
         if(c > 1.0) c = 1.0; else if(c < -1.0) c = -1.0;
         
         float phi = acos(c);
-        if(vector_dot(n1, b3) > 0.0) phi = M_PI * 2.0 - phi;
+        if(vector_dot(n1, b3) > 0.0) phi = - phi;
         
         phi_dihedral[i] = phi;
         
-        float p12 = vector_dot(b1, b2);
-        float p23 = vector_dot(b2, b3);
+        // derivatives
+        // ref1: https://salilab.org/modeller/9v6/manual/node436.html
+        // ref2: https://grigoryanlab.org/docs/dynamics_derivatives.pdf
         
-        float L2sq = vector_dot(b2, b2);
-        float L2 = sqrt(L2sq);
-        float L2sqinv = L2sq>0.0?1.0/L2sq:0.0;
-        float L2inv = sqrt(L2sqinv);
-                
-        float p1to2[3], p3to2[3], p1to2r[3], p3to2r[3];
-        vector_scale(p1to2, b2, p12 * L2inv);
-        vector_scale(p3to2, b2, p23 * L2inv);
-        vector_sub(p1to2r, b1, p1to2);
-        vector_sub(p3to2r, b3, p3to2);
+        float r_ij[3], r_kj[3], r_kl[3];
+        float r_mj[3], r_nk[3];
+        float f1[3], f2[3], f3[3], f4[3];
+        float f2a[3], f2b[3], f3a[3], f3b[3];
         
-        float L12 = sqrt(vector_dot(p1to2r, p1to2r));
-        float L12inv = L12>0.0?1.0/L12:0.0;
+        vector_sub(r_ij, x[i2], x[i1]);
+        vector_sub(r_kj, x[i2], x[i3]);
+        vector_sub(r_kl, x[i4], x[i3]);
         
-        float L34 = sqrt(vector_dot(p3to2r, p3to2r));
-        float L34inv = L34>0.0?1.0/L34:0.0;
+        vector_prod(r_mj, r_ij, r_kj);
+        vector_prod(r_nk, r_kj, r_kl);
         
-        dpd1x_dihedral[i] = n1[0] * L12inv;
-        dpd1y_dihedral[i] = n1[1] * L12inv;
-        dpd1z_dihedral[i] = n1[2] * L12inv;
+        float l2_kj = vector_dot(r_kj, r_kj);
+        float l_kj = sqrt(l2_kj);
         
-        dpd4x_dihedral[i] = n2[0] * L34inv;
-        dpd4y_dihedral[i] = n2[1] * L34inv;
-        dpd4z_dihedral[i] = n2[2] * L34inv;
+        float s1 = l_kj / vector_dot(r_mj, r_mj);
+        vector_scale(f1, r_mj, s1);
         
-        float dp123dx2 = -L2inv * (L2 + p12 * L2inv);
-        float dp234dx2 = L2inv * p23 * L2inv;
+        float s4 = - l_kj / vector_dot(r_nk, r_nk);
+        vector_scale(f4, r_nk, s4);
         
-        float dp123dx3 = L2inv * p12 * L2inv;
-        float dp234dx3 = -L2inv * (L2 + p23 * L2inv);
+        float s2a = vector_dot(r_ij, r_kj) / l2_kj - 1.0;
+        vector_scale(f2a, f1, s2a);
+        float s2b = vector_dot(r_kl, r_kj) / l2_kj * (-1.0);
+        vector_scale(f2b, f4, s2b);
+        vector_add(f2, f2a, f2b);
         
-        dpd2x_dihedral[i] = dp123dx2 * dpd1x_dihedral[i] + dp234dx2 * dpd4x_dihedral[i];
-        dpd2y_dihedral[i] = dp123dx2 * dpd1y_dihedral[i] + dp234dx2 * dpd4y_dihedral[i];
-        dpd2z_dihedral[i] = dp123dx2 * dpd1z_dihedral[i] + dp234dx2 * dpd4z_dihedral[i];
+        float s3a = vector_dot(r_kl, r_kj) / l2_kj - 1.0;
+        vector_scale(f3a, f4, s3a);
+        float s3b = vector_dot(r_ij, r_kj) / l2_kj * (-1.0);
+        vector_scale(f3b, f1, s3b);
+        vector_add(f3, f3a, f3b);
         
-        dpd3x_dihedral[i] = dp123dx3 * dpd1x_dihedral[i] + dp234dx3 * dpd4x_dihedral[i];
-        dpd3y_dihedral[i] = dp123dx3 * dpd1y_dihedral[i] + dp234dx3 * dpd4y_dihedral[i];
-        dpd3z_dihedral[i] = dp123dx3 * dpd1z_dihedral[i] + dp234dx3 * dpd4z_dihedral[i];
+        dpd1x_dihedral[i] = f1[0];
+        dpd1y_dihedral[i] = f1[1];
+        dpd1z_dihedral[i] = f1[2];
+        
+        dpd2x_dihedral[i] = f2[0];
+        dpd2y_dihedral[i] = f2[1];
+        dpd2z_dihedral[i] = f2[2];
+        
+        dpd3x_dihedral[i] = f3[0];
+        dpd3y_dihedral[i] = f3[1];
+        dpd3z_dihedral[i] = f3[2];
+        
+        dpd4x_dihedral[i] = f4[0];
+        dpd4y_dihedral[i] = f4[1];
+        dpd4z_dihedral[i] = f4[2];
     }
 }

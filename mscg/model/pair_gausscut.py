@@ -3,8 +3,6 @@ import numpy as np
 
 class PairGaussCut(Model):
     
-    
-            
     def __init__(self, **kwargs):
         self.n = 1
         self.rmh = '10.0'
@@ -26,11 +24,6 @@ class PairGaussCut(Model):
         sigmas = [float(x) for x in self.sigma.split(':')]
         self.terms = [GaussTerm(rmhs[i], sigmas[i]) for i in range(self.n)]
         
-    
-    def compute_fm(self):
-        self.dF.fill(0)
-        raise Exception("Method not implemented!")
-        
     def compute_rem(self):
         self.dU.fill(0)
         
@@ -38,7 +31,13 @@ class PairGaussCut(Model):
             self.dU += np.array([np.sum(t.factor2 * np.exp(np.square(page.r - t.rmh) * t.factor1)) for t in self.terms])
                     
     def compute_table(self, x, force=True):
+        if force:
+            raise Exception("Cannot generate force table for the Gauss/Cut model.")
+        
         vals = np.zeros(x.shape[0])
-        #
+        
+        for t in self.terms:
+            vals += t.factor2 * np.exp(np.square(x - t.rmh) * t.factor1)
+        
         return vals
         

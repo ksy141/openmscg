@@ -19,6 +19,11 @@ typedef int   vec4i[4];
     if(c[1]>box[1]*0.5) c[1]-=box[1]; else if(c[1]<-box[1]*0.5) c[1]+=box[1]; \
     if(c[2]>box[2]*0.5) c[2]-=box[2]; else if(c[2]<-box[2]*0.5) c[2]+=box[2]
 
+#define vector_add(c, a, b) \
+    c[0] = a[0] + b[0]; \
+    c[1] = a[1] + b[1]; \
+    c[2] = a[2] + b[2];
+
 #define vector_dot(a, b) (a[0] * b[0] + a[1] * b[1] + a[2] * b[2])
 
 #define vector_prod(c, a, b) \

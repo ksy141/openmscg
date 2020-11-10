@@ -5,10 +5,10 @@ from ..core import cxx_model_dihedral_bspline as lib
 class DihedralBSpline(Model):
     
     def __init__(self, **kwargs):
-        self.min = 0.0
+        self.min = -180.0
         self.max = 180.0
         self.order = 6
-        self.resolution = 0.1
+        self.resolution = 5.0
         self.serialized_names = ['min', 'max', 'resolution', 'order']
         super().__init__(**kwargs)
         self._h = lib.create(self.min * D2R, self.max * D2R, self.resolution * D2R, self.order)
@@ -25,7 +25,6 @@ class DihedralBSpline(Model):
         self.dF *= R2D
         
     def compute_rem(self):
-        raise Exception("Method not implemented yet!")
         self.dU.fill(0)
         lib.compute_rem(self._h)
     

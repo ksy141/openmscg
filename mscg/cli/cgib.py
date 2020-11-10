@@ -241,12 +241,12 @@ def main(*args, **kwargs):
                 process_hist(one, types, z)
 
             for one in args.angle:
-                z = blist.get_scalar('angle') * (180.0/np.pi)
+                z = blist.get_scalar('angle') * R2D
                 types = args.top.types_angle
                 process_hist(one, types, z)
             
             for one in args.dihedral:
-                z = blist.get_scalar('dihedral') * (180.0/np.pi)
+                z = blist.get_scalar('dihedral') * R2D
                 types = args.top.types_dihedral
                 process_hist(one, types, z)
 
@@ -289,7 +289,7 @@ def main(*args, **kwargs):
     
     for dihed in args.dihedral:
         dihed.n = np.divide(dihed.n, dihed.n.max())
-        results.append(post_process(dihed, 'Dihderal'))
+        results.append(post_process(dihed, 'Dihedral'))
         
     if args.save == 'return':
         return results
