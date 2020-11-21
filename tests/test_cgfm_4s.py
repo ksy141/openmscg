@@ -86,6 +86,7 @@ def test_bond_angle_dihedral(datafile):
     print("")
     
     for i in range(len(benchmark)):
-        diff = (coeffs[i] - benchmark[i]) / benchmark[i]
-        print("X=%3d, Y0=%10.3e, Y=%10.3e, dY/Y0=%5.2f%%" %(i+1, benchmark[i], coeffs[i], diff*100))
-        assert abs(diff)<0.01
+        if abs(benchmark[i])>0.1:
+            diff = (coeffs[i] - benchmark[i]) / benchmark[i]
+            print("X=%3d, Y0=%10.3e, Y=%10.3e, dY/Y0=%5.2f%%" %(i+1, benchmark[i], coeffs[i], diff*100))
+            assert abs(diff)<0.01

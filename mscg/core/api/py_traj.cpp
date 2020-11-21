@@ -48,6 +48,22 @@ PyObject* get_natoms(PyObject* self, PyObject* args)
     return z;
 }
 
+PyObject* get_timestep(PyObject* self, PyObject* args)
+{
+    GETTRR();
+    PyObject *z = Py_BuildValue("i", p->step);
+    return z;
+}
+
+PyObject* set_timestep(PyObject* self, PyObject* args)
+{
+    Traj* traj;
+    int ts;
+    PyArg_ParseTuple(args, "Li", &traj, &ts);
+    traj->step = ts;
+    Py_RETURN_NONE;
+}
+
 PyObject* has_attr(PyObject* self, PyObject* args)
 {
     Traj* traj;
@@ -118,6 +134,8 @@ static PyMethodDef cModPyMethods[] =
     {"rewind",      rewind,      METH_VARARGS, "Rewind the opened file."},
     {"get_status",  get_status,  METH_VARARGS, "Get trajectory status."},
     {"get_natoms",  get_natoms,  METH_VARARGS, "Return number of atoms."},
+    {"get_timestep",get_timestep,METH_VARARGS, "Return timestep."},
+    {"set_timestep",set_timestep,METH_VARARGS, "Set timestep."},
     {"has_attr",    has_attr,    METH_VARARGS, "If trajectory has the attribute."},
     {"read_frame",  read_frame,  METH_VARARGS, "Read a frame."},
     {"get_frame",   get_frame,   METH_VARARGS, "Get a copy of frame data."},

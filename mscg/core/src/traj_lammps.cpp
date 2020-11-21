@@ -160,14 +160,14 @@ int TrajLAMMPS::read_body()
             f[id][2] = atof(argv[cfz]);
         }
     }
-    
+    /* remove this section to keep consistent x as in the original file
     for(int i=0; i<natoms; i++)
     {
         x[i][0] -= boxlo[0];
         x[i][1] -= boxlo[1];
         x[i][2] -= boxlo[2];
     }
-    
+    */
     pbc();
     
     return 0;

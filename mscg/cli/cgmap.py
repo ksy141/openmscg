@@ -81,6 +81,7 @@ def main(*args, **kwargs):
             frames['f'].append(F)
         else:
             outfile.box, outfile.x, outfile.f = reader.traj.box.copy(), X, F
+            outfile.timestep = reader.traj.timestep
             outfile.write_frame()
             
         TIMER.click('write')

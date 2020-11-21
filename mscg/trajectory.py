@@ -152,12 +152,18 @@ class Trajectory:
             lib.close(self._h)
     
     def __getattr__(self, name):
+        if name == 'timestep':
+            return lib.get_timestep(self._h)
+        
         if name in type(self)._data_names:
             return self._data[name]
         
         raise Exception('Unknown attribute: Trajectory.' + name)
         
     def __setattr__(self, name, value):
+        if name == 'timestep':
+            lib.set_timestep(self._h, value)
+        
         if name in type(self)._data_names:
             self._data[name] = None if value is None else value.astype(type(self)._datadefs[name]['dtype'])
             return
