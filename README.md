@@ -27,6 +27,12 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
+**0.2.2**
+
+1. Enable processing of LAMMPS trajectory in that only part of the system atoms are dumped.
+2. Fixed bugs in modeling of multiple types of UCG sites.
+3. Allow users to setup number of threads for multithreading acceleration.
+
 **0.2.1**
 
 1. The unit of input values for CGFM angular models is changed from radius to degrees.

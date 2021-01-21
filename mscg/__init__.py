@@ -15,13 +15,21 @@ namespace: ::
 
 '''
 
-__version__ = '0.2.0'
+__version__ = '0.2.2'
 
 doc_root = "https://software.rcc.uchicago.edu/mscg/docs/"
 
+threads_envs = ["OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS"]
+
 import os
-for name in ["OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "VECLIB_MAXIMUM_THREADS", "NUMEXPR_NUM_THREADS"]:
-    os.environ[name] = "1"
+
+threads = 0 if 'OPENMSCG_THREADS' not in os.environ else int(os.environ['OPENMSCG_THREADS'])
+
+if threads > 0:
+    for name in threads_envs:
+        os.environ[name] = str(threads)
+else:
+    threads = len(os.sched_getaffinity(os.getpid()))
 
 import numpy as np
 

@@ -28,6 +28,10 @@ class WeightingRLE:
         
         p = 0.5 * (1.0 + np.tanh((rho - self.wth) / (0.1 * self.wth)))
         
+        tid = top.names_atom.index(self.target)
+        types = top.types_atom
+        
         for i in range(top.n_atom):
-            weights[i] = [(self.high, p[i]), (self.low, 1.0-p[i])]
+            if types[i] == tid:
+                weights[i] = [(self.high, p[i]), (self.low, 1.0-p[i])]
         

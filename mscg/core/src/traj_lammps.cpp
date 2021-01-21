@@ -14,6 +14,7 @@ TrajLAMMPS::TrajLAMMPS(const char* filename, const char* mode) : Traj()
     
     status = 2;
     if(read_head()) return;
+    natoms = _natoms;
     rewind();
     
     parse_columns();
@@ -50,7 +51,22 @@ void TrajLAMMPS::rewind()
 int TrajLAMMPS::read_next_frame()
 {
     if(read_head()) return 1;
-    if(read_body()) return 1;
+    
+    fpos_t pos;
+    fgetpos(fp, &pos);
+    
+    while(true)
+    {
+        int z = read_body();
+        
+        if(z)
+        {
+            allocate();
+            fsetpos(fp, &pos);
+        }
+        else break;
+    }
+    
     return 0;
 }
 
@@ -62,7 +78,7 @@ int TrajLAMMPS::read_head()
     sscanf(line, "%d", &(step));
     
     for(int i=0; i<2; i++) GETLINE();
-    sscanf(line, "%d", &(natoms));
+    sscanf(line, "%d", &(_natoms));
     
     GETLINE();
     
@@ -123,7 +139,18 @@ int TrajLAMMPS::parse_columns()
 
 int TrajLAMMPS::read_body()
 {
-    for(int i=0; i<natoms; i++)
+    if(natoms > _natoms)
+    {
+        memset(&(t[0]), 0, sizeof(int)*natoms);
+        memset(&(q[0]), 0, sizeof(float)*natoms);
+        memset(&(x[0][0]), 0, sizeof(float)*natoms*3);
+        memset(&(v[0][0]), 0, sizeof(float)*natoms*3);
+        memset(&(f[0][0]), 0, sizeof(float)*natoms*3);
+    }
+    
+    int maxid = 0;
+    
+    for(int i=0; i<_natoms; i++)
     {
         GETLINE();
         
@@ -139,6 +166,9 @@ int TrajLAMMPS::read_body()
         
         int id = atoi(argv[cid]) - 1;
         
+        if(id >= maxid) maxid = id;
+        if(id >= maxatoms) continue;
+
         x[id][0] = atof(argv[cx]);
         x[id][1] = atof(argv[cy]);
         x[id][2] = atof(argv[cz]);
@@ -160,16 +190,14 @@ int TrajLAMMPS::read_body()
             f[id][2] = atof(argv[cfz]);
         }
     }
-    /* remove this section to keep consistent x as in the original file
-    for(int i=0; i<natoms; i++)
-    {
-        x[i][0] -= boxlo[0];
-        x[i][1] -= boxlo[1];
-        x[i][2] -= boxlo[2];
-    }
-    */
-    pbc();
     
+    if(maxid >= natoms)
+    {
+        natoms = maxid + 1;
+        return -1;
+    }
+    
+    pbc();
     return 0;
 }
 

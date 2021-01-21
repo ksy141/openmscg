@@ -25,7 +25,7 @@ void Traj::allocate()
     if(natoms>maxatoms) 
     {
         deallocate();
-        maxatoms = natoms;
+        maxatoms = natoms + 10000;
         t = new int[maxatoms];
         q = new float[maxatoms];
         x = new Vec[maxatoms];

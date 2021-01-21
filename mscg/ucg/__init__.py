@@ -2,6 +2,13 @@ import numpy as np
 import time
 
 class UCG:
+    """
+    Attributes:
+    
+        weights: list of N x T x 2
+            weights[I][J][0] - Type ID of atom I at type J
+            weights[I][J][1] - Probability of atom I at type J
+    """
     
     weighting_funcs = []
     replica = 100
@@ -21,7 +28,6 @@ class UCG:
     def process(cls):
         for weighting in cls.weighting_funcs:
             weighting.compute(cls.top, cls.traj, cls.weights)
-        
 
 import argparse
 import importlib

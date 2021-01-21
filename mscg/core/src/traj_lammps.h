@@ -28,6 +28,7 @@ class TrajLAMMPS : public Traj
     Vec boxlo;
     
     int cx, cy, cz, cfx, cvx, cvy, cvz, cfy, cfz, cid, ctype, cq;
+    int _natoms;
 };
 
 #endif

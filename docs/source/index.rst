@@ -16,6 +16,7 @@ Documentation of OpenMSCG
    basics
    cli
    commands
+   performance
 
 .. toctree::
    :maxdepth: 2

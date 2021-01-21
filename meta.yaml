@@ -1,12 +1,12 @@
 {% set name = "OpenMSCG" %}
-{% set version = "0.2.0" %}
+{% set version = "0.2.2" %}
 
 package:
   name: "{{ name|lower }}"
   version: "{{ version }}"
 
 source:
-  url: https://software.rcc.uchicago.edu/mscg/downloads/OpenMSCG-0.2.0.tar.gz
+  url: "https://software.rcc.uchicago.edu/mscg/downloads/OpenMSCG-{{ version }}.tar.gz"
 
 build:
   number: 0

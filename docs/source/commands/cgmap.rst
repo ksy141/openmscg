@@ -32,7 +32,7 @@ below:
        x-weight: [16.0, 1.0, 1.0]
        f-weight: [ 1.0, 1.0, 1.0]
    system:
-       anchor: 0
+     - anchor: 0
        repeat: 256
        offset: 3
        sites:
@@ -122,7 +122,7 @@ example,
        x-weight: [16.0, 1.0, 1.0]
        f-weight: [ 1.0, 1.0, 1.0]
    system:
-       anchor: 1
+     - anchor: 1
        repeat: 256
        offset: 3
        sites:
@@ -175,12 +175,12 @@ Multiple groups of mapping can be defined in the system as well. For example,
        x-weight: [16.0, 1.0]
        f-weight: [ 1.0, 1.0]
    system:
-       anchor: 0
+     - anchor: 0
        repeat: 10
        offset: 6
        sites:
          - [CH3, 0]
-       anchor: 4
+     - anchor: 4
        repeat: 10
        offset: 6
        sites:
@@ -247,7 +247,7 @@ The CG mapping can be defined as:
        x-weight: [14.0, 16.0, 16.0, 16.0]
        f-weight: [ 1.0,  1.0,  1.0,  1.0]
    system:
-       anchor: 0
+     - anchor: 0
        repeat: 16
        offset: 25
        sites:
@@ -257,7 +257,7 @@ The CG mapping can be defined as:
          - [CH2, 15]
          - [CH2, 18]
          - [CH3, 21]
-       anchor: 400
+     - anchor: 400
        repeat: 16
        offset: 4
        sites:
@@ -272,27 +272,27 @@ In this example, there are 16 pairs of comprised of a 1-Butyl-3-methylimidazoliu
      ...
      ...
    system:
-       anchor: 0
+     - anchor: 0
        repeat: 16
        offset: 25
        groups:
-           anchor: 0
+         - anchor: 0
            repeat: 1
            offset: 12
            sites:
              - [CH3,  0]
              - [IMI,  4]
-           anchor: 12
+         - anchor: 12
            repeat: 3
            offset: 3
            sites:
              - [CH2, 0]
-           anchor: 21
+         - anchor: 21
            repeat: 1
            offset: 4
            sites:
              - [CH3,  0]
-       anchor: 400
+     - anchor: 400
        repeat: 16
        offset: 4
        sites:
