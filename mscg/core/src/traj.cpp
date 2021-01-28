@@ -53,6 +53,12 @@ void Traj::pbc()
     float yprd = box[1];
     float zprd = box[2];
     
+    if(box[0]<1.0E-6 || box[1]<1.0E-6 || box[2]<1.0E-6)
+    {
+        printf("Error: Invalid BOX dimensions for PBC correction: %f %f %f\n", box[0], box[1], box[2]);
+        exit(1);
+    }
+        
     for(int i=0; i<natoms; i++)
     {
         while(x[i][0]<0) x[i][0] += xprd;
