@@ -172,7 +172,20 @@ if __name__ == '__main__':
             sources = src_files('py_bspline', ['bspline']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['gsl_lib'] + setup_args['link'],
-        )
+        ),
+
+        Extension(core_prefix + 'tables',
+            include_dirs = inc_path,
+            sources = src_files('py_tables', ['tables']),
+            extra_compile_args = setup_args['compile'],
+            extra_link_args = setup_args['link'],
+        ),
+        Extension(core_prefix + 'force',
+            include_dirs = inc_path,
+            sources = src_files('py_force', ['force']),
+            extra_compile_args = setup_args['compile'],
+            extra_link_args = setup_args['link'],
+        ),
     ] + get_models(src_path)
     
     entry_points = {"console_scripts": [
