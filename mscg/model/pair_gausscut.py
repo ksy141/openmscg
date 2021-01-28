@@ -13,7 +13,7 @@ class PairGaussCut(Model):
     def setup(self, top, pairlist):
         class GaussTerm:
             def __init__(self, rmh, sigma):
-                self.rmh = rmh,
+                self.rmh = rmh
                 self.factor1 = -1.0 / 2.0 / (sigma**2)
                 self.factor2 = 1.0 / sigma / np.sqrt(np.pi * 2.0)
             
@@ -36,8 +36,8 @@ class PairGaussCut(Model):
         
         vals = np.zeros(x.shape[0])
         
-        for t in self.terms:
-            vals += t.rmh * t.factor2 * np.exp(np.square(x - t.rmh) * t.factor1)
+        for i, t in enumerate(self.terms):
+            vals += self.params[i] * t.rmh * t.factor2 * np.exp(np.square(x - t.rmh) * t.factor1)
         
         return vals
         
