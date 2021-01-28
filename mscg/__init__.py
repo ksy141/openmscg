@@ -36,15 +36,16 @@ import numpy as np
 D2R = np.pi / 180.0
 R2D = 180.0 / np.pi
 
+from .verbose    import *
 from .topology   import *
 from .trajectory import *
 from .pairlist   import *
 from .bondlist   import *
 from .bspline    import *
+from .force      import *
 from .mapper     import *
 from .table      import *
 from .timer      import *
-from .verbose    import *
 from .cli_parser import *
 from .checkpoint import *
 

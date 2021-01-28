@@ -55,6 +55,7 @@ Syntax of running ``cgfm`` command ::
 '''
 
 from mscg import *
+from mscg.cli.cgnes import SolveNE
 
 def main(*args, **kwargs):
     
@@ -89,6 +90,7 @@ def main(*args, **kwargs):
         
     group.add_argument("--ucg", metavar='[key=value]', action=UCGArgAction, help=UCGArgAction.help(), default=None)
     group.add_argument("--ucg-wf", metavar='[key=value]', action=WFArgAction, help=WFArgAction.help(), default=[])
+    group.add_argument("--force",  metavar='', type=argparse.FileType('r'), help="Force definition", default=None)
     
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
@@ -135,6 +137,15 @@ def main(*args, **kwargs):
     matrix_cov = np.zeros(shape=(n, n))
     vector_cov = np.zeros(n)
     
+    # prepare force evaluation module
+        
+    if args.force is not None:
+        screen.info("Build force evaluation module ...")
+        force = Force(yaml.load(args.force, Loader=yaml.FullLoader))
+        force.setup(args.top, plist, blist)
+    else:
+        force = None
+        
     # start processing trajectory
     
     TIMER.reset()
@@ -148,6 +159,11 @@ def main(*args, **kwargs):
         TIMER.click('io')
         TIMER.click('pair', plist.build(reader.traj.x))
         TIMER.click('bond', blist.build(reader.traj.box, reader.traj.x))
+        f = reader.traj.f.astype(np.float64)
+        
+        if force is not None:
+            f -= force.compute()
+            TIMER.click('force')
         
         for types in UCGSpawner(args.top, args.traj):
             if types is not None:
@@ -158,31 +174,13 @@ def main(*args, **kwargs):
             
             matrix_coeff = np.hstack([model.dF for model in models.items])
             matrix_cov += np.matmul(matrix_coeff.T, matrix_coeff)
-            vector_cov += np.matmul(matrix_coeff.T, reader.traj.f.astype(np.float64).flatten())
+            vector_cov += np.matmul(matrix_coeff.T, f.flatten())
             TIMER.click('matrix')
         
     # end of processing trajectories
     
-    XtX = matrix_cov
-    XtY = vector_cov
-    
-    if args.lasso > 1.0e-32:
-        screen.info(["Solver => LASSO_LARS"])
-        
-        try:
-            from sklearn import linear_model
-            clf = linear_model.LassoLars(alpha=args.lasso, fit_intercept=False, max_iter=50000)
-        except:
-            screen.fatal("Package [sklearn] is required when using the LASSO estimator. (See https://scikit-learn.org/stable/install.html)")
-            
-        clf.fit(XtX, XtY)
-        c = clf.coef_
-    else:
-        screen.info(["Solver => OLS"])
-        c = np.matmul(np.linalg.pinv(XtX), XtY)
-    
+    c = SolveNE(matrix_cov, vector_cov, args.lasso)
     screen.info(["Model coefficients:", c])
-    
     TIMER.click('solver')
         
     if args.save != "return":
@@ -192,7 +190,7 @@ def main(*args, **kwargs):
             m.params[:] = c[offset:offset + m.nparam]
             offset += m.nparam
         
-        Checkpoint(args.save, __file__).update({'models': models.serialize(), 'X': matrix_cov, 'c': c}).dump()
+        Checkpoint(args.save, __file__).update({'models': models.serialize(), 'X': matrix_cov, 'y': vector_cov, 'c': c}).dump()
     
     screen.info([""] + TIMER.report(False) + [""])
     

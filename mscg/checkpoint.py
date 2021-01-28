@@ -6,7 +6,7 @@ import __main__
 
 class Checkpoint:
     
-    def __init__(self, filename, script='__undefined__'):
+    def __init__(self, filename = '', script = '__undefined__'):
         
         self.data = {
             'script': script,
@@ -25,3 +25,7 @@ class Checkpoint:
     
     def dump(self):
         pickle.dump(self.data, open(self.data['file'], 'wb'))
+    
+    @staticmethod
+    def load(f):
+        return Checkpoint().update(pickle.load(f))

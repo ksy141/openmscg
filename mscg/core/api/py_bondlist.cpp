@@ -76,12 +76,42 @@ PYAPI(get_scalar)
     Py_RETURN_NONE;
 }
 
+PYAPI(get_vector)
+{
+    BondList *p;
+    int target;
+    PyArrayObject *npData;
+    PyArg_ParseTuple(args, "LiO", &p, &target, &npData);
+    
+    int n = (target==0?p->nbonds:(target==1?p->nangles:p->ndihedrals));
+    int m = (target==0?3:(target==1?9:12));
+    
+    assert(n == PyArray_DIMS(npData)[0]);
+    assert(m == PyArray_DIMS(npData)[1]);
+    
+    float *des = (float*)PyArray_DATA(npData);
+    
+    for(int i=0; i<n; i++)
+    {
+        if(target==0)
+        {
+            des[i*m]   = p->dx_bond[i];
+            des[i*m+1] = p->dy_bond[i];
+            des[i*m+2] = p->dz_bond[i];
+        }
+        
+    }
+    
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef cModPyMethods[] =
 {
     {"create",     create,     METH_VARARGS, "Create pair-list."},
     {"destroy",    destroy,    METH_VARARGS, "Destroy pair-list."},
     {"build",      build,      METH_VARARGS, "Build from frame data."},
     {"get_scalar", get_scalar, METH_VARARGS, "Get bonding values."},
+    {"get_vector", get_vector, METH_VARARGS, "Get bonding vector components."},
     {NULL, NULL}
 };
 

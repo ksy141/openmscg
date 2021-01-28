@@ -116,6 +116,7 @@ class PairList:
             binsize = cut * 0.5
         
         self._h = lib.create(cut, binsize, max_pairs)
+        self._scalar_t, self._scalar_r = None, None
         self.pages = PageIterator(self._h, page_size)
     
     def __del__(self):
@@ -169,7 +170,23 @@ class PairList:
             t = t.astype(np.int32)
         
         lib.update_types(self._h, t)
+    
+    def num_pairs(self):
+        return lib.num_pairs(self._h)
+    
+    def get_scalar(self):
+        n = self.num_pairs()
         
+        if self._scalar_t is None or self._scalar_t.shape[0] < n:
+            self._scalar_t = np.zeros(n, dtype=np.int32)
+            self._scalar_r = np.zeros(n, dtype=np.float32)
+        else:
+            self._scalar_t.fill(0)
+            self._scalar_r.fill(0)
+            
+        lib.get_scalar(self._h, self._scalar_t, self._scalar_r)
+        return self._scalar_t, self._scalar_r
+
     @classmethod
     def get_tid(cls, i:int, j:int):
         return lib.get_tid(i, j)
@@ -216,15 +233,12 @@ class PageIterator:
         self.r = None if self._r is None else self._r[:self.n]        
         return self
     
-    def __call__(self, type_id=0, index=False, vector=False, scalar=True):
+    def __call__(self, type_id, index=False, vector=False, scalar=True):
         """
         Initiate the iterator.
         
-        :param types: list of type IDs of atoms in the system.
-        :type types: [int]
-        
-        :param type_i/j: type IDs for the pairs of atoms to be extracted.
-        :type type_i/j: int
+        :param type_id: type for the pairs of atoms to be extracted.
+        :type type_id: int
         
         :param index: if to extract index data, default to be *False*.
         :type index: bool

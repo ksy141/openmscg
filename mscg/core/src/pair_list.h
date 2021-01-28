@@ -65,6 +65,7 @@ class PairList
     void bin_atoms(vec3f* x);
     
     // api
+    
     void init(int *types, int natoms, int* exmap, int maxex);
     void setup_bins(vec3f box);
     void build(vec3f *x);

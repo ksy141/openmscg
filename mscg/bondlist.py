@@ -63,7 +63,13 @@ class BondList:
     def __del__(self):
         if self._h is not None:
             lib.destroy(self._h)
-        
+    
+    def __getattr__(self, key):
+        return self._data[key]
+    
+    def num_items(self, key):
+        return len(self._data[key])
+    
     def build(self, box, x):
         """
         Calculate scalar and vector values for given bonds, angles and dihedral torsions.
@@ -91,3 +97,17 @@ class BondList:
             data = np.zeros(self._data[name].shape[0], dtype=np.float32)
             lib.get_scalar(self._h, targets.index(name), data)
             return data
+    
+    def get_vector(self, name, v):
+        """
+        Get scalar values from the list.
+        
+        :param name: *'bond'*, *'angle'* or *'dihedral'* 
+        :type name: str
+        
+        :rtype: numpy.array(N, dtype=numpy.float32)
+        """
+        targets = ['bond', 'angle', 'dihedral']
+        
+        if name in targets:
+            lib.get_vector(self._h, targets.index(name), v)

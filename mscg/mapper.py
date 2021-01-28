@@ -44,7 +44,6 @@ class Mapper:
         self.sites = unpack_group({'anchor':0, 'offset':0, 'repeat':1, 'groups':system})
     
     def process(self, box, x, f):
-        
         x_list = []
                 
         for site_name, site_anchor in self.sites:

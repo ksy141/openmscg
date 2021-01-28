@@ -121,6 +121,30 @@ PYAPI(get_tid)
     return Py_BuildValue("i", pair_tid(i, j));
 }
 
+PYAPI(num_pairs)
+{
+    GETPTR();
+    return Py_BuildValue("L", p->npairs);
+}
+
+PYAPI(get_scalar)
+{
+    PairList *p;
+    PyArrayObject *npType, *npR;
+    PyArg_ParseTuple(args, "LOO", &p, &npType, &npR);
+
+    int *t = (int*)PyArray_DATA(npType);
+    float *r = (float*)PyArray_DATA(npR);
+    
+    for(int i=0; i<p->npairs; i++) 
+    {
+        t[i] = p->tlist[i];
+        r[i] = p->drlist[i];
+    }
+    
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef cModPyMethods[] =
 {
     {"create",       create,       METH_VARARGS, "Create pair-list."},
@@ -131,6 +155,8 @@ static PyMethodDef cModPyMethods[] =
     {"fill_page",    fill_page,    METH_VARARGS, "Fill a page of pairs."},
     {"get_tid",      get_tid,      METH_VARARGS, "Get type ID of a pair."},
     {"update_types", update_types, METH_VARARGS, "Update pair types."},
+    {"num_pairs",    num_pairs,    METH_VARARGS, "Total number of pairs."},
+    {"get_scalar",   get_scalar,   METH_VARARGS, "Get pair distances."},
     {NULL, NULL}
 };
 

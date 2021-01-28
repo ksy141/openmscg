@@ -28,7 +28,7 @@ class Table:
             f[0] = 2.0 * f[1] - f[2]
             f[-1] = 2.0 * f[-2] - 2.0 * f[-3]
             self.f = 0.5 * (f[:-1] + f[1:])
-                
+        
     def dump_lammps(self, xmin=None, xmax=None, xinc=None):
         if xmin is not None:
             self.compute(xmin, xmax, xinc)
@@ -42,3 +42,36 @@ class Table:
         
         with open(self.prefix + self.model.name + ".table", "w") as f:
             f.write(txt)
+    
+    @staticmethod
+    def load_lammps(filename, xinc=0.001):
+        with open(filename, 'r') as file:
+            rows = file.read().strip().split("\n")
+        
+        n = int(rows[3].split()[1])
+        w = rows[5].split()
+        x1, e1, f1 = float(w[1]), float(w[2]), float(w[3])
+        xmin = x = x1
+        e, f = [], []
+        
+        for row in rows[6:6+n]:
+            w = row.strip().split()
+            
+            x0, e0, f0 = x1, e1, f1
+            x1, e1, f1 = float(w[1]), float(w[2]), float(w[3])
+            dx, de, df = x1 - x0, e1 - e0, f1 - f0
+            
+            while x<=x1:
+                e.append(e0 + (x-x0) / dx * de)
+                f.append(f0 + (x-x0) / dx * df)
+                x += xinc
+        
+        return {'min':xmin, 'inc':xinc, 'efac':np.array(e, dtype=np.float32), 'ffac':np.array(f, dtype=np.float32)}
+        
+        
+        
+        
+        
+        
+    
+    
