@@ -66,6 +66,7 @@ class Histogram:
         self.x     = None
         self.n     = None
         self.U     = None
+        self.range = None
         
         segs = args.split(",")
         if len(segs) != self.ntype + 3:
@@ -216,8 +217,11 @@ def main(*args, **kwargs):
                     
                     if pair.n is None:
                         pair.n, pair.x = hist, edges[:-1] + np.diff(edges) * 0.5
+                        pair.range = [page.r.min(), page.r.max()]
                     else:
                         pair.n += hist
+                        pair.range[0] = min(pair.range[0], page.r.min())
+                        pair.range[1] = max(pair.range[1], page.r.max())
             
             TIMER.click('pair')
         
@@ -232,8 +236,11 @@ def main(*args, **kwargs):
 
                 if one.n is None:
                     one.n, one.x = hist, edges[:-1] + np.diff(edges) * 0.5
+                    one.range = [vals.min(), vals.max()]
                 else:
                     one.n += hist
+                    one.range[0] = min(one.range[0], vals.min())
+                    one.range[1] = max(one.range[1], vals.max())
 
             for one in args.bond:
                 z = blist.get_scalar('bond')
@@ -278,18 +285,22 @@ def main(*args, **kwargs):
         pair.n = np.divide(pair.n, 4.0 * np.pi * np.square(pair.x))
         pair.n = np.divide(pair.n, pair.n[-1])
         results.append(post_process(pair, 'Pair'))
-
+        screen.info("Pair: " + pair.name + " " + str(pair.range))
+        
     for bond in args.bond:
         bond.n = np.divide(bond.n, bond.n.max())
         results.append(post_process(bond, 'Bond'))
-
+        screen.info("Bond: " + bond.name + " " + str(bond.range))
+        
     for angle in args.angle:
         angle.n = np.divide(angle.n, angle.n.max())
         results.append(post_process(angle, 'Angle'))
+        screen.info("Angle: " + angle.name + " " + str(angle.range))
     
     for dihed in args.dihedral:
         dihed.n = np.divide(dihed.n, dihed.n.max())
         results.append(post_process(dihed, 'Dihedral'))
+        screen.info("Dihedral: " + dihed.name + " " + str(dihed.range))
         
     if args.save == 'return':
         return results
