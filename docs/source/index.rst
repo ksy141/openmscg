@@ -6,6 +6,8 @@
 Documentation of OpenMSCG
 =========================
 
+For any questions or reporting an issue, please email to the `Service Desk <mscg@rcc.uchicago.edu>`_.
+
 .. toctree::
    :maxdepth: 2
    :caption: User's Manual
@@ -22,6 +24,7 @@ Documentation of OpenMSCG
    :maxdepth: 2
    :caption: Developer's Manual
    
+   contribute  
    module
    tests
 

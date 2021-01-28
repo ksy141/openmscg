@@ -8,6 +8,7 @@ List of Commands
    cgib
    cgmap
    cgfm
+   cgnes
    cgdump
    cgderiv
    cgrem
@@ -17,6 +18,7 @@ List of Commands
    commands/cgib
    commands/cgmap
    commands/cgfm
+   commands/cgnes
    commands/cgdump
    commands/cgderiv
    commands/cgrem
