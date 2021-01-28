@@ -5,27 +5,6 @@ This document details instructions to download, compile, and install the OpenMSC
 If you're not interested in optimizing or developing the package, it is recommended that you use the 
 easy-install method with our precompiled binary distributions in wheel format.
 
-Setup SSH Key on GitLab
------------------------
-
-Login into the GitLab portal (`Link <https://software.rcc.uchicago.edu/git/>`_)
-from the RCC Software website. If you don't have a GitLab account, you can sign up 
-at this `page <https://software.rcc.uchicago.edu/mscg/register.php>`_ for free.
-
-Setup your SSH public key to connect to GitLab (`instructions <https://help.github.
-com/en/articles/adding-a-new-ssh-key-to-your-github-account>`_ ). If you are unfamiliar
-with SSH key pairs or how to create them, please read the instructions
-`here <https://www.digitalocean.com/docs/droplets/how-to/add-ssh-keys/create-
-with-openssh/>`_.
-
-Check that the SSH key was paired successfully::
-
-    ssh -T git@software.rcc.uchicago.edu
-    Welcome to GitLab, @yuxing!
-
-If the SSH key is working, a welcome message from GitLab will be shown.
-
-
 Requirements
 ------------
 
@@ -164,11 +143,11 @@ Download Source
 In the folder that you want to download the package, run "git" to clone the remote
 repository::
 
-    git clone git@software.rcc.uchicago.edu:MSCG/OpenMSCG.git
+    GIT_SSL_NO_VERIFY=true git clone https://software.rcc.uchicago.edu/git/MSCG/openmscg.git
 
 Enter the repository directory::
 
-    cd OpenMSCG
+    cd openmscg
 
 
 Configure
@@ -210,10 +189,6 @@ Run the following command ::
     python setup.py install
 
 If you wish to install it in your local home directory, you can include the ``--user`` flag.
-
-
-
-
 
 
 

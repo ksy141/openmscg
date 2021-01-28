@@ -27,6 +27,11 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
+**0.3.0** (unreleased)
+
+1. Release the feature of substracting tabulated forces from the reference trajectories.
+2. In CGIB, add screen output for the ranges of the target variables.
+
 **0.2.2**
 
 1. Enable processing of LAMMPS trajectory in that only part of the system atoms are dumped.
