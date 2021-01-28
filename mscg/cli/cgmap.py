@@ -83,7 +83,7 @@ def main(*args, **kwargs):
             outfile.box, outfile.x, outfile.f = reader.traj.box.copy(), X, F
             outfile.timestep = reader.traj.timestep
             outfile.write_frame()
-            
+        
         TIMER.click('write')
         
     screen.info("Processing is finished.")
