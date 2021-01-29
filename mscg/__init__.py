@@ -15,7 +15,7 @@ namespace: ::
 
 '''
 
-__version__ = '0.2.2'
+__version__ = '0.2.3'
 
 doc_root = "https://software.rcc.uchicago.edu/mscg/docs/"
 

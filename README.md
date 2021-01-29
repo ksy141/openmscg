@@ -31,6 +31,8 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 1. Release the feature of substracting tabulated forces from the reference trajectories.
 2. In CGIB, add screen output for the ranges of the target variables.
+3. Distributed workflow of Force-matching assisted by new CLI CGNES.
+4. New CLI CGHENM for heterogeneous elastic network modeling.
 
 **0.2.2**
 
