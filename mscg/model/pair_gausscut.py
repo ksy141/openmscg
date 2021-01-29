@@ -37,7 +37,7 @@ class PairGaussCut(Model):
         vals = np.zeros(x.shape[0])
         
         for i, t in enumerate(self.terms):
-            vals += self.params[i] * t.rmh * t.factor2 * np.exp(np.square(x - t.rmh) * t.factor1)
+            vals += self.params[i] * t.factor2 * np.exp(np.square(x - t.rmh) * t.factor1)
         
         return vals
         

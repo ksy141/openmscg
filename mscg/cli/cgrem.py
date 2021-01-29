@@ -50,9 +50,9 @@ class OptimizerBuiltin:
 
         for name, dudl_aa in dudl_ref.items():
             dudl_cg = dudl_mean[name].copy()
-            dudl_var = dudl_var[name].copy()
+            var = dudl_var[name].copy()
             
-            step = self.chi * (dudl_cg - dudl_aa) / (self.beta * dudl_var)
+            step = self.chi * (dudl_cg - dudl_aa) / (self.beta * var)
             param_prev = params[name].copy()
             params[name] = param_prev + step
             
@@ -62,7 +62,7 @@ class OptimizerBuiltin:
             
             screen.info("\n=> %15s %15s %15s" % ("<dU/dL>_aa", "<dU/dL>_cg", "Var(dU/dL)_cg"))
             for i in range(params[name].shape[0]):
-                screen.info("=> %15.5e %15.5e %15.5e" % (dudl_aa[i], dudl_cg[i], dudl_var[i]))
+                screen.info("=> %15.5e %15.5e %15.5e" % (dudl_aa[i], dudl_cg[i], var[i]))
             
             screen.info("\n=> %15s %15s %15s" % ("param_pre", "param_chg", "param_cur"))
             for i in range(params[name].shape[0]):

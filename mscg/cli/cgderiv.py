@@ -66,6 +66,12 @@ class CGDeriv:
 
         group.add_argument("--pair",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('pair'), default=[])
         
+        group.add_argument("--bond",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('bond'), default=[])
+        
+        group.add_argument("--angle",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('angle'), default=[])
+        
+        group.add_argument("--dihedral",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('dihedral'), default=[])
+        
         group.add_argument("--save",  metavar='', type=str, default="model", help="file name for model output")
     
         if len(args)>0 or len(kwargs)>0:
@@ -82,22 +88,29 @@ class CGDeriv:
 
         if args.names is not None:
             args.top.reset_names(args.names.split(','))
-
+        
         # prepare lists
 
         screen.info("Build pair and bonding list-based algorithm ...")
         plist = PairList(cut = args.cut, binsize = args.cut * 0.5)
         plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
+        blist = BondList(
+            args.top.types_bond, args.top.bond_atoms, 
+            args.top.types_angle, args.top.angle_atoms, 
+            args.top.types_dihedral, args.top.dihedral_atoms)
         
         # setup models
         
         [pair.setup(args.top, plist) for pair in args.pair]
+        [bond.setup(args.top, blist) for bond in args.bond]
+        [angle.setup(args.top, blist) for angle in args.angle]
+        [dihedral.setup(args.top, blist) for dihedral in args.dihedral]
         
         # save references
         
         self.args = args
         self.plist = plist
-        #self.blist = blist
+        self.blist = blist
             
     def process(self):
         
@@ -119,7 +132,7 @@ class CGDeriv:
             
             TIMER.click('io')
             TIMER.click('pair', self.plist.build(reader.traj.x))
-            #TIMER.click('bond', blist.build(reader.traj.box, reader.traj.x))
+            TIMER.click('bond', self.blist.build(reader.traj.box, reader.traj.x))
             TIMER.click('model', models.compute_rem())
             
             for m in models.items:
