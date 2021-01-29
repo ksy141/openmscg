@@ -112,10 +112,17 @@ class UCGSpawner:
             return None
         else:
             
+            top_names = UCG.top.names_atom
+            top_types = UCG.top.types_atom
+            
             r = np.random.random(UCG.top.n_atom)
             types = []
             
             for i in range(UCG.top.n_atom):
+                if UCG.weights[i] == []:
+                    types.append(top_names[top_types[i]])
+                    continue
+                    
                 p = 0.0
                 
                 for state in UCG.weights[i]:
