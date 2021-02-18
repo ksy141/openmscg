@@ -51,6 +51,7 @@ Syntax of running ``cgfm`` command ::
                             interactions. (default: [])
       --ucg [key=value]     settings for UCG modeling (default: None)
       --ucg-wf [key=value]  define new state-function for UCG (default: [])
+      --force               Force definition (default: None)
 
 '''
 
@@ -79,7 +80,7 @@ def main(*args, **kwargs):
     group.add_argument("--traj", metavar='file[,args]', action=TrajReaderAction, help=TrajReaderAction.help, default=[])
     
     group.add_argument("--cut", metavar='', type=float, default=10.0, help="cut-off for pair interactions")
-    group.add_argument("--save",  metavar='', type=str, default="result", help="file name for matrix output")
+    group.add_argument("--save",  metavar='', type=str, default="result", help="file name for model output")
     
     group.add_argument("--lasso",  metavar='', type=float, default=0.0, help="lambda value for Lasso regularizer")
     

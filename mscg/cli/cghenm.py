@@ -1,14 +1,49 @@
-'''Heterogeneous Elastic Network Models
+'''Construct Heterogeneous Elastic Network Models
 
 Description
 -----------
 
-The ``cghenm`` is for building Heterogeneous Elastic Network Models (HENM).
+The ``cghenm`` is for building Heterogeneous Elastic Network Models (HENM). 
+The models are consist of a group of harmonic springs connect each pair of CG
+sites within a certain ``cut-off`` distance. The command reads in reference CG
+trajectories and calculates the flucutations of the springs. Then, it runs the
+"flucutation-matching" interative approach by adjusting the set of spring
+constants to match the reference trajectories. The flucuations from a given set
+of trial spring constants are estimated by the Hessian matrix of the system.
 
 Usage
 -----
 
 Syntax of running ``cghenm`` command ::
+
+    usage: cghenm.py [-h] [-v L] [--mass [[...]]] [--traj file[,args]] [--temp]
+                     [--cut] [--alpha] [--maxiter] [--ktol] [--sdstep] [--sdmax]
+                     [--sdftol]
+
+    Run normal equations solver for FM/UCG method. For detailed instructions
+    please read https://software.rcc.uchicago.edu/mscg/docs/commands/cgnes.html
+
+    General arguments:
+      -h, --help          show this help message and exit
+      -v L, --verbose L   screen verbose level (default: 0)
+
+    Required arguments:
+      --mass [ [ ...]]    masses of CG sites (default: [])
+      --traj file[,args]  reader for a trajectory file, multiple fields separated
+                          by commas, the first field is the file name, while
+                          others define the skip, every and frames (default args:
+                          file,skip=0,every=1,frames=0) (default: [])
+
+    Optional arguments:
+      --temp              temperature (default: 300.0)
+      --cut               cut-off of bonds (default: 30.0)
+      --alpha             step size for iterations (default: 0.1)
+      --maxiter           maximum iterations (default: 1000)
+      --ktol              tolerance of k-constants in iterations (default: 0.0001)
+      --sdstep            initial step size for SD minimization (default: 1.0)
+      --sdmax             maximum steps for SD minimization (default: 1000)
+      --sdftol            tolerance of forces SD minimization (default: 0.0001)
+      --save              file name for model output (default: result)
 
 '''
 
@@ -45,8 +80,12 @@ def main(*args, **kwargs):
     group.add_argument("-h", "--help", action="help", help="show this help message and exit")
     group.add_argument("-v", "--verbose", metavar='L', type=int, default=0, help="screen verbose level")
     
-    group = parser.add_argument_group('Optional arguments')
+    group = parser.add_argument_group('Required arguments')
     group.add_argument("--mass", metavar='', type=float, default=[], nargs='*', help="masses of CG sites")
+    group.add_argument("--traj", metavar='file[,args]', action=TrajReaderAction, help=TrajReaderAction.help, default=[])
+    
+    group = parser.add_argument_group('Optional arguments')
+    
     group.add_argument("--temp", metavar='', type=float, default=300.0, help="temperature")
     group.add_argument("--cut", metavar='', type=float, default=30.0, help="cut-off of bonds")
     
@@ -58,7 +97,8 @@ def main(*args, **kwargs):
     group.add_argument("--sdmax", metavar='', type=int, default=1000, help="maximum steps for SD minimization")
     group.add_argument("--sdftol", metavar='', type=float, default=1.0e-4, help="tolerance of forces SD minimization")
     
-    group.add_argument("--traj", metavar='file[,args]', action=TrajReaderAction, help=TrajReaderAction.help, default=[])
+    group.add_argument("--save",  metavar='', type=str, default="result", help="file name for model output")
+    
         
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
@@ -188,13 +228,20 @@ def main(*args, **kwargs):
         if np.abs(K - prevK).max() < args.ktol:
             break
     
-    with open('result.txt', 'w') as f:
-        f.write("%10s %10s %10s %10s %10s %10s\n" % ('Atom I', 'Atom J', 'R0', 'K', 'Fluc_0','Fluc_p'))
-        
-        for i in range(top.n_bond):
-            f.write("%10d %10d %10.3f %10.3f %10.3f %10.3f\n" % (top.bond_atoms[0][i]+1, top.bond_atoms[1][i]+1, rf_mean[i], K[i], rf_std[i], trial_std[i]))
     
-    return
+    if args.save == "return":
+        return {
+            'AtomI': top.bond_atoms[0, :],
+            'AtomJ': top.bond_atoms[1, :],
+            'R0': rf_mean, 'K': K, 'FlucRef': rf_std, 'FlucMatched': trial_std
+        }
+    
+    else:
+        with open(args.save + '.txt', 'w') as f:
+            f.write("%10s %10s %10s %10s %12s %12s\n" % ('Atom I', 'Atom J', 'R0', 'K', 'Fluc_Ref.','Fluc_Matched'))
+
+            for i in range(top.n_bond):
+                f.write("%10d %10d %10.3f %10.3f %12.3f %12.3f\n" % (top.bond_atoms[0][i]+1, top.bond_atoms[1][i]+1, rf_mean[i], K[i], rf_std[i], trial_std[i]))
     
     
 

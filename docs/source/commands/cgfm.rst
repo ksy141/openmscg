@@ -15,6 +15,8 @@ mapped atomistic trajectory.
 
 * |cli-opt-model|
 
+* |cli-opt-forcefield|
+
 * For more details about the options ``--ucg`` and ``--ucg-wf``, please read the subsection below for `Ultra Coarse-Graining`_.
 
 Notes

@@ -12,6 +12,7 @@ List of Commands
    cgdump
    cgderiv
    cgrem
+   cghenm
 
 .. toctree::
 
@@ -22,4 +23,4 @@ List of Commands
    commands/cgdump
    commands/cgderiv
    commands/cgrem
-   
+   commands/cghenm
