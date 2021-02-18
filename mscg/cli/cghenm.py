@@ -48,7 +48,9 @@ def main(*args, **kwargs):
     group = parser.add_argument_group('Optional arguments')
     group.add_argument("--mass", metavar='', type=float, default=[], nargs='*', help="masses of CG sites")
     group.add_argument("--temp", metavar='', type=float, default=300.0, help="temperature")
-    group.add_argument("--alpha", metavar='', type=float, default=0.5, help="step size for iterations")
+    group.add_argument("--cut", metavar='', type=float, default=30.0, help="cut-off of bonds")
+    
+    group.add_argument("--alpha", metavar='', type=float, default=0.1, help="step size for iterations")
     group.add_argument("--maxiter", metavar='', type=int, default=1000, help="maximum iterations")
     group.add_argument("--ktol", metavar='', type=int, default=1.0e-4, help="tolerance of k-constants in iterations")
     
@@ -88,7 +90,8 @@ def main(*args, **kwargs):
             
             top.add_bondings('bond', ['CG-CG'] * len(ba1), [ba1, ba2])
             blist = BondList(top.types_bond, top.bond_atoms, 
-                             top.types_angle, top.angle_atoms, top.types_dihedral, top.dihedral_atoms)
+                             top.types_angle, top.angle_atoms, 
+                             top.types_dihedral, top.dihedral_atoms)
         
         if reader.nread == 1:
             assert(reader.traj.natoms == top.n_atom)
@@ -102,6 +105,18 @@ def main(*args, **kwargs):
     screen.info("MEAN(Bond-Length):" + str(rf_mean))
     rf_std = np.std(bonds, axis=0)
     screen.info("STDDEV(Bond-Length):" + str(rf_std))
+    
+    # clean bond list
+    
+    mask = rf_mean <= args.cut
+    rf_mean = rf_mean[mask].copy()
+    rf_std = rf_std[mask].copy()
+    
+    top.mask_bonds(mask)
+    
+    blist = BondList(top.types_bond, top.bond_atoms, 
+        top.types_angle, top.angle_atoms, 
+        top.types_dihedral, top.dihedral_atoms)
     
     # iteration
 
@@ -140,7 +155,10 @@ def main(*args, **kwargs):
         
         # Eigen problem
         ew, ev = LA.eig(H)
-        screen.info("Eigen-Values of Hessian Matrix: " + str(np.real(ew[:N*3-6])))
+        ew = np.real(ew)
+        ew = np.where(ew<1.0E-8, 1.0E-8, ew)
+        
+        screen.info("Eigen-Values of Hessian Matrix: " + str(ew[:N*3-6]))
         
         # Vibration
         trial_std = np.zeros(len(bonds))
@@ -164,10 +182,18 @@ def main(*args, **kwargs):
         # Update K
         prevK = K.copy()
         K = 0.25 / (0.25 / K - args.alpha * (np.square(trial_std) - np.square(rf_std)))
+        K = np.where(K<0.001, 0.001, K)
         screen.info("New Constants: " + str(K))
         
         if np.abs(K - prevK).max() < args.ktol:
             break
+    
+    with open('result.txt', 'w') as f:
+        f.write("%10s %10s %10s %10s %10s %10s\n" % ('Atom I', 'Atom J', 'R0', 'K', 'Fluc_0','Fluc_p'))
+        
+        for i in range(top.n_bond):
+            f.write("%10d %10d %10.3f %10.3f %10.3f %10.3f\n" % (top.bond_atoms[0][i]+1, top.bond_atoms[1][i]+1, rf_mean[i], K[i], rf_std[i], trial_std[i]))
+    
     return
     
     

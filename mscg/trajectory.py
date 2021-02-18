@@ -236,6 +236,9 @@ class Trajectory:
         :rtype: numpy.array(shape=3, dtype=numpy.float32)
         """
         
+        if np.abs(box[0])<1.0: # if no PBC
+            return x
+        
         x_wrap = x - x[0]
         x_scaled = x_wrap/box
         x_wrap += (x_scaled>0.5) * box * -1.0
@@ -256,6 +259,9 @@ class Trajectory:
         :return: wrapped coordinates
         :rtype: numpy.array(shape=3, dtype=numpy.float32)
         """
+        
+        if box[0]<1.0: # if no PBC
+            return x
         
         x = x/box
         x -= np.floor(x)

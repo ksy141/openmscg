@@ -93,7 +93,7 @@ class PairList:
         page : mscg.PageInterator
             An iterator of pages contaning the data of pairs
     """
-    def __init__(self, cut = 10.0, binsize = 5.0, max_pairs = 2000000, page_size = 1000000):
+    def __init__(self, cut = 10.0, binsize = 5.0, max_pairs = 10000000, page_size = 2000000):
         """
         Create an object in `PairList` class.
         

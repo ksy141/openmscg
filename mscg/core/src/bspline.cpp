@@ -75,9 +75,10 @@ void BSpline::setup_cache(double dx_factor)
     {
         size_t istart, iend;
         double dx = xmin + ddx * i;
+        dx += (i==0?1e-6:-1e-6);
         gsl_bspline_eval_nonzero(dx, B, &istart, &iend, bw);
+        
         int nn = iend - istart + 1;
-
         table_istart[i] = istart;
         table_nn[i] = nn;
         

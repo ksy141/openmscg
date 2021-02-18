@@ -460,6 +460,26 @@ class Topology:
         self._add_items_with_types(bonded_type, types)
         return self._types[bonded_type].__len__()
     
+    def mask_bonds(self, mask:list) -> int:
+        """
+        Refine a new group of bonds from a subset of the existing ones by a mask.
+        Angle and dihedrals are not affected. Needs to manually call gen_angels()
+        and gen_dihedrals() if necessary.
+        
+        :param mask: list of boolean values.
+        :type: mask: [boolean]
+        
+        :return: current number of items in the list for `bonded_type`.
+        :rtype: int
+        """
+        
+        if self._types['bond'].__len__() != len(mask):
+            raise ValueError('Incorrect length of the mask.')
+        
+        self._types['bond'] = self._types['bond'][mask].copy()
+        self._bonded_atoms['bond'] = self._bonded_atoms['bond'][:,mask].copy()
+        return self._types['bond'].__len__()
+    
     def bonding_name(self, atom_types) -> str:
         """
         Get the name for a group of bonding types.

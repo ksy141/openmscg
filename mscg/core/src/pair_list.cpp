@@ -88,17 +88,19 @@ PairList::PairList(float cut, float binsize, long maxpairs)
 }
 
 PairList::~PairList()
-{
+{    
     deallocate();
-    if(stencil) delete [] stencil;
     
+    if(stencil) delete [] stencil;
     if(binhead) delete [] binhead;
+    
     if(ilist) delete [] ilist;
     if(jlist) delete [] jlist;
-    if(tlist) delete [] tlist;
+    if(tlist) delete [] tlist; 
     if(dxlist) delete [] dxlist;
     if(dylist) delete [] dylist;
     if(dzlist) delete [] dzlist;
+    if(drlist) delete [] drlist;
 }
 
 void PairList::allocate()
@@ -274,7 +276,9 @@ void PairList::build(vec3f *x)
                         dylist[npairs] = dy;
                         dzlist[npairs] = dz;
                         drlist[npairs] = sqrt(r2);
+                        
                         npairs++;
+                        assert(npairs < maxpairs);
                     }
                 }
                 
