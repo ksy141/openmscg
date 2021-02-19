@@ -63,6 +63,8 @@ BSpline::~BSpline()
     }
 }
 
+#define SMALL (1.0E-8)
+
 void BSpline::setup_cache(double dx_factor)
 {
     ddx = dx_factor * resolution;
@@ -74,8 +76,9 @@ void BSpline::setup_cache(double dx_factor)
     for(size_t i=0; i<tsize; i++)
     {
         size_t istart, iend;
-        double dx = xmin + ddx * i;
-        dx += (i==0?1e-6:-1e-6);
+        double dx = xmin + (i==0?SMALL:ddx*i);
+        if(dx>=xmax) dx = xmax - SMALL;
+        
         gsl_bspline_eval_nonzero(dx, B, &istart, &iend, bw);
         
         int nn = iend - istart + 1;

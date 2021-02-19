@@ -27,7 +27,11 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
-**0.3.0** (unreleased)
+**0.3.1**
+
+1. Fixed a bug in caching the bspline table
+
+**0.3.0**
 
 1. Release the feature of substracting tabulated forces from the reference trajectories.
 2. In CGIB, add screen output for the ranges of the target variables.
