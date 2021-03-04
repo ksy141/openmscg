@@ -58,17 +58,24 @@ Depth-First-Search (DFS), but much more efficient than it.
 
 DP requires calculating the residual matrix, ``resmax[i][j]``, which stores
 the residuals for all sub-segments from i-th atom to j-th atom. The time-complexity
-of calculating this matrix is O(N^3), where N is the number of atoms. This is the
-time-limit step in this algorithm. After calculation of residual matrix, the 
-time-complexity for searching global minimum is O(N^2 x P), where P is the number 
-groups (CG sites) to be determined.
+of calculating this matrix is O(N^2), where N is the number of atoms. After 
+calculation of residual matrix, the time-complexity for searching global minimum i
+s O(N^2 x P), where P is the number groups (CG sites) to be determined.
+
+In real practices, people may try different numbers of CG sites from the same
+covariance matrix. Therefore, a cache file named as ``resmax.cache.npy`` is
+created in the same folder storing the data of the residual matrix. When rerunning
+the tool with different ``--sites`` option, the residual matrix can be read from
+this cache file instead of computing it again. However, if the PCA data are
+updated, or the option ``--npc`` is changed, users need to manually remove and
+re-generate this cache file.
 
 .. admonition:: Note
 
   In a testing of CGED on `Intel(R) Xeon(R) Gold 6148 CPU @ 2.40GHz` to map a system 
   with N=372 alpha carbons into P=10 CG sites:
   
-  * The time of calculating residual matrix is about `2.0` seconds, which means it requires about 11 hours for a system of 10,000 alpha carbons.
+  * The time of calculating residual matrix is about `0.07` seconds, which means it requires about 50 seconds for a system of 10,000 alpha carbons.
   
   * The time of optimization takes about `0.33` seconds for 10 CG sites, which means it requires about 4 minutes for a system of 10,000 alpha carbons. And, mapping this system to 1000 CG sites will require about 400 minutes (~7 hours).
   
@@ -92,6 +99,6 @@ Examples
     cged --pc pc.npy \
          --ev ev.npy \
          --npc 24 \
-         --sites 20
+         --sites 10
 
     

@@ -51,8 +51,12 @@ def compute_resmax(cov):
     res = [[0.0] * m for _ in range(m)]
     
     screen.info("Progress: ...", end="")
-    total = (m-1) * m * (2*m-1) / 12
     count, last_count, time_start = 0, 0, time()
+    
+    
+    # Algorithm with O(N^3)
+    ''' 
+    total = (m-1) * m * (2*m-1) / 12
     
     for sub_start in range(m-1):
         for sub_end in range(sub_start+1, m):
@@ -71,8 +75,31 @@ def compute_resmax(cov):
                 elapsed = time() - time_start
                 remained = (total - count) / count * elapsed
                 screen.info("\rProgress: %0.2f%%. Elapsed: %0.0f secs. Remaining %0.0f secs ..." % (count*100/total, elapsed, remained), end="")
+    '''
     
+    # Algorithm with O(N^2)
+    
+    total = (m-1) * m / 2
+    
+    for L in range(1, m-1):
+        for i in range(m-L):
+            j = i + L
+            
+            res[i][j] = res[i][j-1] + res[i+1][j] - res[i+1][j-1]
+            res[i][j] += cov[i][i] + cov[j][j] - 2.0 * cov[i][j]
+            res[j][i] = res[i][j]
+        
+        count += m - L
+        if count - last_count > 1000000:
+            last_count = count
+
+            elapsed = time() - time_start
+            remained = (total - count) / count * elapsed
+            screen.info("\rProgress: %0.2f%%. Elapsed: %0.0f secs. Remaining %0.0f secs ..." % (count*100/total, elapsed, remained), end="")
+          
     screen.info("\nProgress: 100%%. Elapsed: %0.2f secs." % (time() - time_start))
+    
+    #print("\n".join([" ".join(["%10.4f" % (col) for col in row[:10]]) for row in res[:10]]))
     
     '''
     from concurrent import futures
@@ -219,6 +246,7 @@ def main(*args, **kwargs):
         
     cov_dim = [np.matmul(pc_dim[d], np.matmul(np.diag(ev), pc_dim[d].T)) for d in range(3)]
     cov = cov_dim[0] + cov_dim[1] + cov_dim[2]
+    #cov = np.tile(cov, (10, 10))
     
     chi, splits = minimize_dp(cov.tolist(), n)
     screen.info("Minimized Chi^2 (Sum of Residuals) = " + str(chi))
