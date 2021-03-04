@@ -106,7 +106,7 @@ def main(*args, **kwargs):
         args = parser.parse_args()
     
     screen.verbose = args.verbose
-    screen.info("OpenCG CLI Command: " + __name__)
+    screen.info("OpenMSCG CLI Command: " + __name__)
     
     # generate fluctuation info
     

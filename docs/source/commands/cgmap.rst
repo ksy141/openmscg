@@ -1,10 +1,6 @@
 cgmap
 =====
 
-The `cgmap` command maps atomistic trajectories to the coarse-grained
-resolution. For example, it maps a trajectory of water molecules to their
-centers of mass.
-
 .. include:: common.rst
 
 .. automodule:: mscg.cli.cgmap

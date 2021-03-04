@@ -1,9 +1,6 @@
 cgfm
 ====
 
-This command performs multiscale coarse-graining (i.e. force-matching) on a
-mapped atomistic trajectory.
-
 .. include:: common.rst
 
 .. automodule:: mscg.cli.cgfm

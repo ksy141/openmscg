@@ -13,6 +13,7 @@ List of Commands
    cgderiv
    cgrem
    cghenm
+   cged
 
 .. toctree::
 
@@ -24,3 +25,4 @@ List of Commands
    commands/cgderiv
    commands/cgrem
    commands/cghenm
+   commands/cged

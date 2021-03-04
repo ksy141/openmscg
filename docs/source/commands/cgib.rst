@@ -1,8 +1,6 @@
 cgib
 ====
 
-The `cgib` command performs non-iterative Boltzmann Inversion.
-
 .. include:: common.rst
 
 .. automodule:: mscg.cli.cgib

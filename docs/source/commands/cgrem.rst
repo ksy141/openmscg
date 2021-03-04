@@ -1,9 +1,6 @@
 cgrem
 =====
 
-This command performs relative entropy minimization (REM) to optimize a CG
-force-field.
-
 .. automodule:: mscg.cli.cgrem
 
 To run REM, there are **three** parts of input that need to be provided:

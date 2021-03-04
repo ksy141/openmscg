@@ -27,9 +27,10 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
-**0.3.1**
+**0.3.2**
 
 1. Fixed a bug in caching the bspline table
+2. Add the trial version of CLI CGED for EDCG modeling
 
 **0.3.0**
 
