@@ -79,7 +79,7 @@ re-generate this cache file.
   
   * The time of calculating residual matrix is about `0.07` seconds, which means it requires about 50 seconds for a system of 10,000 alpha carbons.
   
-  * The time of optimization takes about `0.33` seconds for 10 CG sites, which means it requires about 4 minutes for a system of 10,000 alpha carbons. And, mapping this system to 1000 CG sites will require about 400 minutes (~7 hours).
+  * The time of optimization takes about `0.13` seconds for 10 CG sites, which means it requires about 1.6 minutes for a system of 10,000 alpha carbons. And, mapping this system to 1000 CG sites will require about 160 minutes (~3 hours).
   
   Therefore, the time of this algorithm is totally acceptable for systems with less
   than 10k sites to be mapped.
