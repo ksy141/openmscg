@@ -91,7 +91,7 @@ def main(*args, **kwargs):
     
     group.add_argument("--alpha", metavar='', type=float, default=0.1, help="step size for iterations")
     group.add_argument("--maxiter", metavar='', type=int, default=1000, help="maximum iterations")
-    group.add_argument("--ktol", metavar='', type=int, default=1.0e-4, help="tolerance of k-constants in iterations")
+    group.add_argument("--ktol", metavar='', type=float, default=1.0e-4, help="tolerance of k-constants in iterations")
     
     group.add_argument("--sdstep", metavar='', type=float, default=1.0, help="initial step size for SD minimization")
     group.add_argument("--sdmax", metavar='', type=int, default=1000, help="maximum steps for SD minimization")
@@ -139,7 +139,7 @@ def main(*args, **kwargs):
         blist.build(reader.traj.box, reader.traj.x)
         bonds.append(blist.get_scalar('bond'))
         X, box = reader.traj.x.copy(), reader.traj.box.copy()
-    
+        
     bonds = np.stack(bonds)
     rf_mean = np.mean(bonds, axis=0)
     screen.info("MEAN(Bond-Length):" + str(rf_mean))
@@ -151,7 +151,6 @@ def main(*args, **kwargs):
     mask = rf_mean <= args.cut
     rf_mean = rf_mean[mask].copy()
     rf_std = rf_std[mask].copy()
-    
     top.mask_bonds(mask)
     
     blist = BondList(top.types_bond, top.bond_atoms, 
@@ -197,6 +196,7 @@ def main(*args, **kwargs):
         ew, ev = LA.eig(H)
         ew = np.real(ew)
         ew = np.where(ew<1.0E-8, 1.0E-8, ew)
+        ev = np.real(ev)
         
         screen.info("Eigen-Values of Hessian Matrix: " + str(ew[:N*3-6]))
         
@@ -214,7 +214,7 @@ def main(*args, **kwargs):
                     sprj += v[ib, dim] / r[ib] * (ev[a*3 + dim, imode] - ev[b*3 + dim, imode]) / np.sqrt(ew[imode])
             
                 prj += np.square(sprj)
-                    
+            
             trial_std[ib] = np.sqrt(prj)
         
         screen.info("Current Fluctuation: " + str(trial_std))
@@ -224,7 +224,7 @@ def main(*args, **kwargs):
         K = 0.25 / (0.25 / K - args.alpha * (np.square(trial_std) - np.square(rf_std)))
         K = np.where(K<0.001, 0.001, K)
         screen.info("New Constants: " + str(K))
-        
+                
         if np.abs(K - prevK).max() < args.ktol:
             break
     

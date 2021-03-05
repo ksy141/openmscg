@@ -9,11 +9,16 @@ and the mapped fine-grained forces (a.k.a, "force matching").
 
 **This package also provides support for the following methods:**
 
-* Relative entropy
+* Relative entropy Minimization
 
-* Iterative boltzmann inversion
+* Boltzmann Inversion
 
-* Rapid local equilibrium Ultra Coarse-Graining
+* Rapid Local Equilibrium Ultra Coarse-Graining
+
+* Heterogeneous Elastic Network Modeling
+
+* Essential Dyanamics Coarse-Graining Mapping
+
 
 **The terminology and algorithms used in the code are explained the publications
 for these methods, which include:**

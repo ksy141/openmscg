@@ -68,10 +68,16 @@ int TrajTRR::read_next_frame()
         if(attrs['f']) { f[i][0] /= 41.82; f[i][1] /= 41.82; f[i][2] /= 41.82; }
     }
     
-    if(_box[0][0]>1.0E-6 && _box[1][1]>1.0E-6 && _box[2][2]>1.0E-6)
-        for(int dim=0; dim<3; dim++) box[dim] = _box[dim][dim] * 10.0;
+    for(int dim=0; dim<3; dim++) 
+    {        
+        box[dim] = _box[dim][dim] * 10.0;
+        
+        // temporary fix for trajectory with no PBC box
+        if(box[dim]<1.0) box[dim] = 1.0E6;
+    }
     
-    if(box[0]>1.0E-6 && box[1]>1.0E-6 && box[2]>1.0E-6) pbc();
+    pbc();
+    
     return 0;
 }
 

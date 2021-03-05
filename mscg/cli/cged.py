@@ -33,17 +33,18 @@ Syntax of running ``cged`` command ::
     Optional arguments:
       --npc N            number of principal components (default: 0)
       --save             file name for output (default: map)
-
+      --cache            save residual matrix to file (default: False)
+      
 '''
 
 from mscg import *
 from time import time
 import os
 
-def compute_resmax(cov):
+def compute_resmax(cov, with_cache=False):
     if os.path.isfile('resmax.chk.npy'):
         screen.info("Loading residual matrix from cache ...")
-        return np.load('resmax.chk.npy')
+        return np.load('resmax.chk.npy').tolist()
     
     screen.info("Calculate residual matrix for all sub-domains ...")
     
@@ -101,55 +102,21 @@ def compute_resmax(cov):
     
     #print("\n".join([" ".join(["%10.4f" % (col) for col in row[:10]]) for row in res[:10]]))
     
-    '''
-    from concurrent import futures
-    
-    def resmax_from(sub_start):
-        screen.info("[multithreading] starting %d ..." % (sub_start))
-        sub_res = [0.0]
+    if with_cache:
+        np.save('resmax.chk.npy',  np.array(res))
         
-        for sub_end in range(sub_start+1, m):
-            sub_res.append(sub_res[-1])
-            
-            for i in range(sub_start, sub_end):
-                sub_res[-1] += cov[i][i] + cov[sub_end][sub_end] - 2.0 * cov[i][sub_end]
-        
-        return sub_start, sub_res
-    
-    time_start = time()
-    with futures.ThreadPoolExecutor(max_workers=1) as pool:
-        jobs = []
-        
-        for sub_start in range(m-1):
-            jobs.append(pool.submit(resmax_from, sub_start=sub_start))
-        
-        screen.info("[multithreading] %d jobs submitted to %d workers" % (len(jobs), threads))
-        screen.info("[multithreading] waiting ...", end="")
-        
-        for job in futures.as_completed(jobs):
-            sub_start, sub_res = job.result()
-            
-            for sub_end in range(sub_start+1, m):
-                res[sub_start][sub_end] = res[sub_end][sub_start] = sub_res[sub_end-sub_start]
-    
-    screen.info(" Finished. Elapsed: %0.2f secs." % (time() - time_start))
-    '''
-    
-    res = np.array(res)
-    np.save('resmax.chk.npy', res)
     return res
 
-def minimize_dp(cov, n):
+def minimize_dp(cov, n, with_cache=False):
     # residual matrix: res[i][j] - residuals for a sub-domain from atom i to j
-    res = compute_resmax(cov)
-    #res = np.tile(res, (27, 27))
+    res = compute_resmax(cov, with_cache)
     
     # dp[i][j]: minimum residual for i splits for subdomain 0-j
     # dp[i][j] = min{dp[i-1][k-1] + cov[k][m], k=[i, m-1]}
     # best[i][j]: best position of the last split in i splits for subdomain 0-j
     # i = 0, n-1, the results for i splits (n domains <=> n-1 splits)
     
-    m = res.shape[0]
+    m = len(res)
     dp = [[0.0] * m for _ in range(n)]
     best = [[None] * m for _ in range(n)]
     
@@ -213,6 +180,7 @@ def main(*args, **kwargs):
     group = parser.add_argument_group('Optional arguments')
     group.add_argument("--npc", metavar='N', type=int, default=0, help="number of principal components")
     group.add_argument("--save",  metavar='', type=str, default="map", help="file name for output")
+    group.add_argument("--cache",  metavar='', type=bool, default=False, help="save residual matrix to file")
     
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
@@ -246,9 +214,8 @@ def main(*args, **kwargs):
         
     cov_dim = [np.matmul(pc_dim[d], np.matmul(np.diag(ev), pc_dim[d].T)) for d in range(3)]
     cov = cov_dim[0] + cov_dim[1] + cov_dim[2]
-    #cov = np.tile(cov, (10, 10))
     
-    chi, splits = minimize_dp(cov.tolist(), n)
+    chi, splits = minimize_dp(cov.tolist(), n, args.cache)
     screen.info("Minimized Chi^2 (Sum of Residuals) = " + str(chi))
     
     # result

@@ -1,6 +1,8 @@
 cged
 ====
 
+*Available since 0.3.2-dev*
+
 .. automodule:: mscg.cli.cged
 
 Notes

@@ -1,6 +1,8 @@
 cghenm
 ======
 
+*Available since 0.3.0*
+
 .. include:: common.rst
 
 .. automodule:: mscg.cli.cghenm
