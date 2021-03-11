@@ -21,19 +21,20 @@ class Mapper:
 
         def unpack_group(group, root_anchor=0):
             unit_sites = []
-
-            for item in group['groups']:
-                if 'groups' in item:
-                    for site in unpack_group(item, root_anchor):
+            
+            if 'groups' in group:
+                for item in group['groups']:
+                    for site in unpack_group(item, root_anchor + group['anchor']):
                         unit_sites.append(site[:])
-                else:
-                    for site in item['sites']:
-                        unit_sites.append(site[:])
-
+            
+            if 'sites' in group:
+                for site in group['sites']:
+                    unit_sites.append(site[:])
+            
             sites = []
 
             for i in range(group['repeat']):
-                offset = group['anchor'] + i * group['offset']
+                offset = root_anchor + group['anchor'] + i * group['offset']
 
                 for site in unit_sites:
                     sites.append([site[0], site[1]+offset])

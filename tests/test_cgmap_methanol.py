@@ -17,7 +17,7 @@ def test_mapper(datafile):
                 'f-weight': [1.0, 1.0]
             }
         },
-        'system': [{'sites': [['CG', 0]]}]
+        'system': [{'anchor': 0, 'repeat': 1, 'offset': 0, 'sites': [['CG', 0]]}]
     })
     
     X, F = mapper.process(box, x, None)
