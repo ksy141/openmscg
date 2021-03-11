@@ -27,6 +27,10 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
+**0.3.3**
+
+1. Fixed a bug in CGMAP for incorrect repeat times for sites
+
 **0.3.2**
 
 1. Fixed a bug in caching the bspline table
