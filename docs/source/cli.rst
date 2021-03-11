@@ -62,10 +62,10 @@ For example, users can put options in a file (i.e., ``cgib.opts``) such as ::
     --names CH3,OH
     --cut 10.0
     --temp 298.15
-    --pair CH3,CH3,min=2.8,max=10.0,bins=200
-    --pair CH3,OH,min=2.8,max=10.0,bins=200
-    --pair OH,OH,min=2.5,max=10.0,bins=200
-    --bond CH3,OH,min=1.35,max=1.65,bins=60
+    --pair model=BSpline,type=CH3:CH3,min=2.8,max=10.0,bins=200
+    --pair model=BSpline,type=CH3:OH,min=2.8,max=10.0,bins=200
+    --pair model=BSpline,type=OH:OH,min=2.5,max=10.0,bins=200
+    --bond model=BSpline,type=CH3:OH,min=1.35,max=1.65,bins=60
     --plot none
     --verbose 1
 
@@ -83,8 +83,8 @@ Finally, the Python routines can be directly called from within Python. Each scr
     
     $ cgib --top run/data/lmp.data,lammps \
       --traj run/data/cg_methanol_1728_2s.trr \
-      --pair CH3,OH,min=2.8,max=10.0,bins=200 \
-      --pair OH,OH,min=2.5,max=10.0,bins=200 \
+      --pair model=BSpline,type=CH3:OH,min=2.8,max=10.0,bins=200 \
+      --pair model=BSpline,type=OH:OH,min=2.5,max=10.0,bins=200 \
       --names CH3,OH
 
 which is equivalent to the following code in Python::
@@ -93,7 +93,7 @@ which is equivalent to the following code in Python::
     
     cgib.main(top='run/data/lmp.data,lammps',
         traj='run/data/cg_methanol_1728_2s.trr',
-        pair=['CH3,OH,min=2.8,max=10.0,bins=200', 'OH,OH,min=2.5,max=10.0,bins=200'],
+        pair=['model=BSpline,type=CH3:OH,min=2.8,max=10.0,bins=200', 'model=BSpline,type=OH:OH,min=2.5,max=10.0,bins=200'],
         names='CH3,OH')
 
 Note that for options that can be specified multiple times, i.e., ``--pair``, the values can be aggregated as a list passed to the argument of the function.
