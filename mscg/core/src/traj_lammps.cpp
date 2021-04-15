@@ -227,7 +227,8 @@ int TrajLAMMPS::write_frame()
         if(attrs['f']) fprintf(fp, " %f %f %f", f[i][0], f[i][1], f[i][2]);
         fprintf(fp, "\n");
     }
-    
+     
+    fflush(fp);
     return 0;
 }
 

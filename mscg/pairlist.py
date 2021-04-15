@@ -84,6 +84,7 @@ stored in the pages:
 
 import numpy as np
 from .core import cxx_pairlist as lib
+import os
 
 class PairList:
     """
@@ -93,7 +94,7 @@ class PairList:
         page : mscg.PageInterator
             An iterator of pages contaning the data of pairs
     """
-    def __init__(self, cut = 10.0, binsize = 5.0, max_pairs = 10000000, page_size = 2000000):
+    def __init__(self, cut = 10.0, binsize = 5.0, max_pairs = 0, page_size = 2000000):
         """
         Create an object in `PairList` class.
         
@@ -114,6 +115,9 @@ class PairList:
         
         if binsize>cut:
             binsize = cut * 0.5
+        
+        if max_pairs == 0:
+            max_pairs = int(os.environ['OPENMSCG_MAXPAIRS']) if 'OPENMSCG_MAXPAIRS' in os.environ else 10000000
         
         self._h = lib.create(cut, binsize, max_pairs)
         self._scalar_t, self._scalar_r = None, None

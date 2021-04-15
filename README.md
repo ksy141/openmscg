@@ -27,14 +27,19 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
+**0.3.4**
+
+1. Allow environment variables OPENMSCG_MAXPAIRS to increase max_pairs in pair-list.
+2. Fixed a bug in UCG weight-function for computing local densities.
+
 **0.3.3**
 
-1. Fixed a bug in CGMAP for incorrect repeat times for sites
+1. Fixed a bug in CGMAP for incorrect repeat times for sites.
 
 **0.3.2**
 
-1. Fixed a bug in caching the bspline table
-2. Add the trial version of CLI CGED for EDCG modeling
+1. Fixed a bug in caching the bspline table.
+2. Add the trial version of CLI CGED for EDCG modeling.
 
 **0.3.0**
 

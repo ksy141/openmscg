@@ -20,7 +20,7 @@ class WeightingRLE:
         rho = np.zeros(top.n_atom)
         
         for page in self.plist.pages(pair_type, index=True):
-            w = 0.5 * (1.0 - np.tanh((page.r - self.rth) / (0.1 * self.wth)))
+            w = 0.5 * (1.0 - np.tanh((page.r - self.rth) / (0.1 * self.rth)))
             
             for i in range(w.shape[0]):
                 rho[page.index[0][i]] += w[i]
