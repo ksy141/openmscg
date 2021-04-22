@@ -11,16 +11,16 @@ def test_slab(datafile):
                      'model=BSpline,type=Near:Far,min=3.0,resolution=0.05',
                      'model=BSpline,type=Far:Far,min=3.0,resolution=0.05'],
         'ucg'     : 'replica=25,seed=1234',
-        'ucg-wf'  : 'RLE,target=MeOH,high=Near,low=Far,rth=4.5,wth=3.5',
+        'ucg-wf'  : 'RLE,I=MeOH,J=MeOH,high=Near,low=Far,rth=4.5,wth=3.5',
         'verbose' : 0,
         'save'    : 'return'
     }
     
     coeffs = cgfm.main(**kwargs)
     
-    benchmark = [1.02639004e+01,  9.58964330e+00,  8.46078987e+00,  8.11806459e+00,
-                 6.07700853e+00,  4.55259471e+00,  3.51225519e+00,  2.41642475e+00,
-                 1.71897334e+00,  1.08990822e+00]
+    benchmark = [ 1.02706770e+01,  9.60111079e+00,  8.49875703e+00,  8.09731422e+00,
+                  6.07569120e+00,  4.57822777e+00,  3.50977763e+00,  2.42697457e+00,
+                  1.72940049e+00,  1.07372497e+00]
     
     print(coeffs)
     
@@ -29,6 +29,6 @@ def test_slab(datafile):
         print("X=%3d, Y0=%10.3e, Y=%10.3e, dY/Y0=%5.2f%%" %(i+1, benchmark[i], coeffs[i], diff))
         
         if abs(benchmark[i])>0.05:
-            assert abs(diff)<0.1
+            assert abs(diff)<0.01
         
         

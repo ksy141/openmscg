@@ -27,6 +27,10 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
+**0.3.5**
+
+1. Enable cross-density for the RLE weighting function in UCG.
+
 **0.3.4**
 
 1. Allow environment variables OPENMSCG_MAXPAIRS to increase max_pairs in pair-list.

@@ -5,7 +5,8 @@ import numpy as np
 class WeightingRLE:
     
     def __init__(self, **kwargs):
-        self.target = "undefined"
+        self.I      = "undefined"
+        self.J      = "undefined"
         self.low    = "undefined"
         self.high   = "undefined"
         self.rth    = 0.0
@@ -16,20 +17,24 @@ class WeightingRLE:
         pass
     
     def compute(self, top, traj, weights):
-        pair_type = top.pair_tid(self.target, self.target)
+        pair_type = top.pair_tid(self.I, self.J)
+        tid = top.names_atom.index(self.I)
+        types = top.types_atom
         rho = np.zeros(top.n_atom)
         
         for page in self.plist.pages(pair_type, index=True):
             w = 0.5 * (1.0 - np.tanh((page.r - self.rth) / (0.1 * self.rth)))
             
             for i in range(w.shape[0]):
-                rho[page.index[0][i]] += w[i]
-                rho[page.index[1][i]] += w[i]
+                ia, ib = page.index[0][i], page.index[1][i]
+                
+                if types[ia] == tid:
+                    rho[ia] += w[i]
+                
+                if types[ib] == tid:
+                    rho[ib] += w[i]
         
-        p = 0.5 * (1.0 + np.tanh((rho - self.wth) / (0.1 * self.wth)))
-        
-        tid = top.names_atom.index(self.target)
-        types = top.types_atom
+        p = 0.5 * (1.0 + np.tanh((rho - self.wth) / (0.1 * self.wth)))        
         
         for i in range(top.n_atom):
             if types[i] == tid:
