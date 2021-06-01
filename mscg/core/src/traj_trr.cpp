@@ -65,7 +65,7 @@ int TrajTRR::read_next_frame()
     {
         x[i][0] *= 10.0; x[i][1] *= 10.0; x[i][2] *= 10.0;
         if(attrs['v']) { v[i][0] *= 0.01; v[i][1] *= 0.01; v[i][2] *= 0.01; }
-        if(attrs['f']) { f[i][0] /= 41.82; f[i][1] /= 41.82; f[i][2] /= 41.82; }
+        if(attrs['f']) { f[i][0] /= 41.84; f[i][1] /= 41.84; f[i][2] /= 41.84; }
     }
     
     for(int dim=0; dim<3; dim++) 
@@ -97,7 +97,7 @@ int TrajTRR::write_frame()
     {
         x[i][0] *= 0.1; x[i][1] *= 0.1; x[i][2] *= 0.1;
         if(attrs['v']) { v[i][0] *= 100.0; v[i][1] *= 100.0; v[i][2] *= 100.0; }
-        if(attrs['f']) { f[i][0] *= 41.82; f[i][1] *= 41.82; f[i][2] *= 41.82; }
+        if(attrs['f']) { f[i][0] *= 41.84; f[i][1] *= 41.84; f[i][2] *= 41.84; }
     }
     
     return write_trr(xd, natoms, step, t, lambda, _box, x, attrs['v']?v:NULL, attrs['f']?f:NULL);

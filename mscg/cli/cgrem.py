@@ -44,7 +44,6 @@ class OptimizerBuiltin:
         self.beta = 1.0 / (0.001985875 * self.t)        
         
     def run(self, params, dudl_ref, dudl_mean, dudl_var):
-
         if dudl_mean is None:
             return params
 
@@ -156,7 +155,7 @@ def main(*args, **kwargs):
             screen.fatal("Reference model [%s] is not in targets." % (name))
             
         if m['nparam'] != models[name].nparam:
-                screen.fatal("Incorrect number of parameters for reference model %s. (%d != %d)" % (name, models[name].nparam, m['nparam']))
+            screen.fatal("Incorrect number of parameters for reference model %s. (%d != %d)" % (name, models[name].nparam, m['nparam']))
     
     dudl_ref = ref['dudl_mean']
     
@@ -220,7 +219,7 @@ def main(*args, **kwargs):
         
         Checkpoint(args.restart + ".bak", __file__).update({'dudl_ref': dudl_ref, 'iterations': iters}).dump()
         params = args.optimizer.run(params.copy(), dudl_ref, dudl_mean, dudl_var)
-        
+                        
         for m in models.items:
             m.params = np.array(params[m.name])
             screen.info("Generate table [%s] to [%s]" % (m.name, args.table + m.name + '.table'))

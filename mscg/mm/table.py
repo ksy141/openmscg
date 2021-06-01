@@ -15,7 +15,7 @@ class ForceTable:
         
         for k, v in self.tables.items():
             ks = k.split('-')
-            tid = top.pair_tid(*ks) if self.style == 'pair' else top.bonding_tid(self.style.lower(), k)
+            tid = top.pair_tid(*ks) if self.style == 'pair' else top.bonding_tid(self.style.lower(), ks)
             lib.set_table(self._h, tid, v)
     
     def compute(self, n, types, scalars, U, dU):
