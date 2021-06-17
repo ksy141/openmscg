@@ -38,12 +38,8 @@ def SolveNE(XtX, XtY, Lasso=None):
     if Lasso > 1.0e-32:
         screen.info(["Solver => LASSO_LARS"])
         
-        try:
-            from sklearn import linear_model
-            clf = linear_model.LassoLars(alpha=args.lasso, fit_intercept=False, max_iter=50000)
-        except:
-            screen.fatal("Package [sklearn] is required when using the LASSO estimator. (See https://scikit-learn.org/stable/install.html)")
-            
+        from sklearn import linear_model
+        clf = linear_model.LassoLars(alpha=Lasso, fit_intercept=False, max_iter=50000)
         clf.fit(XtX, XtY)
         c = clf.coef_
     else:

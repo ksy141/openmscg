@@ -1,5 +1,6 @@
 #
 
+from mscg import R2D
 from ..table import *
 import mscg.core.cxx_tables as lib
 
