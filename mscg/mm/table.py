@@ -29,7 +29,19 @@ class Bond_Table(ForceTable):
     pass
 
 class Angle_Table(ForceTable):
-    pass
+    def __init__(self, params):
+        super().__init__(params)
+
+        for k, t in self.tables.items():
+            t['min']  /= R2D
+            t['inc']  /= R2D
+            t['ffac'] *= R2D
 
 class Dihedral_Table(ForceTable):
-    pass
+    def __init__(self, params):
+        super().__init__(params)
+
+        for k, t in self.tables.items():
+            t['min']  /= R2D
+            t['inc']  /= R2D
+            t['ffac'] *= R2D

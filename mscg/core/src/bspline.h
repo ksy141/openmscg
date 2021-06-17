@@ -4,6 +4,8 @@
 #include "gsl/gsl_bspline.h"
 #include "gsl/gsl_blas.h"
 
+#define SMALL 0.000001
+
 class BSpline
 {
   public:
@@ -32,6 +34,9 @@ class BSpline
     void eval_coeffs(double, double**, size_t*, int*);
     void eval(double*, double*, double, double, int);
     void eval(double*, double*, double*, int);
+    
+    enum ExtrapolationMethod {LINEAR, TRUNC, CAP};
+    ExtrapolationMethod extrapolation;
 };
 
 #endif

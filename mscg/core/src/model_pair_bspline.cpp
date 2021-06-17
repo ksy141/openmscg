@@ -9,7 +9,6 @@ ModelPairBSpline::ModelPairBSpline(double xmin, double xmax, double resolution, 
 
 ModelPairBSpline::~ModelPairBSpline()
 {
-    
 }
 
 void ModelPairBSpline::compute_fm()

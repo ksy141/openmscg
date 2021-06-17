@@ -2,6 +2,8 @@
 
 BSpline::BSpline(int order, double resolution, double xmin, double xmax)
 {
+    extrapolation = LINEAR;
+    
     this->order = order;
     this->resolution = resolution;
     this->xmin = xmin;
@@ -63,8 +65,6 @@ BSpline::~BSpline()
     }
 }
 
-#define SMALL (1.0E-8)
-
 void BSpline::setup_cache(double dx_factor)
 {
     ddx = dx_factor * resolution;
@@ -91,11 +91,18 @@ void BSpline::setup_cache(double dx_factor)
 
 void BSpline::eval_coeffs(double x, double **b, size_t *istart, int *nn)
 {
+    if(extrapolation == CAP && x<=xmin) x = xmin + SMALL;
+    else if(extrapolation == CAP && x>=xmax) x = xmax - SMALL;
+    
     if(x<=xmin)
     {
-        gsl_vector_memcpy(B, D0);
-        gsl_vector_scale(B, (x-xmin));
-        gsl_vector_add(B, B0);
+        if(extrapolation == TRUNC) gsl_vector_set_zero(B);
+        else
+        {
+            gsl_vector_memcpy(B, D0);
+            gsl_vector_scale(B, (x-xmin));
+            gsl_vector_add(B, B0);
+        }
         
         (*istart) = start0;
         (*nn) = order;
@@ -103,9 +110,13 @@ void BSpline::eval_coeffs(double x, double **b, size_t *istart, int *nn)
     }
     else if(x>=xmax)
     {
-        gsl_vector_memcpy(B, D1);
-        gsl_vector_scale(B, (x-xmax));
-        gsl_vector_add(B, B1);
+        if(extrapolation == TRUNC) gsl_vector_set_zero(B);
+        else
+        {
+            gsl_vector_memcpy(B, D1);
+            gsl_vector_scale(B, (x-xmax));
+            gsl_vector_add(B, B1);
+        }
         
         (*istart) = start1;
         (*nn) = order;
@@ -121,8 +132,7 @@ void BSpline::eval_coeffs(double x, double **b, size_t *istart, int *nn)
     else
     {
         size_t iend;
-        gsl_bspline_eval_nonzero(x, B, istart, &iend, bw);        
-        
+        gsl_bspline_eval_nonzero(x, B, istart, &iend, bw);
         (*nn) = iend - (*istart) + 1;
         (*b) = B->data;
     }

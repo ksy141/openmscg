@@ -11,6 +11,8 @@ typedef int   vec2i[2];
 typedef int   vec3i[3];
 typedef int   vec4i[4];
 
+#define RAD2DEG (180.0/M_PI)
+
 #define vector_sub(c, a, b) \
     c[0] = a[0] - b[0]; \
     c[1] = a[1] - b[1]; \

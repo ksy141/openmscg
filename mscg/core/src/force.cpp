@@ -33,7 +33,6 @@ void Force::compute_pair(PairList *pair, float *dU, float *f)
 void Force::compute_bond(BondList *blist, float *dU, float *f)
 {
     vec2i *atoms = blist->bond_atoms;
-    int* types = blist->bond_types;
     float *dx = blist->dx_bond;
     float *dy = blist->dy_bond;
     float *dz = blist->dz_bond;
@@ -61,8 +60,6 @@ void Force::compute_bond(BondList *blist, float *dU, float *f)
 void Force::compute_angle(BondList *lst, float *dU, float *f)
 {
     vec3i *atoms = lst->angle_atoms;
-    int* types = lst->angle_types;
-
     float *dx1 = lst->dx1_angle;
     float *dy1 = lst->dy1_angle;
     float *dz1 = lst->dz1_angle;
@@ -72,7 +69,6 @@ void Force::compute_angle(BondList *lst, float *dU, float *f)
     float *a11 = lst->a11_angle;
     float *a12 = lst->a12_angle;
     float *a22 = lst->a22_angle;
-    float *theta = lst->theta_angle;
 
     for(int i=0; i<lst->nangles; i++)
     {
@@ -104,9 +100,6 @@ void Force::compute_angle(BondList *lst, float *dU, float *f)
 void Force::compute_dihedral(BondList *lst, float *dU, float *f)
 {
     vec4i *atoms = lst->dihedral_atoms;
-    int* types = lst->dihedral_types;
-    float *phi = lst->phi_dihedral;
-
     float *dpd1x = lst->dpd1x_dihedral;
     float *dpd1y = lst->dpd1y_dihedral;
     float *dpd1z = lst->dpd1z_dihedral;
