@@ -28,7 +28,45 @@ class Table:
             f[0] = 2.0 * f[1] - f[2]
             f[-1] = 2.0 * f[-2] - 2.0 * f[-3]
             self.f = 0.5 * (f[:-1] + f[1:])
+    
+    
+    def padding_low(self, model_min):
+        i = 0
         
+        while self.x[i] < model_min:
+            i += 1
+        
+        while i<self.n-1 and (self.f[i]<0 or self.f[i] - self.f[i+1]) <= 0:
+            i += 1
+        
+        if i<self.n-1:
+            df = self.f[i] - self.f[i+1]
+            i -= 1
+            
+            while i>=0:
+                self.f[i] = self.f[i+1] + df
+                self.u[i] = (self.f[i+1] + 0.5 * df) * (self.x[i+1] - self.x[i]) + self.u[i+1]
+                i-=1
+    
+    def padding_high(self, model_max):
+        i = self.n-1
+        
+        while self.x[i] > model_max:
+            i -= 1
+        
+        while i>0 and (self.f[i]>0 or self.f[i] - self.f[i-1]) >= 0:
+            i -= 1
+        
+        if i>0:
+            df = self.f[i] - self.f[i-1]
+            i += 1
+            
+            while i<self.n:
+                self.f[i] = self.f[i-1] + df
+                self.u[i] = (self.f[i-1] + 0.5 * df) * (self.x[i] - self.x[i-1]) + self.u[i-1]
+                i+=1
+        
+    
     def dump_lammps(self, xmin=None, xmax=None, xinc=None):
         if xmin is not None:
             self.compute(xmin, xmax, xinc)

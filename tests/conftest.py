@@ -12,3 +12,11 @@ def datafile():
         return os.path.join(pwd, "data", fn)
     
     return fullpath
+
+
+@pytest.fixture
+def show():
+    def __show__(name, arr):
+        print(name + ": [" + ", ".join([str(_) for _ in arr]) + "]")
+        
+    return __show__

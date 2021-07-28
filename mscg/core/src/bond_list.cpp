@@ -147,7 +147,7 @@ void BondList::build_dihedrals(vec3f box, vec3f *x)
         if(c > 1.0) c = 1.0; else if(c < -1.0) c = -1.0;
         
         float phi = acos(c);
-        if(vector_dot(n1, b3) > 0.0) phi = - phi;
+        if(vector_dot(n1, b3) > 0.0) phi = 2.0 * M_PI - phi;
         
         phi_dihedral[i] = phi;
         

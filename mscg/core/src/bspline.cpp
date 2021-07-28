@@ -2,7 +2,7 @@
 
 BSpline::BSpline(int order, double resolution, double xmin, double xmax)
 {
-    extrapolation = LINEAR;
+    extrapolation = TRUNC;
     
     this->order = order;
     this->resolution = resolution;
@@ -72,7 +72,7 @@ void BSpline::setup_cache(double dx_factor)
     table_bvalue = new double [tsize * order];
     table_istart = new int [tsize];
     table_nn = new int [tsize];
-
+    
     for(size_t i=0; i<tsize; i++)
     {
         size_t istart, iend;
@@ -165,6 +165,9 @@ void BSpline::eval(double *input, double *output, double xmin, double dx, int n)
 
 void BSpline::eval(double *knots, double *in, double *out, int size)
 {
+    ExtrapolationMethod save = extrapolation;
+    extrapolation = LINEAR;
+    
     gsl_vector *Bs = gsl_vector_calloc(ncoeff);
     gsl_vector *Cs = gsl_vector_calloc(ncoeff);
     
@@ -186,6 +189,8 @@ void BSpline::eval(double *knots, double *in, double *out, int size)
 
     gsl_vector_free(Bs);
     gsl_vector_free(Cs);
+    
+    extrapolation = save;
 }
 
 

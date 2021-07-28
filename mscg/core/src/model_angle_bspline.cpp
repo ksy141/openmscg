@@ -36,7 +36,7 @@ void ModelAngleBSpline::compute_fm()
         int nn;
         
         eval_coeffs(theta[i], &b, &istart, &nn);
-        
+                
         double f1x = a11[i]*dx1[i] + a12[i]*dx2[i];
         double f1y = a11[i]*dy1[i] + a12[i]*dy2[i];
         double f1z = a11[i]*dz1[i] + a12[i]*dz2[i];

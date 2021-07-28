@@ -48,7 +48,7 @@ def main(*args, **kwargs):
     group.add_argument("--dump", metavar='', type=str, help="dump a LAMMPS table file, in format of [model-name,xmin,xmax,dx]", action='append')
     group.add_argument("--plot", metavar='', type=str, help="plot table, in format of [model-name,xmin,xmax,dx]", action='append')
     group.add_argument("--plot-force", metavar='', default=True, type=bool, help="plot force tables")
-   
+    
     parser.add_argument('--no-plot-frc', default=False, action='store_true')
     parser.add_argument('--no-plot-pot', default=False, action='store_true')
     
@@ -96,6 +96,7 @@ def main(*args, **kwargs):
         xmin = float(w[1]) if len(w)>1 else model['min']
         xmax = float(w[2]) if len(w)>2 else model['max']
         dx   = float(w[3]) if len(w)>3 else model['resolution']
+        pad  = w[4] if len(w)>4 else ""
         
         screen.info('Produce table for [%s] ...' % (mname))
         
@@ -104,12 +105,16 @@ def main(*args, **kwargs):
         
         m = model_class(**model_kwargs[mname])
         m.params = model['params']
+        
         setattr(m, 'name', mname)
         tbl = Table(m)
         tbl.compute(xmin, xmax, dx)
         
         if not mname.startswith('Pair_'):
             tbl.u = tbl.u - tbl.u.min()
+        
+        if "L" in pad: tbl.padding_low(m.min)
+        if "H" in pad: tbl.padding_high(m.max)
         
         return tbl
     

@@ -3,6 +3,21 @@ import argparse
 
 
 
+def parse_kwargs_line(line):
+    kwargs = {}
+    
+    for k, v in [seg.split('=') for seg in line.split(',')]:
+        if v.replace('.','').isnumeric():
+            kwargs[k] = float(v)
+        elif v.lower() == 'true':
+            kwargs[k] = True
+        elif v.lower() == 'false':
+            kwargs[k] = False
+        else:
+            kwargs[k] = v
+    
+    return kwargs
+
 class CLIParser(argparse.ArgumentParser):
     
     def convert_arg_line_to_args(self, arg_line):

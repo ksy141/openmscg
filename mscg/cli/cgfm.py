@@ -39,7 +39,7 @@ Syntax of running ``cgfm`` command ::
                             [])
       --cut                 cut-off for pair interactions (default: 10.0)
       --save                file name for matrix output (default: result)
-      --lasso               lambda value for Lasso regularizer (default: 0.0)
+      --alpha               alpha value for ridge regression (default: 0.0)
       --pair [key=value]    add a model declaration for pair-style interactions.
                             (default: [])
       --bond [key=value]    add a model declaration for bond-style interactions.
@@ -82,7 +82,7 @@ def main(*args, **kwargs):
     group.add_argument("--cut", metavar='', type=float, default=10.0, help="cut-off for pair interactions")
     group.add_argument("--save",  metavar='', type=str, default="result", help="file name for model output")
     
-    group.add_argument("--lasso",  metavar='', type=float, default=0.0, help="lambda value for Lasso regularizer")
+    group.add_argument("--alpha",  metavar='', type=float, default=0, help="alpha value for ridge regression")
     
     group.add_argument("--pair",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('pair'), default=[])
     group.add_argument("--bond",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('bond'), default=[])
@@ -180,7 +180,7 @@ def main(*args, **kwargs):
         
     # end of processing trajectories
     
-    c = SolveNE(matrix_cov, vector_cov, args.lasso)
+    c = SolveNE(matrix_cov, vector_cov, args.alpha)
     screen.info(["Model coefficients:", c])
     TIMER.click('solver')
         

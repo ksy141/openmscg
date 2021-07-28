@@ -27,25 +27,27 @@ Syntax of running ``cgnes`` command ::
       --save                file name for matrix output (default: result)
       --equation files [files ...]
                             CGFM result files (default: None)
-      --lasso               lambda value for Lasso regularizer (default: 0.0)
+      --model               Regularization settings (default: model=none)
 
 '''
 
 from mscg import *
 
-def SolveNE(XtX, XtY, Lasso=None):
-    
-    if Lasso > 1.0e-32:
-        screen.info(["Solver => LASSO_LARS"])
+def SolveNE(XtX, XtY, alpha = 0.0):
+    if alpha > 1.0E-6:
+        screen.info(["Solver => Ridge Regression"])
         
-        from sklearn import linear_model
-        clf = linear_model.LassoLars(alpha=Lasso, fit_intercept=False, max_iter=50000)
-        clf.fit(XtX, XtY)
-        c = clf.coef_
+        scale = np.sqrt(np.square(XtX).sum(axis=1))
+        XtX /= scale
+        XtX = XtX + np.identity(XtX.shape[0]) * (alpha * alpha)
+        
+        #c = np.linalg.solve(XtX, XtY)
+        c = np.matmul(np.linalg.pinv(XtX), XtY)
+        c /= scale
     else:
         screen.info(["Solver => OLS"])
+        #c = np.linalg.solve(XtX, XtY)
         c = np.matmul(np.linalg.pinv(XtX), XtY)
-    
     return c
 
 
@@ -64,7 +66,7 @@ def main(*args, **kwargs):
     group = parser.add_argument_group('Optional arguments')
     group.add_argument("--save",  metavar='', type=str, default="result", help="file name for matrix output")
     group.add_argument("--equation", metavar='files', nargs='+', type=argparse.FileType('rb'), help="CGFM result files")
-    group.add_argument("--lasso",  metavar='', type=float, default=0.0, help="lambda value for Lasso regularizer")
+    group.add_argument("--alpha",  metavar='', type=float, default=0, help="alpha value for Ridge regression")
         
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
@@ -89,13 +91,18 @@ def main(*args, **kwargs):
         X += data['X']
         y += data['y']
     
-    c = SolveNE(X, y, args.lasso)
+    c = SolveNE(X.copy(), y.copy(), args.alpha)
     screen.info(["Model coefficients:", c])
     
     if args.save == "return":
         return c
     
     else:
+        offset = 0
+        for name, m in models.items():
+            m['params'] = c[offset:offset + m['params'].size]
+            offset += m['params'].size
+            
         Checkpoint(args.save, __file__).update({
             'models': models,
             'X': X,

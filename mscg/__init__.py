@@ -15,7 +15,7 @@ namespace: ::
 
 '''
 
-__version__ = '0.4.3'
+__version__ = '0.5.0'
 
 doc_root = "https://software.rcc.uchicago.edu/mscg/docs/"
 
@@ -32,6 +32,8 @@ else:
     threads = len(os.sched_getaffinity(os.getpid()))
 
 import numpy as np
+
+bs_caching = False if 'OPENMSCG_BS_NOCACHE' in os.environ and int(os.environ['OPENMSCG_BS_NOCACHE'])>0 else True
 
 D2R = np.pi / 180.0
 R2D = 180.0 / np.pi
@@ -51,5 +53,4 @@ from .checkpoint import *
 
 from .model import *
 from .ucg import *
-
 from .traj_reader import *

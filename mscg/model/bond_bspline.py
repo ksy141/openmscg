@@ -12,7 +12,9 @@ class BondBSpline(Model):
         self.serialized_names = ['min', 'max', 'resolution', 'order']
         super().__init__(**kwargs)
         self._h = lib.create(self.min, self.max, self.resolution, self.order)
-        lib.setup_cache(self._h, self.resolution * 0.01)
+        
+        if bs_caching:
+            lib.setup_cache(self._h, self.resolution * 0.001)
         
     def setup(self, top, bondlist):
         self.nparam = lib.get_npars(self.min, self.max, self.resolution, self.order)
