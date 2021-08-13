@@ -63,7 +63,7 @@ class Table:
             
             while i<self.n:
                 self.f[i] = self.f[i-1] + df
-                self.u[i] = (self.f[i-1] + 0.5 * df) * (self.x[i] - self.x[i-1]) + self.u[i-1]
+                self.u[i] = - (self.f[i-1] + 0.5 * df) * (self.x[i] - self.x[i-1]) + self.u[i-1]
                 i+=1
         
     

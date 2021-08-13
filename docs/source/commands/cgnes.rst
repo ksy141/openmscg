@@ -6,11 +6,12 @@ cgnes
 Notes
 -----
 
-This command solves normal equations combined from one or more result files by CGFM.
+* Read `Ridge Regression (regularization) <https://en.wikipedia.org/wiki/Ridge_regression>`_ for more information.
+* The command doesn't check the matrix sigularity for the normal equation. If the matrix contains a column of all zero values, the resulting coefficient for that column will be zero as well.
 
 Examples
 --------
 
 ::
     
-    cgnes --equation result/*.p
+    cgnes --equation result/*.p --save combined.p

@@ -22,8 +22,8 @@ Syntax of running ``cgdump`` command ::
 
     Optional arguments:
       --dump             dump a LAMMPS table file, in format of
-                         [table_name,xmin,xmax,dx] (default: None)
-      --plot             plot table, in format of [table_name,xmin,xmax,dx]
+                         "table_name,xmin,xmax,dx[,padding]" (default: None)
+      --plot             plot table, in format of "table_name,xmin,xmax,dx[,padding]"
                          (default: None)
 
 '''

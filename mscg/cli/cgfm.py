@@ -9,18 +9,18 @@ In OpenMSCG, a force table is defined in B-spline function defined by *n* **unif
 
 ``n = (max - min) / resolution + order - 2``
 
+Note: for the B-Spline models in force-matching, all samples outside the range (`min` and `max` cut-offs) will be excluded.
+
 Usage
 -----
 
 Syntax of running ``cgfm`` command ::
 
-    usage: cgfm [-h] [-v L] --top file [--names] [--traj file[,args]] [--cut]
-                [--save] [--lasso] [--pair [key=value]] [--bond [key=value]]
-                [--angle [key=value]] [--dihedral [key=value]] [--ucg [key=value]]
-                [--ucg-wf [key=value]]
-
-    Run MSCG force-matching method. For detailed instructions please read
-    https://software.rcc.uchicago.edu/mscg/docs/commands/cgfm.html
+    usage: cgfm.py [-h] [-v L] --top file [--names] [--traj file[,args]] [--cut]
+                   [--save] [--alpha] [--bayesian] [--pair [key=value]]
+                   [--bond [key=value]] [--angle [key=value]]
+                   [--dihedral [key=value]] [--ucg [key=value]]
+                   [--ucg-wf [key=value]] [--force]
 
     General arguments:
       -h, --help            show this help message and exit
@@ -38,8 +38,9 @@ Syntax of running ``cgfm`` command ::
                             (default args: file,skip=0,every=1,frames=0) (default:
                             [])
       --cut                 cut-off for pair interactions (default: 10.0)
-      --save                file name for matrix output (default: result)
-      --alpha               alpha value for ridge regression (default: 0.0)
+      --save                file name for model output (default: result)
+      --alpha               alpha value for ridge regression (default: 0)
+      --bayesian            maximum steps for Bayesian regularization (default: 0)
       --pair [key=value]    add a model declaration for pair-style interactions.
                             (default: [])
       --bond [key=value]    add a model declaration for bond-style interactions.
@@ -83,6 +84,7 @@ def main(*args, **kwargs):
     group.add_argument("--save",  metavar='', type=str, default="result", help="file name for model output")
     
     group.add_argument("--alpha",  metavar='', type=float, default=0, help="alpha value for ridge regression")
+    group.add_argument("--bayesian",  metavar='', type=int, default=0, help="maximum steps for Bayesian regularization")
     
     group.add_argument("--pair",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('pair'), default=[])
     group.add_argument("--bond",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('bond'), default=[])
@@ -138,6 +140,9 @@ def main(*args, **kwargs):
     matrix_cov = np.zeros(shape=(n, n))
     vector_cov = np.zeros(n)
     
+    sum_fsq = 0.0
+    nframe = 0
+    
     # prepare force evaluation module
         
     if args.force is not None:
@@ -151,7 +156,7 @@ def main(*args, **kwargs):
     
     TIMER.reset()
     last = TIMER.last
-            
+    
     for reader in TrajBatch(args.traj, natoms = args.top.n_atom, cut = plist.cut):
     
         if reader.nread == 1:
@@ -161,6 +166,7 @@ def main(*args, **kwargs):
         TIMER.click('pair', plist.build(reader.traj.x))
         TIMER.click('bond', blist.build(reader.traj.box, reader.traj.x))
         f = reader.traj.f.astype(np.float64)
+        
         
         if force is not None:
             f -= force.compute()
@@ -176,11 +182,23 @@ def main(*args, **kwargs):
             matrix_coeff = np.hstack([model.dF for model in models.items])
             matrix_cov += np.matmul(matrix_coeff.T, matrix_coeff)
             vector_cov += np.matmul(matrix_coeff.T, f.flatten())
+            
+            sum_fsq += np.square(f.flatten()).sum()
+            nframe += 1
+            
             TIMER.click('matrix')
         
     # end of processing trajectories
     
-    c = SolveNE(matrix_cov, vector_cov, args.alpha)
+    matrix = {
+        'XtX': matrix_cov,
+        'XtY': vector_cov,
+        'y_sumsq': sum_fsq,
+        'row_per_frame': args.top.n_atom,
+        'nframe': nframe
+    }
+    
+    c = SolveNE(matrix, args.alpha, args.bayesian)
     screen.info(["Model coefficients:", c])
     TIMER.click('solver')
         
@@ -191,7 +209,7 @@ def main(*args, **kwargs):
             m.params[:] = c[offset:offset + m.nparam]
             offset += m.nparam
         
-        Checkpoint(args.save, __file__).update({'models': models.serialize(), 'X': matrix_cov, 'y': vector_cov, 'c': c}).dump()
+        Checkpoint(args.save, __file__).update({'models': models.serialize(), 'matrix': matrix, 'c': c}).dump()
     
     screen.info([""] + TIMER.report(False) + [""])
     

@@ -6,7 +6,7 @@
 Documentation of OpenMSCG
 =========================
 
-For any questions or reporting an issue, please email to the `Service Desk <mscg@rcc.uchicago.edu>`_.
+For any questions or reporting an issue, please email to the `Service Desk <openmscg+mscg-openmscg-17-issue-@gmail.com>`_.
 
 .. toctree::
    :maxdepth: 2

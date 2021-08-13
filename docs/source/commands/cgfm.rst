@@ -23,7 +23,7 @@ Notes
 
   * **covariance_matrix.p** stores the covariance matrix for the regression problem before solving it. It can be used as intermediate results for debugging or other purposes.
 
-  * **coeffs_matrix.p** stores the coefficients of B-Spline for each force table after solving the regression problem. Users can use the command `cgdump <cgdump.html>`_ to dump the readable force tables from it.
+  * **coeffs_matrix.p** stores the coefficients of the model for each force table after solving the regression problem. Users can use the command `cgdump <cgdump.html>`_ to dump the readable force tables from it.
   
 * If this command is `called with in another Python script <../commands.html#call-command-in-python>`_, users may want to access these results directly. In this case, users can pass the value *"return"* to the ``--save`` argument and the coefficient matrix will be returned to the wrapper script as lists. For example::
     
@@ -31,12 +31,11 @@ Notes
         top     = datafile("unary_lj_fluid.top"),
         traj    = datafile("unary_lj_fluid.lammpstrj,frames=20"),
         cut     = 2.50,
-        pair    = ['model=BSpline,type=1:1,min=0.9,resolution=0.1'],
+        pair    = ['model=BSpline,type=1:1,min=0.9,max=2.50,resolution=0.1'],
         save    = 'return'
     )
 
 * If you have used the old ``MSCGFM`` software, this command is a replacement to the ``newfm`` command in ``MSCGFM``.
-
 
 Ultra Coarse-Graining
 ---------------------

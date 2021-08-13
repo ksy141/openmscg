@@ -6,7 +6,7 @@ Description
 The ``cgnes`` provides the module to solve the normal equations problem from 
 force-matching approach. It can be also used in processing the stored normal
 equations from previous FM tasks, under different conditions, such as the
-Lambda value for LASSO regularization. Another important usage of this tool
+Alpha value for Ridge regularization. Another important usage of this tool
 is to read multile saved equations for the same modeling task but constructed
 from different parts of trajectories, make an elemetary summation of them, and
 solve the NE problem of it. This is the last step for the `distributed workflow
@@ -17,7 +17,8 @@ Usage
 
 Syntax of running ``cgnes`` command ::
 
-    usage: cgnes.py [-h] [-v L] [--save] [--equation files [files ...]] [--lasso]
+    usage: cgnes.py [-h] [-v L] [--save] [--equation files [files ...]] [--alpha]
+                    [--bayesian]
 
     General arguments:
       -h, --help            show this help message and exit
@@ -27,27 +28,54 @@ Syntax of running ``cgnes`` command ::
       --save                file name for matrix output (default: result)
       --equation files [files ...]
                             CGFM result files (default: None)
-      --model               Regularization settings (default: model=none)
+      --alpha               alpha value for Ridge regression (default: 0)
+      --bayesian            maximum steps for Bayesian regularization (default: 0)
 
 '''
 
 from mscg import *
 
-def SolveNE(XtX, XtY, alpha = 0.0):
+def SolveNE(nmmat, alpha = 0.0, bayesian = 0):
+    XtX, XtY = nmmat['XtX'].copy(), nmmat['XtY'].copy()
+    
+    def GetR(XtX, XtY, c):
+        return np.dot(c, np.matmul(XtX, c)) - 2.0 * np.dot(XtY, c) + nmmat['y_sumsq']
+        
+    def Normalize(X):
+        scale = np.sqrt(np.square(X).sum(axis=1))
+        return X / scale, scale
+        
     if alpha > 1.0E-6:
         screen.info(["Solver => Ridge Regression"])
         
-        scale = np.sqrt(np.square(XtX).sum(axis=1))
-        XtX /= scale
-        XtX = XtX + np.identity(XtX.shape[0]) * (alpha * alpha)
+        XtX_, scale = Normalize(XtX)
+        XtX_ = XtX_ + np.identity(XtX_.shape[0]) * (alpha * alpha)
         
-        #c = np.linalg.solve(XtX, XtY)
-        c = np.matmul(np.linalg.pinv(XtX), XtY)
-        c /= scale
+        c = np.matmul(np.linalg.pinv(XtX_), XtY) / scale
     else:
         screen.info(["Solver => OLS"])
-        #c = np.linalg.solve(XtX, XtY)
         c = np.matmul(np.linalg.pinv(XtX), XtY)
+        
+    if bayesian > 0:
+        screen.info(["Applying Bayesian iterative regularization ..."])
+        N = nmmat['row_per_frame'] * nmmat['nframe']
+        
+        _a = XtX.shape[0] / np.dot(c, c)
+        _b = N / GetR(XtX, XtY, c)
+        a = np.ones(XtX.shape[0]) * (_a)
+        
+        for it in range(bayesian):
+            
+            XtX_reg = XtX + np.identity(XtX.shape[0]) * (a / _b)
+            XtX_norm, scale = Normalize(XtX_reg)
+            c = np.matmul(np.linalg.pinv(XtX_norm), XtY) / scale 
+            
+            invXtX_reg = np.linalg.pinv(XtX_reg)
+            a = 1.0 / (c * c + np.diagonal(invXtX_reg)/_b)
+            
+            tr = np.trace(np.matmul(invXtX_reg, XtX))
+            _b = (N - tr) / GetR(XtX, XtY, c)
+            
     return c
 
 
@@ -67,7 +95,8 @@ def main(*args, **kwargs):
     group.add_argument("--save",  metavar='', type=str, default="result", help="file name for matrix output")
     group.add_argument("--equation", metavar='files', nargs='+', type=argparse.FileType('rb'), help="CGFM result files")
     group.add_argument("--alpha",  metavar='', type=float, default=0, help="alpha value for Ridge regression")
-        
+    group.add_argument("--bayesian",  metavar='', type=int, default=0, help="maximum steps for Bayesian regularization")
+    
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
     else:
@@ -83,15 +112,16 @@ def main(*args, **kwargs):
     
     chk = Checkpoint.load(args.equation[0])
     models = chk.data['models']
-    X = chk.data['X']
-    y = chk.data['y']
+    matrix = chk.data['matrix']
     
     for eq in args.equation[1:]:
         data = Checkpoint.load(eq).data
-        X += data['X']
-        y += data['y']
+        matrix['XtX'] += data['matrix']['XtX']
+        matrix['XtY'] += data['matrix']['XtY']
+        matrix['y_sumq'] += data['matrix']['y_sumq']
+        matrix['nframe'] += data['matrix']['nframe']
     
-    c = SolveNE(X.copy(), y.copy(), args.alpha)
+    c = SolveNE(matrix, args.alpha, args.bayesian)
     screen.info(["Model coefficients:", c])
     
     if args.save == "return":
@@ -105,8 +135,7 @@ def main(*args, **kwargs):
             
         Checkpoint(args.save, __file__).update({
             'models': models,
-            'X': X,
-            'y': y,
+            'matrix': matrix,
             'c': c
         }).dump()
 
