@@ -14,7 +14,7 @@ class PairBSpline(Model):
         self._h = lib.create(self.min, self.max, self.resolution, self.order)
         
         if bs_caching:
-            lib.setup_cache(self._h, self.resolution * 0.01)        
+            lib.setup_cache(self._h, 0.001)
         
     def setup(self, top, pairlist):
         assert self.max <= pairlist.cut

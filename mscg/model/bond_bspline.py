@@ -14,7 +14,7 @@ class BondBSpline(Model):
         self._h = lib.create(self.min, self.max, self.resolution, self.order)
         
         if bs_caching:
-            lib.setup_cache(self._h, self.resolution * 0.001)
+            lib.setup_cache(self._h, 0.001)
         
     def setup(self, top, bondlist):
         self.nparam = lib.get_npars(self.min, self.max, self.resolution, self.order)

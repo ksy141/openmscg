@@ -14,7 +14,7 @@ class AngleBSpline(Model):
         self._h = lib.create(self.min * D2R, self.max * D2R, self.resolution * D2R, self.order)
         
         if bs_caching:
-            lib.setup_cache(self._h, self.resolution * D2R * 0.001)
+            lib.setup_cache(self._h, 0.001)
         
     def setup(self, top, bondlist):
         self.nparam = lib.get_npars(self.min * D2R, self.max * D2R, self.resolution * D2R, self.order)
