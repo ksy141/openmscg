@@ -118,7 +118,7 @@ def main(*args, **kwargs):
         data = Checkpoint.load(eq).data
         matrix['XtX'] += data['matrix']['XtX']
         matrix['XtY'] += data['matrix']['XtY']
-        matrix['y_sumq'] += data['matrix']['y_sumq']
+        matrix['y_sumsq'] += data['matrix']['y_sumsq']
         matrix['nframe'] += data['matrix']['nframe']
     
     c = SolveNE(matrix, args.alpha, args.bayesian)
