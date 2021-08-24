@@ -89,7 +89,7 @@ def main(*args, **kwargs):
         mname = w[0]
         
         if mname not in matrix['models']:
-            screen.error("model [%s] doesn't exist." % (tbl_name))
+            screen.error("model [%s] doesn't exist." % (table_line))
             return None
                
         model = matrix['models'][mname]
@@ -110,11 +110,13 @@ def main(*args, **kwargs):
         tbl = Table(m)
         tbl.compute(xmin, xmax, dx)
         
-        if not mname.startswith('Pair_'):
-            tbl.u = tbl.u - tbl.u.min()
-        
         if "L" in pad: tbl.padding_low(m.min)
         if "H" in pad: tbl.padding_high(m.max)
+        
+        if mname.startswith('Pair_'):
+            tbl.u = tbl.u - tbl.u[-1]
+        else:
+            tbl.u = tbl.u - tbl.u.min()
         
         return tbl
     

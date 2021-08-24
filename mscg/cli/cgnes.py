@@ -75,6 +75,7 @@ def SolveNE(nmmat, alpha = 0.0, bayesian = 0):
             
             tr = np.trace(np.matmul(invXtX_reg, XtX))
             _b = (N - tr) / GetR(XtX, XtY, c)
+            screen.info(["Bayesian iteration step %d: beta = %lf" % (it+1, _b)])
             
     return c
 
