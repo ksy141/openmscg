@@ -48,6 +48,22 @@ class Table:
                 self.u[i] = (self.f[i+1] + 0.5 * df) * (self.x[i+1] - self.x[i]) + self.u[i+1]
                 i-=1
     
+    def padding_low2(self, model_min):
+        i = 0
+        
+        while self.x[i] < model_min - 1.0E-6:
+            i += 1
+        
+        i += 1
+        df = abs(self.f[i+1] - self.f[i+2])
+                  
+        while i>=0:
+            self.f[i] = self.f[i+1] + df
+            self.u[i] = (self.f[i+1] + 0.5 * df) * (self.x[i+1] - self.x[i]) + self.u[i+1]
+            i-=1
+            
+            
+    
     def padding_high(self, model_max):
         i = self.n-1
         

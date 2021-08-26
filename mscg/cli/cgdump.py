@@ -110,7 +110,9 @@ def main(*args, **kwargs):
         tbl = Table(m)
         tbl.compute(xmin, xmax, dx)
         
-        if "L" in pad: tbl.padding_low(m.min)
+        if "L2" in pad: tbl.padding_low2(m.min)
+        elif "L" in pad: tbl.padding_low(m.min)
+        
         if "H" in pad: tbl.padding_high(m.max)
         
         if mname.startswith('Pair_'):

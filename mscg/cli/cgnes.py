@@ -63,6 +63,8 @@ def SolveNE(nmmat, alpha = 0.0, bayesian = 0):
         _a = XtX.shape[0] / np.dot(c, c)
         _b = N / GetR(XtX, XtY, c)
         a = np.ones(XtX.shape[0]) * (_a)
+        screen.info(["Bayesian iteration step %d: beta = %lf" % (0, _b)])
+        
         
         for it in range(bayesian):
             
