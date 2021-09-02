@@ -35,6 +35,10 @@ Notes
         save    = 'return'
     )
 
+* Read `Ridge Regression (regularization) <https://en.wikipedia.org/wiki/Ridge_regression>`_ for more information about the Ridge model.
+
+* Read the article `A Bayesian statistics approach to multiscale coarse graining <https://aip.scitation.org/doi/pdf/10.1063/1.3033218>`_ for more information about this approach.
+
 * If you have used the old ``MSCGFM`` software, this command is a replacement to the ``newfm`` command in ``MSCGFM``.
 
 Ultra Coarse-Graining

@@ -24,7 +24,7 @@ Syntax of running ``cgrem`` command ::
       --table               prefix of table names (default: )
       --maxiter             maximum iterations (default: 20)
       --restart file        restart file (default: restart)
-      --models file         target models (default: model.txt)
+      --models file         initial model parameters (default: model.txt)
       --optimizer name,args Define optimizer (default: [])
 
 '''
@@ -122,7 +122,7 @@ def main(*args, **kwargs):
     group.add_argument("--maxiter", metavar='', type=int, default=20, help="maximum iterations")
     
     group.add_argument("--restart", metavar='file', default="restart", help="restart file")
-    group.add_argument("--models", metavar='file', default="model.txt", help="target models")
+    group.add_argument("--models", metavar='file', default="model.txt", help="initial model parameters")
     group.add_argument("--optimizer", metavar='name,[key=value]', action=OptimizerAction, help=OptimizerAction.help, default=[])
     
     # parse args

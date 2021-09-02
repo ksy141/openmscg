@@ -60,7 +60,36 @@ A customized optimizer can be developed in Python in a file placed in the workin
 
 * The function should return a Python dictionary containing the new parameters for targeted models, in which the keys are names of the models and the values are model parameters in NumPy arrays.
 
+An example provided below is to demostrate the following update/optimization approach:
 
+  1. for the first and last parameters, keep them fixed.
+  2. For the rest parameters, update with a constant step-size factor `kappa`.
+
+The customized script will be::
+    
+    # file: my_opt.py
+    class Optimizer:
+
+        def __init__(self, **kwargs):
+            # parse and store the step-size factor
+            self.kappa = float(kwargs.get('kappa', 0.01))
+            
+        def run(self, params, dudl_ref, dudl_mean, dudl_var):
+            # loop over each model
+            for name, dudl_aa in dudl_ref.items():
+              # get the relative entropy information
+              dudl_cg = dudl_mean[name].copy()
+              var = dudl_var[name].copy()
+              
+              # update parameters
+              step = self.kappa * (dudl_cg - dudl_aa) / var
+              params[name] += step
+
+And then, this customized script can be used in the CGREM command as::
+    
+    --optimizer my_opt,kappa=0.01
+    
+    
 Examples
 --------
 
