@@ -441,6 +441,7 @@ class Topology:
         atoms = np.array(atoms, dtype=np.int32)
         
         if (atoms>=len(self.types_atom)).sum() > 0 or (atoms<0).sum() > 0:
+            print(len(self.types_atom), atoms[atoms>=len(self.types_atom)])
             raise ValueError('Incorrect index values for %s atoms.' % (bonded_type))
         
         # check types
@@ -730,7 +731,7 @@ class Topology:
             raise Exception('File is not found: ' + file)
         
         with open(file, "r") as f:
-            rows = [row.strip().split() for row in f.read().split("\n")]
+            rows = [row.split('#')[0].strip().split() for row in f.read().split("\n")]
         
         formatters = cls.search_formatters()
                         
