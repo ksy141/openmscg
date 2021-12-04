@@ -16,6 +16,8 @@ cgfm
 
 * For more details about the options ``--ucg`` and ``--ucg-wf``, please read the subsection below for `Ultra Coarse-Graining`_.
 
+* |cli-opt-expair|
+
 Notes
 -----
 

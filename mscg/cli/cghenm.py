@@ -16,9 +16,8 @@ Usage
 
 Syntax of running ``cghenm`` command ::
 
-    usage: cghenm.py [-h] [-v L] [--mass [[...]]] [--traj file[,args]] [--temp]
-                     [--cut] [--alpha] [--maxiter] [--ktol] [--sdstep] [--sdmax]
-                     [--sdftol]
+    usage: cghenm.py [-h] [-v L] [--traj file[,args]] [--temp] [--cut] [--alpha]
+                     [--maxiter] [--ktol] [--sdstep] [--sdmax] [--sdftol] [--save]
 
     Run normal equations solver for FM/UCG method. For detailed instructions
     please read https://software.rcc.uchicago.edu/mscg/docs/commands/cgnes.html
@@ -28,7 +27,6 @@ Syntax of running ``cghenm`` command ::
       -v L, --verbose L   screen verbose level (default: 0)
 
     Required arguments:
-      --mass [ [ ...]]    masses of CG sites (default: [])
       --traj file[,args]  reader for a trajectory file, multiple fields separated
                           by commas, the first field is the file name, while
                           others define the skip, every and frames (default args:
@@ -81,7 +79,6 @@ def main(*args, **kwargs):
     group.add_argument("-v", "--verbose", metavar='L', type=int, default=0, help="screen verbose level")
     
     group = parser.add_argument_group('Required arguments')
-    group.add_argument("--mass", metavar='', type=float, default=[], nargs='*', help="masses of CG sites")
     group.add_argument("--traj", metavar='file[,args]', action=TrajReaderAction, help=TrajReaderAction.help, default=[])
     
     group = parser.add_argument_group('Optional arguments')

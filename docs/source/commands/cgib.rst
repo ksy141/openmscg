@@ -9,6 +9,8 @@ cgib
 
 * |cli-opt-traj|
 
+* |cli-opt-expair|
+
 * The script generates a list of result files for each targeted variable specified in the options. The files are named as ``[Pair/Bond/Angle/Dihedral]-[Types].dat``. The result file contains three columns: the variable, the relative probability density, and the IB potential.
 
 * The options ``--pair``, ``--bond``, and ``--angle`` are used to do histogram analysis for centain pair-types, bond-types, and angle-types. The multi-field values always comes with a number of type names (two for pair and bond, and three for angle), and are followed by the arguments for the histogram: min-value, max-value, and number of bins.

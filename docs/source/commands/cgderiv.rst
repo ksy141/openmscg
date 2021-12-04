@@ -11,6 +11,8 @@ cgderiv
 
 * |cli-opt-model|
 
+* |cli-opt-expair|
+
 Notes
 -----
 

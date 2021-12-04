@@ -28,6 +28,8 @@ Syntax of running ``cgderiv`` command ::
                           others define the skip, every and frames (default args:
                           file,skip=0,every=1,frames=0) (default: [])
       --cut               cut-off for pair interactions (default: 10.0)
+      --exclude           exclude 1-2, 1-3, 1-4 bonding neighbors in the pair-
+                          list (default: 111)
       --pair [key=value]  add a model declaration for pair-style interactions.
                           (default: [])
       --save              file name for model output (default: model)
@@ -63,7 +65,8 @@ class CGDeriv:
         group.add_argument("--traj", metavar='file[,args]', action=TrajReaderAction, help=TrajReaderAction.help, default=[])
 
         group.add_argument("--cut", metavar='', type=float, default=10.0, help="cut-off for pair interactions")
-
+        group.add_argument("--exclude", metavar='', type=str, default="111", help="exclude 1-2, 1-3, 1-4 bonding neighbors in the pair-list")
+        
         group.add_argument("--pair",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('pair'), default=[])
         
         group.add_argument("--bond",  metavar='[key=value]', action=ModelArgAction, help=ModelArgAction.help('bond'), default=[])
@@ -93,7 +96,7 @@ class CGDeriv:
 
         screen.info("Build pair and bonding list-based algorithm ...")
         plist = PairList(cut = args.cut, binsize = args.cut * 0.5)
-        plist.init(args.top.types_atom, args.top.linking_map(True, True, True))
+        plist.init(args.top.types_atom, args.top.linking_map(*([bit=='1' for bit in args.exclude[:3]])))
         blist = BondList(
             args.top.types_bond, args.top.bond_atoms, 
             args.top.types_angle, args.top.angle_atoms, 
