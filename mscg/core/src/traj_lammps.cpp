@@ -110,7 +110,8 @@ int TrajLAMMPS::parse_columns()
         ch = strtok(NULL, " \r\n");
     }
     
-    cx = cy = cz = cvx = cvy = cvz = cfx = cfy = cfz = cid = ctype = cq = -1;
+    xs = ys = zs = false;
+    cx = cy = cz = cvx = cvy = cvz = cfx = cfy = cfz = cid = ctype = cq = cxs = cys = czs = -1;
     
     #define KEY(k,name) else if(strcmp(argv[i], #name)==0) c##k = i
     
@@ -119,10 +120,13 @@ int TrajLAMMPS::parse_columns()
         if(0);
         KEY(x,x);
         KEY(x,xu);
+        KEY(xs,xs);
         KEY(y,y);
         KEY(y,yu);
+        KEY(ys,ys);
         KEY(z,z);
         KEY(z,zu);
+        KEY(zs,zs);
         KEY(vx,vx);
         KEY(vy,vy);
         KEY(vz,vz);
@@ -133,6 +137,10 @@ int TrajLAMMPS::parse_columns()
         KEY(type,type);
         KEY(q,q);
     }
+    
+    if(cx==-1 && cxs!=-1) { cx = cxs; xs = true; }
+    if(cy==-1 && cys!=-1) { cy = cys; ys = true; }
+    if(cz==-1 && czs!=-1) { cz = czs; zs = true; }
     
     return 0;
 }
@@ -173,6 +181,10 @@ int TrajLAMMPS::read_body()
         x[id][1] = atof(argv[cy]);
         x[id][2] = atof(argv[cz]);
         
+        if(xs) x[id][0] *= box[0];
+        if(ys) x[id][1] *= box[1];
+        if(zs) x[id][2] *= box[2];
+       
         if(attrs['t']) t[id] = atoi(argv[ctype]);
         if(attrs['q']) q[id] = atof(argv[cq]);
         

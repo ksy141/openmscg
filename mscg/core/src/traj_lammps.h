@@ -27,8 +27,9 @@ class TrajLAMMPS : public Traj
     char columns[1001];
     Vec boxlo;
     
-    int cx, cy, cz, cfx, cvx, cvy, cvz, cfy, cfz, cid, ctype, cq;
+    int cx, cy, cz, cfx, cvx, cvy, cvz, cfy, cfz, cid, ctype, cq, cxs, cys, czs;
     int _natoms;
+    bool xs, ys, zs;
 };
 
 #endif
