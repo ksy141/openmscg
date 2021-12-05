@@ -57,14 +57,16 @@ def main(*args, **kwargs):
     # building map
     
     mapper = Mapper.build_from_yaml(args.map)
+    site_types = mapper.get_types()
     
     # start processing trajectory
     
     if args.out == 'return':
-        frames = {'box':[], 'x':[], 'f':[]}
+        frames = {'box':[], 'type':site_types, 'x':[], 'f':[]}
     else:
         outfile = Trajectory(args.out, "w")
-        outfile.type = outfile.v = None
+        outfile.t = np.array(site_types)
+        outfile.v = None
     
     TIMER.reset()
     last = TIMER.last

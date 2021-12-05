@@ -7,4 +7,4 @@
 
 .. |cli-opt-forcefield| replace:: For more details about defining a force field by a `YAML` file, see `here <../basics.html#force-field-molecular-mechanics>`__.
 
-.. |cli-opt-expair| replace:: The option ``--expair`` excludes 1-2, 1-3, 1-4 neighbors when building the pair-list. It takes a string with 3 bits, each bit is 1 or 0 switching the types of neighbors on or off. Deafult "111" means excluding all bonding neighbors.
+.. |cli-opt-expair| replace:: The option ``--exclude`` excludes 1-2, 1-3, 1-4 neighbors when building the pair-list. It takes a string with 3 bits, each bit is 1 or 0 switching the types of neighbors on or off. Deafult "111" means excluding all bonding neighbors.

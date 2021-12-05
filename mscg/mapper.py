@@ -44,6 +44,9 @@ class Mapper:
         self.types = types
         self.sites = unpack_group({'anchor':0, 'offset':0, 'repeat':1, 'groups':system})
     
+    def get_types(self):
+        return [list(self.types.keys()).index(s[0]) + 1 for s in self.sites]
+    
     def process(self, box, x, f):
         x_list = []
                 
