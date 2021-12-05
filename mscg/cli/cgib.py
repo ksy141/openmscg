@@ -286,8 +286,7 @@ def main(*args, **kwargs):
     results = []
 
     for pair in args.pair:
-        pair.n = np.divide(pair.n, 4.0 * np.pi * np.square(pair.x))
-        pair.n = np.divide(pair.n, pair.n[-1])
+        pair.n = np.divide(pair.n, 4.0 * np.pi * np.square(pair.x) * (pair.x[1] - pair.x[0]))
         results.append(post_process(pair, 'Pair'))
         screen.info("Pair: " + pair.name + " " + str(pair.range))
         

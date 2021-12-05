@@ -5,7 +5,6 @@ import numpy as np
 def test_3b(datafile):
     
     z = cghenm.main(
-        mass = [5963, 4355, 3968],
         traj = [datafile('3b_cg.lammpstrj')],
         temp = 310.0,
         cut  = 30.0,
@@ -22,9 +21,6 @@ def test_3b(datafile):
 def test_atp(datafile):
     
     z = cghenm.main(
-        mass = [1357.209100, 288.256800, 1116.995100, 612.545700, 144.128400,
-                192.171200, 120.107000, 312.278200, 30.973700, 48.042800,
-                120.107000, 192.171200],
         traj = [datafile('atp_cg.trr')],
         temp = 310.0,
         cut  = 30.0,
