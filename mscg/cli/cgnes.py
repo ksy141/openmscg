@@ -59,12 +59,13 @@ def SolveNE(nmmat, alpha = 0.0, bayesian = 0):
     if bayesian > 0:
         screen.info(["Applying Bayesian iterative regularization ..."])
         N = nmmat['row_per_frame'] * nmmat['nframe']
-        
+                
         _a = XtX.shape[0] / np.dot(c, c)
         _b = N / GetR(XtX, XtY, c)
         a = np.ones(XtX.shape[0]) * (_a)
         screen.info(["Bayesian iteration step %d: beta = %lf" % (0, _b)])
         
+        log_a, log_b = [], []
         
         for it in range(bayesian):
             
@@ -79,6 +80,15 @@ def SolveNE(nmmat, alpha = 0.0, bayesian = 0):
             _b = (N - tr) / GetR(XtX, XtY, c)
             screen.info(["Bayesian iteration step %d: beta = %lf" % (it+1, _b)])
             
+            log_a.append(",".join([("%0.6e" % (_)) for _ in list(a)]))
+            log_b.append("%0.6e" % (_b))
+        
+        with open('alpha.log', 'w') as f:
+            f.write("\n".join(log_a))
+        
+        with open('beta.log', 'w') as f:
+            f.write("\n".join(log_b))
+        
     return c
 
 
