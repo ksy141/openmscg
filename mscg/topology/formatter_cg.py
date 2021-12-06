@@ -51,7 +51,48 @@ def read_moltype(rows, ir, systop):
             top.gen_dihedrals(autotype=True)
     
     elif bondtype == -1:
-        raise Exception('Not implemented yet.')
+        # add explicit angle list
+        if rows[ir][0] != "angles":
+            raise Exception('Expecting key [angles] at line %d: %s' % (ir, rows[ir]))
+        
+        na = int(rows[ir][1])
+        fa = int(rows[ir][2])
+        a1, a2, a3 = [], [], []
+        ir += 1
+        
+        for row in rows[ir:ir+na]:
+            a1.append(int(row[0])-1)
+            a2.append(int(row[1])-1)
+            a3.append(int(row[2])-1)
+        
+        if fa == 1:
+            top.add_bondings('angle', ['?'] * na, [a1, a2, a3], True)
+        else:
+            top.add_bondings('angle', ['?'] * na, [a2, a1, a3], True)
+        
+        ir += na
+        
+        # add explicit dihedral list
+        if rows[ir][0] != "dihedrals":
+            raise Exception('Expecting key [dihedrals] at line %d: %s' % (ir, rows[ir]))
+        
+        nd = int(rows[ir][1])
+        fd = int(rows[ir][2])
+        d1, d2, d3, d4 = [], [], [], []
+        ir += 1
+        
+        for row in rows[ir:ir+nd]:
+            d1.append(int(row[0])-1)
+            d2.append(int(row[1])-1)
+            d3.append(int(row[2])-1)
+            d4.append(int(row[3])-1)
+        
+        if fd == 1:
+            top.add_bondings('dihedral', ['?'] * nd, [d1, d2, d3, d4], True)
+        else:
+            top.add_bondings('dihedral', ['?'] * nd, [a3, a1, a2, a4], True)
+        
+        ir += nd    
     
     return ir, top
 
