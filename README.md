@@ -27,6 +27,14 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
+**0.6.7**
+1. Trajectory: add support for scaled coordinates in LAMMPS format.
+2. Trajectory: dump type ids in LAMMPS format in CGMAP.
+3. Topology: add support of explicit angle/dihedral lists in CGTOP.
+4. Add option --exclude for command-line interfaces using pair-lists.
+5. Dump alpha/beta logs in Bayesian regression.
+6. Update normalization scheme for pair RDFs in CGIB. 
+
 **0.3.5**
 
 1. Enable cross-density for the RLE weighting function in UCG.
