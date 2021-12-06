@@ -13,9 +13,11 @@ To run REM, there are **three** parts of input that need to be provided:
 
 **Table generation**: In each iteration, the REM engine will generate input files with tabulated potential/force, which will then be loaded by the MD simulations. The generation of such tables are controlled by the input file specified by ``--model``. In this file, each row defines the tables for a targeted model, in the format of::
 
-    <model-name> <min> <max> <resolution> [initial parameters ...]
+    <model-name> <min> <max> <resolution> <padding> [initial parameters ...]
 
 The first segment is the name of the model, matching a model defined in the ``cgderiv`` input. The next three segments control the generation of the tables with the minimum, maximum, and intervals of the table. The remaining segments are the values used to generate the initial tables during the iterations.
+
+The ``padding`` option can be applied to adjust the boundaries of the tabulated potentials. Possible choices are ``L``, ``L2``, ``H``, and the value ``U`` is for no-padding. Details can be found in the instruction of `CGDUMP <cgdump.html>`_ .
 
 **Optimizer**: By default, REM uses a curvature based scheme for the optimization, which is described in the equation 12 and 14 in this `paper <https://doi.org/10.1039/B903299C>`__. An example of defining the parameters for the optimizer is following::
     

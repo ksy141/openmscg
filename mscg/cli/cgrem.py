@@ -168,7 +168,7 @@ def main(*args, **kwargs):
 
         for row in rows:
             model_name = row[0]
-            model_params = [float(_) for _ in row[4:]]
+            model_params = [float(_) for _ in row[5:]]
             m = models[model_name]
 
             if m is None:
@@ -176,11 +176,15 @@ def main(*args, **kwargs):
 
             if m.nparam != len(model_params):
                 screen.fatal("Incorrect number of parameters for model %s. (%d != %d)" % (model_name, m.nparam, len(model_params)))
-
+            
+            if ('U' not in row[4]) and ('L' not in row[4]) and ('H' not in row[4]):
+                screen.fatal("Incorrect padding option model %s. (%s)" % (model_name, row[4]))
+            
             targets[model_name] = {
                 'min': float(row[1]),
                 'max': float(row[2]),
                 'inc': float(row[3]),
+                'pad': row[4],
                 'init_params': model_params
             }
     
@@ -224,12 +228,16 @@ def main(*args, **kwargs):
             m.params = np.array(params[m.name])
             screen.info("Generate table [%s] to [%s]" % (m.name, args.table + m.name + '.table'))
             
-            Table(m, force=False, prefix=args.table).dump_lammps(
-                xmin = targets[m.name]['min'],
-                xmax = targets[m.name]['max'],
-                xinc = targets[m.name]['inc']
-            )
-        
+            tbl = Table(m, force=False, prefix=args.table)
+            tbl.compute(targets[m.name]['min'], targets[m.name]['max'], targets[m.name]['inc'])
+            
+            pad = targets[m.name]['pad']
+            if "L2" in pad: tbl.padding_low2(targets[m.name]['min'])
+            elif "L" in pad: tbl.padding_low(targets[m.name]['min'])
+            if "H" in pad: tbl.padding_high(targets[m.name]['max'])
+            
+            tbl.dump_lammps()
+
         # run MD
         
         if os.system(md_cmd) != 0:
