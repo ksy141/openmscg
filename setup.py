@@ -123,11 +123,13 @@ if __name__ == '__main__':
         
         for f in [f for f in os.listdir(model_path) if f.endswith('.cpp') and f.startswith('model_')]:
             f = f.split('.')[0]
+            src = src_files('py_' + f, [f, 'model'] + (['bspline'] if 'bspline' in f else []))
+            print(f, "<=", src)
             
             models.append(Extension(
                 core_prefix + f,
                 include_dirs = inc_path,
-                sources = src_files('py_' + f, [f, 'model'] + ['bspline'] if 'bspline' in f else []),
+                sources = src,
                 extra_compile_args = setup_args['compile'],
                 extra_link_args = setup_args['gsl_lib'] if 'bspline' in f else [] + setup_args['link'],
             ))
@@ -180,12 +182,20 @@ if __name__ == '__main__':
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
         ),
+        
         Extension(core_prefix + 'force',
             include_dirs = inc_path,
             sources = src_files('py_force', ['force']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
         ),
+
+        Extension(core_prefix + 'nb3b',
+            include_dirs = inc_path,
+            sources = src_files('py_nb3b', ['nb3b']),
+            extra_compile_args = setup_args['compile'],
+            extra_link_args = setup_args['link'],
+        )
     ] + get_models(src_path)
     
     entry_points = {"console_scripts": [

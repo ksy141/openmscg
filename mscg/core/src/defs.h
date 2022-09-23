@@ -43,4 +43,6 @@ typedef int   vec4i[4];
     b[1] = a[1] * (s); \
     b[2] = a[2] * (s);
 
+#define vector_reverse(a) a[0] = -a[0]; a[1] = -a[1]; a[2] = -a[2]
+
 #endif

@@ -49,7 +49,8 @@ class Model:
         'pair': 2,
         'bond': 2,
         'angle': 3,
-        'dihedral': 4
+        'dihedral': 4,
+        'nb3b': 3
     }
     
     def __init__(self, **kwargs):
@@ -95,11 +96,16 @@ class Model:
         if self.style == 'pair':
             self.tid = top.pair_tid(*types)
             self.name = '-'.join(types)
+        elif self.style == 'nb3b':
+            self.tid = top._names['atom'].index(types[1])
+            self.tid_ij = top.pair_tid(types[1], types[0])
+            self.tid_ik = top.pair_tid(types[1], types[2])
+            self.name = '-'.join(types)
         else:
-            if len(types)>1:
+            if len(types)>1: # this part is for ambigious A-B and B-A bonding types
                 self.tid = top.bonding_tid(self.style, types)
                 self.name = '-'.join(types)
-            else:
+            else: # for other styles, angle and dihedral
                 self.tid = getattr(top, 'names_' + self.style).index(self.types[0])
                 self.name = types[0]
         

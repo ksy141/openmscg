@@ -13,6 +13,7 @@ class Model
     
     Model();
     virtual ~Model();
+    
     void setup(int tid, void *list, double *dF, double *dU);
     
     virtual void compute_fm() = 0;

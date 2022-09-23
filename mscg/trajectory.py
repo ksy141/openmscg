@@ -143,7 +143,7 @@ class Trajectory:
             self.__allocate__()            
     
     def __allocate__(self):
-        for attr,defs in type(self)._datadefs.items():
+        for attr, defs in type(self)._datadefs.items():
             shape = (self.natoms, 3) if defs['matrix'] else (self.natoms,)
             self._data[attr] = np.zeros(shape=shape, dtype=defs['dtype']) if self.has_attr(attr) else None
         

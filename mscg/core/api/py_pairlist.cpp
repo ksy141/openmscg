@@ -12,7 +12,7 @@ PYAPI(create)
 {
     float cut, binsize;
     long maxpairs;
-    
+
     PyArg_ParseTuple(args, "ffL", &cut, &binsize, &maxpairs);
     PairList *p = new PairList(cut, binsize, maxpairs);
     return Py_BuildValue("L", p);
@@ -30,14 +30,14 @@ PYAPI(init)
     PairList *pair;
     PyArrayObject *types, *exmap;
     PyArg_ParseTuple(args, "LOO", &pair, &types, &exmap);
-    
+
     int *t = (int*)PyArray_DATA(types);
     int natoms = PyArray_DIMS(types)[0];
-    
+
     if(Py_None != (PyObject *)exmap)
         pair->init(t, natoms, (int*)PyArray_DATA(exmap), PyArray_DIMS(exmap)[1]);
     else pair->init(t, natoms, 0, 0);
-    
+
     Py_RETURN_NONE;
 }
 
@@ -45,7 +45,7 @@ PYAPI(setup_bins)
 {
     PairList *pair;
     PyArrayObject *box;
-    
+
     PyArg_ParseTuple(args, "LO", &pair, &box);
     pair->setup_bins((float*)PyArray_DATA(box));
     Py_RETURN_NONE;
@@ -55,7 +55,7 @@ PYAPI(build)
 {
     PairList *pair;
     PyArrayObject *x;
-    
+
     PyArg_ParseTuple(args, "LO", &pair, &x);
     pair->build((vec3f*)PyArray_DATA(x));
     return Py_BuildValue("L", pair->npairs);
@@ -66,24 +66,24 @@ PYAPI(fill_page)
     PairList *pair;
     int type_id, inext, page_size;
     PyArrayObject *npIndex, *npVector, *npScalar;
-    
-    PyArg_ParseTuple(args, "LiiiOOO", &pair, &type_id, &inext, &page_size, 
+
+    PyArg_ParseTuple(args, "LiiiOOO", &pair, &type_id, &inext, &page_size,
                      &npIndex, &npVector, &npScalar);
-    
+
     int nfill = 0, npairs = pair->npairs;
-    
+
     while(inext<npairs && nfill<page_size)
     {
         while(inext<npairs && pair->tlist[inext]!=type_id) inext++;
         if(inext >= npairs) break;
-        
+
         if(Py_None != (PyObject *)npIndex)
         {
             long *d = (long*)PyArray_DATA(npIndex);
             d[nfill] = pair->ilist[inext];
             d[nfill+page_size] = pair->jlist[inext];
         }
-        
+
         if(Py_None != (PyObject *)npVector)
         {
             double *d = (double*)PyArray_DATA(npVector);
@@ -91,17 +91,17 @@ PYAPI(fill_page)
             d[nfill+page_size] = pair->dylist[inext];
             d[nfill+page_size+page_size] = pair->dzlist[inext];
         }
-        
+
         if(Py_None != (PyObject *)npScalar)
         {
             double *d = (double*)PyArray_DATA(npScalar);
             d[nfill] = pair->drlist[inext];
         }
-        
+
         nfill++;
         inext++;
     }
-    
+
     return Py_BuildValue("ii", inext, nfill);
 }
 
@@ -127,6 +127,12 @@ PYAPI(num_pairs)
     return Py_BuildValue("L", p->npairs);
 }
 
+PYAPI(num_3bs)
+{
+    GETPTR();
+    return Py_BuildValue("L", p->count_3b());
+}
+
 PYAPI(get_scalar)
 {
     PairList *p;
@@ -135,13 +141,13 @@ PYAPI(get_scalar)
 
     int *t = (int*)PyArray_DATA(npType);
     float *r = (float*)PyArray_DATA(npR);
-    
-    for(int i=0; i<p->npairs; i++) 
+
+    for(int i=0; i<p->npairs; i++)
     {
         t[i] = p->tlist[i];
         r[i] = p->drlist[i];
     }
-    
+
     Py_RETURN_NONE;
 }
 
@@ -157,6 +163,7 @@ static PyMethodDef cModPyMethods[] =
     {"update_types", update_types, METH_VARARGS, "Update pair types."},
     {"num_pairs",    num_pairs,    METH_VARARGS, "Total number of pairs."},
     {"get_scalar",   get_scalar,   METH_VARARGS, "Get pair distances."},
+    {"num_3bs",      num_3bs,      METH_VARARGS, "Total number of 3-body terms."},
     {NULL, NULL}
 };
 

@@ -4,7 +4,10 @@ from mscg import Trajectory
 
 class Mapper:
     
-    def __init__(self, map_data):
+    def __init__(self):
+        pass
+    
+    def from_topology(self, map_data):
         
         types = map_data['site-types']
         system = map_data['system']
@@ -44,6 +47,34 @@ class Mapper:
         self.types = types
         self.sites = unpack_group({'anchor':0, 'offset':0, 'repeat':1, 'groups':system})
     
+    def from_sequence(self, s, xw, fw):
+        self.types = {}
+        self.sites = []
+        
+        for index, cgname in enumerate(s):
+            if cgname == 0:
+                continue
+                
+            if cgname not in self.types:
+                self.types[cgname] = {
+                    'index': [index],
+                    'x-weight': [xw[index]],
+                    'f-weight': [fw[index]]
+                }
+                
+                self.sites.append([cgname, 0])
+            
+            else:
+                self.types[cgname]['index'].append(index)
+                self.types[cgname]['x-weight'].append(xw[index])
+                self.types[cgname]['f-weight'].append(fw[index])
+                
+        for name, weights in self.types.items():
+            v = np.array(weights['x-weight'])
+            v /= v.sum()
+            weights['x-weight'] = v[np.newaxis].T
+            weights['f-weight'] = np.array(weights['f-weight'])[np.newaxis].T
+    
     def get_types(self):
         return [list(self.types.keys()).index(s[0]) + 1 for s in self.sites]
     
@@ -81,4 +112,23 @@ class Mapper:
         with open(yaml_file, 'r') as f:
             map_data = yaml.load(f.read(), Loader=yaml.FullLoader)
         
-        return Mapper(map_data)
+        m = Mapper()
+        m.from_topology(map_data)
+        return m
+    
+    @classmethod
+    def build_from_sequence(cls, seq, x_weights = None, f_weights = None):
+        if x_weights is None:
+            x_weights = [1.0] * len(seq)
+        
+        if len(seq) != len(x_weights) or len(seq) != len(f_weights):
+            raise Exception("Lengths of sequence and weight are not matched.")
+        
+        m = Mapper()
+        m.from_sequence(seq, x_weights, f_weights)
+        return m
+        
+        
+    
+    
+    

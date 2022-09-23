@@ -49,6 +49,12 @@ public:
 
 #define DECLARE_API(name, method, desc) {#name, method, METH_VARARGS, desc},
 
+#ifdef PY_API_EXTRA
+    #define _PY_API_EXTRA PY_API_EXTRA
+#else
+    #define _PY_API_EXTRA
+#endif
+
 #define BEGIN_PY_API(class) \
 static PyMethodDef cModPyMethods[] = {\
     {"destroy", PyModel<class>::Destroy, METH_VARARGS, "Destroy model."}, \
@@ -56,7 +62,7 @@ static PyMethodDef cModPyMethods[] = {\
     {"compute_fm", PyModel<class>::ComputeFM, METH_VARARGS, "Compute dU/dLambda for FM."}, \
     {"get_table", PyModel<class>::GetTable, METH_VARARGS, "Return the model table."},
 
-#define END_PY_API() {NULL, NULL}};
+#define END_PY_API() _PY_API_EXTRA {NULL, NULL}};
 
 #define DECLARE_PY_MODULE(name) static struct PyModuleDef cModPy = { \
     PyModuleDef_HEAD_INIT, #name, "", -1, cModPyMethods }; \
