@@ -175,6 +175,8 @@ def main(*args, **kwargs):
         TIMER.click('bond', blist.build(reader.traj.box, reader.traj.x))
         f = reader.traj.f.astype(np.float64)
 
+        #print(reader.nread, reader.traj.x[0], reader.traj.x[2], reader.traj.x[0] - reader.traj.x[60], reader.traj.x[2] - reader.traj.x[60])
+
         if force is not None:
             f -= force.compute()
             TIMER.click('force')
@@ -185,6 +187,7 @@ def main(*args, **kwargs):
                 TIMER.click('ucg')
 
             TIMER.click('model', models.compute_fm())
+
             matrix_coeff = np.hstack([model.dF for model in models.items])
             matrix_cov += np.matmul(matrix_coeff.T, matrix_coeff)
             vector_cov += np.matmul(matrix_coeff.T, f.flatten())
@@ -193,7 +196,7 @@ def main(*args, **kwargs):
             nframe += 1
 
             TIMER.click('matrix')
-        break
+            
     # end of processing trajectories
 
     matrix = {

@@ -188,13 +188,6 @@ if __name__ == '__main__':
             sources = src_files('py_force', ['force']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
-        ),
-
-        Extension(core_prefix + 'nb3b',
-            include_dirs = inc_path,
-            sources = src_files('py_nb3b', ['nb3b']),
-            extra_compile_args = setup_args['compile'],
-            extra_link_args = setup_args['link'],
         )
     ] + get_models(src_path)
     

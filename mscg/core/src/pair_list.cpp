@@ -334,10 +334,10 @@ void PairList::build_neighbors()
         int i = ilist[p];
         int j = jlist[p];
 
-        neigh_list[i][nneigh[i]] = j;
+        neigh_list[i][nneigh[i]] = p;
         nneigh[i]++;
 
-        neigh_list[j][nneigh[j]] = i;
+        neigh_list[j][nneigh[j]] = p;
         nneigh[j]++;
     }
 }

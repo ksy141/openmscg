@@ -1,8 +1,8 @@
 #include "py_model.h"
-#include "model_nb3b_sw_bspline.h"
+#include "model_nb3b_bspline.h"
 
 
-#define MODEL_CLASS ModelNB3BSW
+#define MODEL_CLASS ModelNB3BBSpline
 
 PYAPI(setup_ex)
 {
@@ -21,6 +21,6 @@ PYAPI(setup_ex)
 #define PY_API_EXTRA {"setup_ex", setup_ex, METH_VARARGS, "Extra parameters."},
 
 #include "py_model_bspline.h"
-DECLARE_PY_MODULE(cxx_model_nb3b_sw_bspline)
+DECLARE_PY_MODULE(cxx_model_nb3b_bspline)
 
 #undef PY_API_EXTRA
