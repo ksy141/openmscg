@@ -27,7 +27,12 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
+**0.7.0**
+
+1. Add "model_nb3b_bspline" and "model_nb3b_sw" for the NB3B method.
+
 **0.6.7**
+
 1. Trajectory: add support for scaled coordinates in LAMMPS format.
 2. Trajectory: dump type ids in LAMMPS format in CGMAP.
 3. Topology: add support of explicit angle/dihedral lists in CGTOP.
