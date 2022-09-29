@@ -3,24 +3,27 @@
 #include "defs.h"
 #include <cassert>
 
-ModelNB3BSW::ModelNB3BSW(int tid_ij, double gamma_ij, double a_ij,
-    int tid_ik, double gamma_ik, double a_ik, double theta0)
+ModelNB3BSW::ModelNB3BSW(double gamma_ij, double a_ij, double gamma_ik, double a_ik, double theta0)
 {
-    this->tid_ij = tid_ij;
     this->gamma_ij = gamma_ij;
     this->a_ij = a_ij;
 
-    this->tid_ik = tid_ik;
     this->gamma_ik = gamma_ik;
     this->a_ik = a_ik;
 
-    this->cos0 = cos(theta0);
+    this->cos0 = cos(theta0 / RAD2DEG);
 
     nparam = 1;
 }
 
 ModelNB3BSW::~ModelNB3BSW()
 {
+}
+
+void ModelNB3BSW::setup_ex(int tid_ij, int tid_ik)
+{
+    this->tid_ij = tid_ij;
+    this->tid_ik = tid_ik;
 }
 
 void ModelNB3BSW::compute_fm()
@@ -82,7 +85,7 @@ void ModelNB3BSW::compute_fm()
                             vector_reverse(dr2);
                         }
 
-                        //printf("3BODY %d-%d-%d r1=%f r2=%f\n", i, j, k, dr[p1], dr[p2]);
+                        //printf("3BODY %d-%d-%d r1=%f r2=%f\n", j, i, k, dr[p1], dr[p2]);
                         compute_fm_one(i, j, k, dr1, dr2, dr[p1], dr[p2]);
                     }
 
@@ -114,43 +117,17 @@ void ModelNB3BSW::compute_fm_one(int i, int j, int k, float *dr1, float *dr2, fl
 
     for(int d=0; d<3; d++)
     {
-        /*
-        double *coeff_i = dF + (i * 3 + d) * nparam;
-        double *coeff_j = dF + (j * 3 + d) * nparam;
-        double *coeff_k = dF + (k * 3 + d) * nparam;
+        double Bi = (cs - cos0) * (cs - cos0);
+        float fj = Bi * dedxj * dr1[d];
+        float fk = Bi * dedxk * dr2[d];
 
+        Bi =  2.0 * (cs - cos0);
+        fj += Bi * (dcdxj * dr1[d] + dcdx2 * dr2[d]);
+        fk += Bi * (dcdxk * dr2[d] + dcdx2 * dr1[d]);
 
-        float fj = dedxj * dr1[d];
-        float fk = dedxk * dr2[d];
-        float fi = - fj - fk;
-
-        for(int c=0; c<nn_coeff; c++)
-        {
-            double Bi = b_coeff[c];
-            int pos = istart_coeff + c;
-
-            coeff_i[pos] += Bi * fi;
-            coeff_j[pos] += Bi * fj;
-            coeff_k[pos] += Bi * fk;
-        }
-
-        fj = dcdxj * dr1[d] + dcdx2 * dr2[d];
-        fk = dcdxk * dr2[d] + dcdx2 * dr1[d];
-        fi = - fj - fk;
-
-        for(int c=0; c<nn_deriv; c++)
-        {
-            double Bi = b_deriv[c];
-            if(using_theta) Bi *= -1.0 / sin(theta);
-
-            int pos = istart_deriv + c;
-
-            coeff_i[pos] += Bi * fi;
-            coeff_j[pos] += Bi * fj;
-            coeff_k[pos] += Bi * fk;
-        }
-
-        */
+        dF[(j * 3 + d) * nparam] += fj;
+        dF[(k * 3 + d) * nparam] += fk;
+        dF[(i * 3 + d) * nparam] -= (fj + fk);
     }
 }
 
@@ -161,5 +138,5 @@ void ModelNB3BSW::compute_rem()
 
 void ModelNB3BSW::get_table(double *params, double* in, double* out, int size)
 {
-
+    out[0] = params[0];
 }

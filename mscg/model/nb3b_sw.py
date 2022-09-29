@@ -1,43 +1,31 @@
 from mscg import *
 import numpy as np
-from ..core import cxx_model_nb3b_sw_bspline as lib
+from ..core import cxx_model_nb3b_sw as lib
 
 class Nb3bSW(Model):
 
     def __init__(self, **kwargs):
-        self.min = -0.9
-        self.max =  0.9
-        self.order = 6
-        self.resolution = 0.5
         self.gamma_ij = self.gamma_ik = 1.2
         self.a_ij = self.a_ik = 4.0
-
-        self.serialized_names = ['min', 'max', 'resolution', 'order'] + \
-            ['gamma_ij', 'a_ij', 'gamma_ik', 'a_ik']
+        self.theta0 = 180.0
+        
+        self.serialized_names = ['gamma_ij', 'a_ij', 'gamma_ik', 'a_ik', 'theta0']
 
         super().__init__(**kwargs)
-        self._h = lib.create(self.min, self.max, self.resolution, self.order)
-
-        #if bs_caching:
-        #    lib.setup_cache(self._h, 0.001)
+        self._h = lib.create(self.gamma_ij, self.a_ij, self.gamma_ik, self.a_ik, self.theta0)
 
     def setup(self, top, pairlist):
-
-        self.nparam = lib.get_npars(self.min, self.max, self.resolution, self.order)
+        self.nparam = 1
         super().setup(top, pairlist)
-
         lib.setup(self._h, self.tid, pairlist._h, self.dF, self.dU)
-        lib.setup_ex(self._h, self.tid_ij, self.gamma_ij, self.a_ij,
-            self.tid_ik, self.gamma_ik, self.a_ik)
-
+        lib.setup_ex(self._h, self.tid_ij, self.tid_ik)
+   
     def compute_fm(self):
         self.dF.fill(0)
         lib.compute_fm(self._h)
 
     def compute_rem(self):
-    	assert 0
+    	fatal("NB3B/SW cannot work for REM!")
 
     def compute_table(self, x, force=True):
-        vals = np.zeros(x.shape[0])
-        lib.get_table(self._h, self.params, x, vals)
-        return vals
+        fatal("NB3B/SW is not a tabulated potential style!")

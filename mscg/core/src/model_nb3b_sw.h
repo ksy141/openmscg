@@ -7,12 +7,13 @@ class ModelNB3BSW : public Model
 {
   public:
 
-    ModelNB3BSW(int, double, double, int, double, double, double);
+    ModelNB3BSW(double, double, double, double, double);
     virtual ~ModelNB3BSW();
 
     virtual void compute_rem();
     virtual void compute_fm();
     virtual void get_table(double *params, double* in, double* out, int size);
+    void setup_ex(int, int);
     void compute_fm_one(int, int, int, float*, float*, float, float);
 
     int tid_i, tid_ij, tid_ik;

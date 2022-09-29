@@ -2,7 +2,7 @@ from mscg import *
 import numpy as np
 from ..core import cxx_model_nb3b_bspline as lib
 
-class Nb3bSpline(Model):
+class Nb3bBSpline(Model):
 
     def __init__(self, **kwargs):
         self.min = -0.9
