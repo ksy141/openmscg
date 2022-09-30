@@ -97,6 +97,28 @@ void ModelNB3BSW::compute_fm()
 
 void ModelNB3BSW::compute_fm_one(int i, int j, int k, float *dr1, float *dr2, float r1, float r2)
 {
+    /* -----------------------------------------------------------------------
+     * cos[t] = cos(theta) - cos(theta0)
+     * exp[ij] = exp[gamma_ij/(r_ij-a_ij)]
+     * exp[ik] = exp[gamma_ik/(r_ik-a_ik)]
+     * U = lambda * cos[t]^2 * exp[ij] * exp[ik]
+     *
+     * d(cos[t]^2)/dx_j = 2.0 [cos(theta)-cos(theta0)] * [d(cos(theta))/dx_j]
+     * d(cos(theta))/dx_j = (x_k-x_i)/(r_ij*r_ik) - (x_j-x_i)*cos(theta)/r_ij^2
+     * d(exp[ij])/dx_j = - exp[ij] * gamma_ij * (x_j-x_i) / (r_ij-a_ij)^2 / r_ij
+     *
+     * dU/dx_j = lambda * { d(cos[t]^2)/dx_j * exp[ij] * exp[ik] +
+     *                      cos[t]^2 * [d(exp[ij])/dx_j] * exp[ik] }
+     *
+     * dU/dx_j / lambda = {
+     *   2.0 * cos[t] * exp[ij] * exp[ik] *
+     *     [ (x_k-x_i)/(r_ij*r_ik) - (x_j-x_i)*cos(theta)/r_ij^2 ] +
+     *   cos[t]^2 * exp[ij] * exp[ik] *
+     *     [ - exp[ij] * gamma_ij  * (x_j-x_i) / (r_ij-a_ij)^2 / r_ij ] }
+     *
+     * F[x_i] = - dU / dx_j
+     * --------------------------------------------------------------------- */
+
     float rinv1 = 1.0 / r1;
     float rinv1a = 1.0 / (r1 - a_ij);
     float exp1 = exp(gamma_ij * rinv1a);
@@ -130,19 +152,6 @@ void ModelNB3BSW::compute_fm_one(int i, int j, int k, float *dr1, float *dr2, fl
         dF[(k * 3 + d) * nparam] += fk;
         dF[(i * 3 + d) * nparam] -= (fj + fk);
     }
-    /*
-    if(i==88 && j==159 && k==97)
-    {
-        printf("%f %f %f\n", acos(cs), r1, r2);
-        printf("dr1 %f %f %f\n", dr1[0], dr1[1], dr1[2]);
-        printf("dr2 %f %f %f\n", dr2[0], dr2[1], dr2[2]);
-
-        float Bi = 2.0 * (cs - cos0);
-        printf("f1 %f %f %f\n", (cs - cos0) * (cs - cos0) * dedxk * dr2[0], (cs - cos0) * (cs - cos0) * dedxk * dr2[1], (cs - cos0) * (cs - cos0) * dedxk * dr2[2]);
-        printf("f2 %f %f %f\n", Bi * (dcdxj * dr2[0] + dcdx2 * dr1[0]), Bi * (dcdxj * dr2[1] + dcdx2 * dr1[1]), Bi * (dcdxj * dr2[2] + dcdx2 * dr1[2]));
-        exit(0);
-    }
-    */
 }
 
 void ModelNB3BSW::compute_rem()
