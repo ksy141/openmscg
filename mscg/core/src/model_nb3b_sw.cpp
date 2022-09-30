@@ -109,19 +109,20 @@ void ModelNB3BSW::compute_fm_one(int i, int j, int k, float *dr1, float *dr2, fl
     float rinv_12 = 1.0 / (r1 * r2);
     float cs = vector_dot(dr1, dr2) * rinv_12;
 
-    float dedxj = gamma_ij * rinv1a * rinv1a * rinv1 * e1e2;
-    float dedxk = gamma_ik * rinv2a * rinv2a * rinv2 * e1e2;
-    float dcdxj = cs * rinv1 * rinv1 * e1e2;
-    float dcdxk = cs * rinv2 * rinv2 * e1e2;
-    float dcdx2 = - rinv_12 * e1e2;
+    float dedxj = gamma_ij * rinv1a * rinv1a * rinv1;
+    float dedxk = gamma_ik * rinv2a * rinv2a * rinv2;
+    float dcdxj = cs * rinv1 * rinv1;
+    float dcdxk = cs * rinv2 * rinv2;
+    float dcdx2 = - rinv_12;
 
     for(int d=0; d<3; d++)
     {
-        double Bi = (cs - cos0) * (cs - cos0);
+        double dcs = cs - cos0;
+        double Bi = dcs * dcs * e1e2;
         float fj = Bi * dedxj * dr1[d];
         float fk = Bi * dedxk * dr2[d];
 
-        Bi =  2.0 * (cs - cos0);
+        Bi =  2.0 * (cs - cos0) * e1e2;
         fj += Bi * (dcdxj * dr1[d] + dcdx2 * dr2[d]);
         fk += Bi * (dcdxk * dr2[d] + dcdx2 * dr1[d]);
 
@@ -129,6 +130,19 @@ void ModelNB3BSW::compute_fm_one(int i, int j, int k, float *dr1, float *dr2, fl
         dF[(k * 3 + d) * nparam] += fk;
         dF[(i * 3 + d) * nparam] -= (fj + fk);
     }
+    /*
+    if(i==88 && j==159 && k==97)
+    {
+        printf("%f %f %f\n", acos(cs), r1, r2);
+        printf("dr1 %f %f %f\n", dr1[0], dr1[1], dr1[2]);
+        printf("dr2 %f %f %f\n", dr2[0], dr2[1], dr2[2]);
+
+        float Bi = 2.0 * (cs - cos0);
+        printf("f1 %f %f %f\n", (cs - cos0) * (cs - cos0) * dedxk * dr2[0], (cs - cos0) * (cs - cos0) * dedxk * dr2[1], (cs - cos0) * (cs - cos0) * dedxk * dr2[2]);
+        printf("f2 %f %f %f\n", Bi * (dcdxj * dr2[0] + dcdx2 * dr1[0]), Bi * (dcdxj * dr2[1] + dcdx2 * dr1[1]), Bi * (dcdxj * dr2[2] + dcdx2 * dr1[2]));
+        exit(0);
+    }
+    */
 }
 
 void ModelNB3BSW::compute_rem()

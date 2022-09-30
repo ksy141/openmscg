@@ -2,6 +2,7 @@
 #define TRAJ_H
 
 #include <cstdio>
+#include <cstdlib>
 #include <map>
 
 typedef float Vec[3];
