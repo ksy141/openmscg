@@ -62,12 +62,12 @@ void Traj::pbc()
     for(int i=0; i<natoms; i++)
     {
         while(x[i][0]<0) x[i][0] += xprd;
-        while(x[i][0]>xprd) x[i][0] -= xprd;
+        while(x[i][0]>=xprd) x[i][0] -= xprd;
         
         while(x[i][1]<0) x[i][1] += yprd;
-        while(x[i][1]>yprd) x[i][1] -= yprd;
+        while(x[i][1]>=yprd) x[i][1] -= yprd;
         
         while(x[i][2]<0) x[i][2] += zprd;
-        while(x[i][2]>zprd) x[i][2] -= zprd;
+        while(x[i][2]>=zprd) x[i][2] -= zprd;
     }
 }

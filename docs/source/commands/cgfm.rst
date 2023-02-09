@@ -56,9 +56,9 @@ The option ``--ucg`` defines the parameters to control the UCG scheme using a co
 The option ``--ucg-wf`` defines the weighting functions that's used to calculate the probabilities of states for a CG type. It is also a comma separated string starting with the weighting function name following by a group of ``key=value`` fields. For example:
 
 
-  * A sample rapid methanol model: ``--ucg-wf RLE,target=MeOH,high=Near,low=Far,rth=4.5,wth=3.5``
+  * A sample rapid methanol model: ``--ucg-wf RLE,I=MeOH,J=MeOH,high=Near,low=Far,rth=4.5,wth=3.5``
 
-     * target=[name], the name of the targeted CG type to spawn.
+     * I,J=[name], the name of the targeted CG type for pairs of I and J to spawn.
      * high=[name],low=[name], the names of the CG types representing sites of high or low local densities.
      * rth=[float],wth=[float], the two parameters in the UCG model used to calculate local coordination numbers.
 

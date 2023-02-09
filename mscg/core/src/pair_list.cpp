@@ -203,7 +203,7 @@ void PairList::bin_atoms(vec3f *x)
 
         int bin = offset2bin(bx, by, bz);
         if(bin<0 || bin>=nbins) continue;
-
+        
         ibins[i] = bin;
         links[i] = binhead[bin];
         binhead[bin] = i;
@@ -277,9 +277,9 @@ void PairList::build(vec3f *x)
             double sx = box[0] * stencil[ibin].sx[si];
             double sy = box[1] * stencil[ibin].sy[si];
             double sz = box[2] * stencil[ibin].sz[si];
-
+  
             int j = binhead[jbin];
-
+            
             while(j>=0)
             {
                 if(ex==0 || not_excluded(ex, j))
@@ -308,6 +308,7 @@ void PairList::build(vec3f *x)
 
                 j = links[j];
             }
+
         }
     }
 

@@ -27,6 +27,10 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
+**0.7.1**
+
+1. Fixed a bug in PBC when an atom is just at the boundary.
+
 **0.7.0**
 
 1. Add "model_nb3b_bspline" and "model_nb3b_sw" for the NB3B method.
