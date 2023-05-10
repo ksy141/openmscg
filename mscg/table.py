@@ -89,7 +89,11 @@ class Table:
         
         txt = "# Table %s: id, r, potential, force\n\n" % (self.model.name)
         txt += self.model.name.split("_")[1] + "\n"
-        txt += "N %d R %f %f\n\n" % (self.n, self.x[0], self.x[-1])
+
+        if 'Pair' in self.model.name:
+            txt += "N %d R %f %f\n\n" % (self.n, self.x[0], self.x[-1])
+        else:
+            txt += "N %d\n\n" % (self.n)
         
         for i in range(self.n):
             txt += "%d %f %f %f\n" % (i+1, self.x[i], self.u[i], self.f[i])
