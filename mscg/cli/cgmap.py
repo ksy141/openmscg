@@ -32,9 +32,8 @@ Syntax of running ``cgmap`` command ::
 Use the option "--af" will call the "aggforce" package that's developed by the AI4Science 
 group to optimize (denoise) the CG forces with ML methods. When using "aggforce", there
 are another set of arguments that can be set. Please use "cgmap -h" to gain the full list
-of arguments, or visit the link below for the official documentation of this method:
+of arguments, or visit https://github.com/noegroup/aggforce for the official guide.
 
-* https://github.com/noegroup/aggforce
 '''
 
 from mscg import *

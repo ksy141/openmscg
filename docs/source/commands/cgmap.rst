@@ -5,10 +5,7 @@ cgmap
 
 .. automodule:: mscg.cli.cgmap
 
-* |cli-opt-top-name|
-
 * |cli-opt-traj|
-
 
 CG Mapping File
 ---------------
