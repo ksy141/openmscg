@@ -62,14 +62,14 @@ def main(*args, **kwargs):
     group.add_argument("--af-map-style", type=str, default='basic', help=_aggforce_help)
     group.add_argument("--af-constraint-threshold", type=float, default=1e-3, help=_aggforce_help)
     group.add_argument("--af-constraint-frames", type=int, default=10, help=_aggforce_help)
-    group.add_argument("--af-inner", type=float, default=1e-3, help=_aggforce_help)
-    group.add_argument("--af-outer", type=float, default=1e-3, help=_aggforce_help)
-    group.add_argument("--af-width", type=float, default=1e-3, help=_aggforce_help)
-    group.add_argument("--af-n-basis", type=float, default=1e-3, help=_aggforce_help)
-    group.add_argument("--af-batch-size", type=float, default=1e-3, help=_aggforce_help)
+    group.add_argument("--af-inner", type=float, default=0.0, help=_aggforce_help)
+    group.add_argument("--af-outer", type=float, default=8.0, help=_aggforce_help)
+    group.add_argument("--af-width", type=float, default=1.0, help=_aggforce_help)
+    group.add_argument("--af-n-basis", type=int, default=10, help=_aggforce_help)
+    group.add_argument("--af-batch-size", type=int, default=100, help=_aggforce_help)
     group.add_argument("--af-lazy", type=bool, default=True, help=_aggforce_help)
-    group.add_argument("--af-temperature", type=float, default=300, help=_aggforce_help)
-    group.add_argument("--af-l2", type=float, default=1e-3, help=_aggforce_help)
+    group.add_argument("--af-temperature", type=float, default=298.15, help=_aggforce_help)
+    group.add_argument("--af-l2", type=float, default=1e3, help=_aggforce_help)
 
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
@@ -137,7 +137,7 @@ def main(*args, **kwargs):
                 n_basis = args.af_n_basis, batch_size = args.af_batch_size, lazy = args.af_lazy)
             
             optim_results = ag.project_forces(xyz = np.array(x), forces = np.array(f), config_mapping = cmap, 
-                constrained_inds = constraints, l2_regularization = 1e3, kbt = 0.001987204259 * args.af_temperature,
+                constrained_inds = constraints, l2_regularization = args.af_l2, kbt = 0.001987204259 * args.af_temperature,
                 featurizer = p.Multifeaturize([p.id_feat, config_feater]), method = p.qp_feat_linear_map)
             
         else:
