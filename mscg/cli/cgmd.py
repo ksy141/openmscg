@@ -1,4 +1,4 @@
-'''Force-matching to construct force tables with B-Spline or other linear models
+'''Compute forces from tabulated potential
 
 Description
 -----------
@@ -8,22 +8,22 @@ The ``cgmd`` is a mini simulator.
 Usage
 -----
 
-Syntax of running ``cgfm`` command ::
+Syntax of running ``cgmd`` command ::
 
-    usage: cgfm.py [-h] [-v L] --top file [--names] [--traj file[,args]] [--cut]
-                   [--save] [--alpha] [--bayesian] [--pair [key=value]]
-                   [--bond [key=value]] [--angle [key=value]]
-                   [--dihedral [key=value]] [--ucg [key=value]]
-                   [--ucg-wf [key=value]] [--force]
+    usage: cgmd.py [-h] [-v L] --top file --start file --force file [--cut] [--exclude]
+
+    Run CG simulation. For detailed instructions please read https://software.rcc.uchicago.edu/mscg/docs/commands/cgmd.html
 
     General arguments:
-      -h, --help            show this help message and exit
-      -v L, --verbose L     screen verbose level (default: 0)
+    -h, --help         show this help message and exit
+    -v L, --verbose L  screen verbose level (default: 0)
 
     Required arguments:
-      --top file            topology file (default: None)
-
-    Optional arguments:
+    --top file         topology file (default: None)
+    --start file       starting coordinates (default: [])
+    --force file       force-field definitions (default: None)
+    --cut              cut-off for pair interactions (default: 10.0)
+    --exclude          exclude 1-2, 1-3, 1-4 bonding neighbors in the pair-list (default: 111)
 
 '''
 

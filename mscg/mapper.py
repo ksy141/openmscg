@@ -78,12 +78,26 @@ class Mapper:
     def get_types(self):
         return [list(self.types.keys()).index(s[0]) + 1 for s in self.sites]
     
+    def get_matrix(self, num_aa):
+        
+        def build_row(site_name, site_anchor):
+            row = np.zeros(num_aa)
+            site_index = [index + site_anchor for index in self.types[site_name]['index']]
+            
+            for i in range(len(site_index)):
+                row[site_index[i]] = self.types[site_name]['x-weight'][i][0]
+            
+            return row
+
+        weights = [build_row(site_name, site_anchor) for site_name, site_anchor in self.sites]        
+        return np.array(weights)
+
     def process(self, box, x, f):
         x_list = []
-                
+        
         for site_name, site_anchor in self.sites:
             site_index = [index + site_anchor for index in self.types[site_name]['index']]
-                        
+
             x_aa = x[site_index].copy()
             x_aa = Trajectory.wrap_molecule(x_aa, box)
             
@@ -132,3 +146,4 @@ class Mapper:
     
     
     
+
