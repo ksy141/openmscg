@@ -57,7 +57,7 @@ def main(*args, **kwargs):
     
     _aggforce_help = 'See aggforce documentation'
 
-    group.add_argument("--af", type=bool, default = False, action=argparse.BooleanOptionalAction, help="Using the aggforce method for force-mapping")
+    group.add_argument("--af", default = False, action='store_true', help="Using the aggforce method for force-mapping")
     group.add_argument("--af-map-style", type=str, default='basic', help=_aggforce_help)
     group.add_argument("--af-constraint-threshold", type=float, default=1e-3, help=_aggforce_help)
     group.add_argument("--af-constraint-frames", type=int, default=10, help=_aggforce_help)
