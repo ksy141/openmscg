@@ -17,7 +17,7 @@ Usage
 Syntax of running ``cghenm`` command ::
 
     usage: cghenm.py [-h] [-v L] [--traj file[,args]] [--temp] [--cut] [--alpha]
-                     [--maxiter] [--ktol] [--sdstep] [--sdmax] [--sdftol] [--save]
+                     [--maxiter] [--ktol] [--sdstep] [--sdmax] [--sdftol] [--save] [--restart]
 
     Run normal equations solver for FM/UCG method. For detailed instructions
     please read https://software.rcc.uchicago.edu/mscg/docs/commands/cgnes.html
@@ -42,6 +42,7 @@ Syntax of running ``cghenm`` command ::
       --sdmax             maximum steps for SD minimization (default: 1000)
       --sdftol            tolerance of forces SD minimization (default: 0.0001)
       --save              file name for model output (default: result)
+      --restart           file name for model output/restart (default: None)
 
 '''
 
@@ -95,7 +96,7 @@ def main(*args, **kwargs):
     group.add_argument("--sdftol", metavar='', type=float, default=1.0e-4, help="tolerance of forces SD minimization")
     
     group.add_argument("--save",  metavar='', type=str, default="result", help="file name for model output")
-    
+    group.add_argument("--restart", metavar='files', nargs='+', type=argparse.FileType('rb'), help="file name for model output/restart")
         
     if len(args)>0 or len(kwargs)>0:
         args = parser.parse_inline_args(*args, **kwargs)
@@ -174,6 +175,10 @@ def main(*args, **kwargs):
     v = np.zeros((len(bonds), 3), dtype=np.float32)
     K = np.ones(rf_mean.shape[0])
     
+    if args.restart is not None:
+        chk = Checkpoint.load(args.restart[0])
+        K = chk.data['K']
+
     for _ in range(args.maxiter):
         screen.info("\nStep %d ..." % _)
         
@@ -240,7 +245,7 @@ def main(*args, **kwargs):
             for i in range(top.n_bond):
                 f.write("%10d %10d %10.3f %10.3f %12.3f %12.3f\n" % (top.bond_atoms[0][i]+1, top.bond_atoms[1][i]+1, rf_mean[i], K[i], rf_std[i], trial_std[i]))
     
-    
+    Checkpoint(args.save, __file__).update({'AtomI': top.bond_atoms[0, :], 'AtomJ': top.bond_atoms[1, :], 'R0': rf_mean, 'K': K, 'FlucRef': rf_std, 'FlucMatched': trial_std}).dump()
 
 if __name__ == '__main__':
     main()
