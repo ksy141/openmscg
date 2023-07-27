@@ -41,7 +41,9 @@ class OptimizerBuiltin:
         
         self.chi = float(kwargs.get('chi', 0.05))
         self.t = float(kwargs.get('t', 298.15))
-        self.beta = 1.0 / (0.001985875 * self.t)        
+        self.beta = 1.0 / (0.001985875 * self.t)  
+        self.begknots=int(kwargs.get('begknots', 0))
+        self.endknots=int(kwargs.get('endknots', 0))      
         
     def run(self, params, dudl_ref, dudl_mean, dudl_var):
         if dudl_mean is None:
@@ -52,6 +54,8 @@ class OptimizerBuiltin:
             var = dudl_var[name].copy()
             
             step = self.chi * (dudl_cg - dudl_aa) / (self.beta * var)
+            step[:self.begknots] = 0
+            step[(len(step)-self.endknots):] = 0
             param_prev = params[name].copy()
             params[name] = param_prev + step
             
