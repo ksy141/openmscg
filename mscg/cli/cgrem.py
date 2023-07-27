@@ -124,6 +124,7 @@ def main(*args, **kwargs):
     group = parser.add_argument_group('Optional arguments')
     group.add_argument("--table", metavar='', type=str, default='', help="prefix of table names")
     group.add_argument("--maxiter", metavar='', type=int, default=20, help="maximum iterations")
+    group.add_argument("--cutoff", metavar='', type=float, default=25, help="distance cutoff")
     
     group.add_argument("--restart", metavar='file', default="restart", help="restart file")
     group.add_argument("--models", metavar='file', default="model.txt", help="initial model parameters")
@@ -233,14 +234,25 @@ def main(*args, **kwargs):
             screen.info("Generate table [%s] to [%s]" % (m.name, args.table + m.name + '.table'))
             
             tbl = Table(m, force=False, prefix=args.table)
-            tbl.compute(targets[m.name]['min'], targets[m.name]['max'], targets[m.name]['inc'])
-            
-            pad = targets[m.name]['pad']
-            if "L2" in pad: tbl.padding_low2(targets[m.name]['min'])
-            elif "L" in pad: tbl.padding_low(targets[m.name]['min'])
-            if "H" in pad: tbl.padding_high(targets[m.name]['max'])
-            
-            tbl.dump_lammps()
+            if 'Bon' in m.name:
+                tbl.compute(targets[m.name]['inc'], args.cutoff, targets[m.name]['inc'])
+                tbl.padding_low(targets[m.name]['min'])
+                tbl.padding_high(targets[m.name]['max'])
+                tbl.u = tbl.u - tbl.u.min()
+                tbl.dump_lammps()
+            elif 'Ang' in m.name:
+                tbl.compute(0.0, 180.0, targets[m.name]['inc'])
+                tbl.padding_low(targets[m.name]['min'])
+                tbl.padding_high(targets[m.name]['max'])
+                tbl.u = tbl.u - tbl.u.min()
+                tbl.dump_lammps()
+            else:
+                tbl.compute(targets[m.name]['min'], targets[m.name]['max'], targets[m.name]['inc'])
+                pad = targets[m.name]['pad']
+                if "L2" in pad: tbl.padding_low2(targets[m.name]['min'])
+                elif "L" in pad: tbl.padding_low(targets[m.name]['min'])
+                if "H" in pad: tbl.padding_high(targets[m.name]['max'])
+                tbl.dump_lammps()
 
         # run MD
         
