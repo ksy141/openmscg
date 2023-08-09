@@ -20,5 +20,6 @@ We will obtain an optimal mapping of 523 CG sites via EDCG using the 24 largest 
 
   * map.txt -- EDCG output file
   * edcg_resolution_map.py -- python script to convert cged output to a YAML file for cgmap
+  * resolution_edcg.yaml -- outputted yaml from edcg_resolution_map.py
 
 To create a YAML file for use in the cgmap module of OpenMSCG, run 'python edcg_resolution_map.py'.
