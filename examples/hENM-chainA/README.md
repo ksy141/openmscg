@@ -1,9 +1,17 @@
-hENM tutorial
+Example of hENM model for ChainA Protein
+======================================================
 
-1. Download the following coarse-grained trajectory of the chainA protein: 'cg.lammpstrj'.
-2. The arguments used for cghenm are contained in 'cghenm.args'. cghenm can be executed via:
+0. Download the reference trajectory
 
-cghenm @cghenm.args
+  * cg.lammpstrj
 
-3. The output from cghenm is located in 'chainA_henm.txt' for reference.
+1. Download the hENM argument file
+
+  * cghenm.args -- OpenMSCG argument file for hENM
+
+2. Run hENM via 'cghenm @cghenm.args'
+
+3. hENM output for comparison
+
+  * chainA_henm.txt
 
