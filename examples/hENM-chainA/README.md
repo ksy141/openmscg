@@ -1,9 +1,9 @@
-Example of hENM model for ChainA Protein
+Example of hENM model for ChainA of Nucleoporin (NUP)
 ======================================================
 
 0. Download the reference trajectory
 
-  * cg.lammpstrj
+  * cg.lammpstrj -- trajectory for NUP trimeric complex
 
 1. Download the hENM argument file
 
