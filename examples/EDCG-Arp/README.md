@@ -19,6 +19,7 @@ We will obtain an optimal mapping of 523 CG sites via EDCG using the 24 largest 
 2. Convert EDCG output to mapping file
 
   * map.txt -- EDCG output file
+  * protein_1microsec.pdb -- all-atom PDB of Arp2/3 protein (Download here: https://software.rcc.uchicago.edu/mscg/downloads/tutorial_trajectories/example_EDCG/protein_1microsec.pdb)
   * edcg_resolution_map.py -- python script to convert cged output to a YAML file for cgmap
   * resolution_edcg.yaml -- outputted yaml from edcg_resolution_map.py
 
