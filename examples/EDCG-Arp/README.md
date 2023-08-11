@@ -4,7 +4,7 @@ Example of EDCG for Arp2/3 Protein
 0. (Optional) Principal Component Analysis (PCA)
 
   * data.data -- LAMMPS data   
-  * GC.dcd -- protein trajectory
+  * GC.dcd -- protein trajectory (Download here: https://software.rcc.uchicago.edu/mscg/downloads/tutorial_trajectories/example_EDCG/GC.dcd)
   * pca_ca_com.py -- python script to conduct PCA. Note: this script requires MDAnalysis. This step can be skipped, as the resulting files outputted from this script are already provided.
 
 Run PCA via 'python pca_ca_com.py'.
