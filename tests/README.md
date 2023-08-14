@@ -10,7 +10,7 @@ regression tests. More information for `pytest` can be found
 1. Download the data files that are needed for the regression tests
 
 ```
-wget --no-check-certificate https://software.rcc.uchicago.edu/download/data.tar.gz
+wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/data.tar.gz
 tar xzvf data.tar.gz
 mv data ${path_to_openmscg_package}/tests/
 ```
