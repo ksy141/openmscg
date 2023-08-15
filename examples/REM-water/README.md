@@ -2,8 +2,9 @@ Example of 1-Site Water Box by Relative Entropy Method
 ======================================================
 
 0. Download the reference trajectory
-
+```
   * wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/reference.lammpstrj
+```
 
 1. Prepare the LAMMPS input for the testing system
 
