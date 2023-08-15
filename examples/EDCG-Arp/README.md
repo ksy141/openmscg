@@ -4,14 +4,20 @@ Example of EDCG for Arp2/3 Protein
 0. (Optional) Principal Component Analysis (PCA)
 
   * data.data -- LAMMPS data   
-  * GC.dcd -- protein trajectory (Download here: https://software.rcc.uchicago.edu/mscg/downloads/tutorial_trajectories/example_EDCG/GC.dcd)
+  * GC.dcd -- protein trajectory. Download here: 
+  ```
+  wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/tutorial_trajectories/example_EDCG/GC.dcd
+  ```
   * pca_ca_com.py -- python script to conduct PCA. Note: this script requires MDAnalysis. This step can be skipped, as the resulting files outputted from this script are already provided.
 
 Run PCA via 'python pca_ca_com.py'.
 
 1. Essential Dynamics Coarse-Graining (EDCG)
 
-  * pc.npy -- PCA eigenvectors (Download here if Step 0 is skipped: https://software.rcc.uchicago.edu/mscg/downloads/tutorial_trajectories/example_EDCG/pc.npy)
+  * pc.npy -- PCA eigenvectors. Download here if Step 0 is skipped: 
+  ```
+  wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/tutorial_trajectories/example_EDCG/pc.npy
+  ```
   * ev.npy -- PCA eigenvalues
 
 We will obtain an optimal mapping of 523 CG sites via EDCG using the 24 largest principal components. This can be accomplished via: 'cged --pc pc.npy --ev ev.npy --npc 24 --sites 523'.
