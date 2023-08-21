@@ -202,11 +202,14 @@ def main(*args, **kwargs):
     TIMER.reset()
     last = TIMER.last
     
+    vol = 0.0
+
     for reader in TrajBatch(args.traj, natoms = args.top.n_atom, cut = plist.cut):
 
         if reader.nread == 1:
             plist.setup_bins(reader.traj.box)
-        
+            vol = np.prod(reader.traj.box)
+
         TIMER.click('io')
         
         # process pair styles
@@ -286,7 +289,17 @@ def main(*args, **kwargs):
     results = []
 
     for pair in args.pair:
+        N1 = np.count_nonzero(args.top.types_atom == names_atom.index(pair.types[0]))
+        #double count pair histogram, density normalization
+        if pair.types[0] ==  pair.types[1]:                               
+            pair.n = 2.0*np.divide(pair.n,  ((N1 - 1.0) * N1 / vol))
+        else:
+            N2 = np.count_nonzero(args.top.types_atom == names_atom.index(pair.types[1]))
+            pair.n = 2.0*np.divide(pair.n,  (N1 * N2 / vol))
+        #shell normalization
         pair.n = np.divide(pair.n, 4.0 * np.pi * np.square(pair.x) * (pair.x[1] - pair.x[0]))
+        #frame normalization
+        pair.n = np.divide(pair.n, reader.nread)
         results.append(post_process(pair, 'Pair'))
         screen.info("Pair: " + pair.name + " " + str(pair.range))
         
