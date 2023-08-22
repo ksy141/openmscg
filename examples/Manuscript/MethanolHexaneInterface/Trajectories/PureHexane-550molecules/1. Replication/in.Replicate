@@ -1,0 +1,17 @@
+units			real
+atom_style		full
+bond_style		harmonic
+angle_style             harmonic
+dihedral_style		harmonic
+pair_style              lj/cut/coul/long 10.0
+pair_modify             mix arithmetic tail yes
+kspace_style  	        pppm 1e-04
+boundary      	        p p p
+special_bonds 		amber
+
+read_data	    	data.n-Hexane
+
+replicate		11 10 5
+
+write_data		Data.Replicated
+
