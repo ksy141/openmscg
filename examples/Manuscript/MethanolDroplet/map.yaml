@@ -1,0 +1,11 @@
+site-types:
+  MeOH:
+    index:    [   0,   1,   2,   3,    4,   5]
+    x-weight: [12.0, 1.0, 1.0, 1.0, 16.0, 1.0]
+    f-weight: [ 1.0, 1.0, 1.0, 1.0,  1.0, 1.0]
+system:
+  - anchor: 0
+    repeat: 1728
+    offset: 6
+    sites:
+      - [MeOH, 0]
