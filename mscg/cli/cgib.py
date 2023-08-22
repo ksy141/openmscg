@@ -290,12 +290,12 @@ def main(*args, **kwargs):
 
     for pair in args.pair:
         N1 = np.count_nonzero(args.top.types_atom == names_atom.index(pair.types[0]))
-        #double count pair histogram, density normalization
+        #double count pair histogram for like types, density normalization
         if pair.types[0] ==  pair.types[1]:                               
             pair.n = 2.0*np.divide(pair.n,  ((N1 - 1.0) * N1 / vol))
         else:
             N2 = np.count_nonzero(args.top.types_atom == names_atom.index(pair.types[1]))
-            pair.n = 2.0*np.divide(pair.n,  (N1 * N2 / vol))
+            pair.n = np.divide(pair.n,  (N1 * N2 / vol))
         #shell normalization
         pair.n = np.divide(pair.n, 4.0 * np.pi * np.square(pair.x) * (pair.x[1] - pair.x[0]))
         #frame normalization
