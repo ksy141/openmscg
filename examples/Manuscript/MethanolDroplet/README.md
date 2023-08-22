@@ -25,7 +25,7 @@ conf.gro
 grompp.mdp
 methanol_opls.itp
 traj.trr     - AA simulation trajectory
-cg.lammpstrj - CG trajectory mapped from AA trajectory
+cg.lammpstrj - CG trajectory mapped from AA trajectory (wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/MethanolDroplet/cg.lammpstrj)
 
 2. Traditional MSCG work
 
