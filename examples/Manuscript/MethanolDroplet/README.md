@@ -25,7 +25,7 @@ conf.gro
 grompp.mdp
 methanol_opls.itp
 traj.trr     - AA simulation trajectory
-cg.lammpstrj - CG trajectory mapped from AA trajectory (wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/MethanolDroplet/cg.lammpstrj)
+cg.lammpstrj - CG trajectory mapped from AA trajectory 
 
 2. Traditional MSCG work
 
@@ -50,3 +50,20 @@ ucg_sim.dcd          - UCG simulation trajectory
 density.py           - Plot RDF from AA, MSCG and UCG trajectories
 dump-ucg.py          - Dump and plot pairwise tables for MSCG and UCG models
 
+The following trajectories can be downloaded here:
+
+```
+wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/MethanolDroplet/cg.lammpstrj
+```
+
+```
+wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/MethanolDroplet/traj.trr
+```
+
+```
+wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/MethanolDroplet/mscg_sim.dcd
+```
+
+```
+wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/MethanolDroplet/ucg_sim.dcd
+```
