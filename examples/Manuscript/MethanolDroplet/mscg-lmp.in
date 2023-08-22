@@ -1,0 +1,14 @@
+units real
+atom_style bond
+neigh_modify delay 10 every 1
+pair_style table linear 1000
+
+read_data system.data
+
+pair_coeff * * Pair_MeOH-MeOH.table MeOH-MeOH
+
+fix nvt all nvt temp 298.15 298.15 100.0
+velocity all create 298.15 1234 rot no dist gaussian
+timestep 1.0
+dump trr all dcd 100 CGTraj_sim.dcd
+run 2000000 post no
