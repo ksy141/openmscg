@@ -1,9 +1,6 @@
-hENM tutorial
+The full trajectory can be downloaded here: 
 
-1. Download the following coarse-grained trajectory of the chainA protein: 'cg.lammpstrj'.
-2. The arguments used for cghenm are contained in 'cghenm.args'. cghenm can be executed via:
-
-cghenm @cghenm.args
-
-3. The output from cghenm is located in 'chainA_henm.txt' for reference.
+```
+wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/MethanolHexanolInterface/dump1.lammpstrj
+```
 
