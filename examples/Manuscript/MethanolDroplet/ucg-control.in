@@ -1,0 +1,12 @@
+block_size 100
+start_frame 0
+n_frames 5000
+dynamic_types 1
+basis_type 0
+nonbonded_cutoff 10
+pair_nonbonded_bspline_basis_order 6
+pair_nonbonded_basis_set_resolution 0.25
+pair_nonbonded_output_binwidth 0.05
+output_style 2
+output_solution_flag 1
+output_spline_coeffs_flag 1
