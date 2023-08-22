@@ -1,0 +1,21 @@
+units real
+newton off
+
+atom_style bond
+neigh_modify delay 10 every 1
+pair_style table_rleucg_interface linear 1000 state.conf
+
+read_data system.data
+
+pair_coeff 1 1 Pair_Near-Near.table Near-Near
+pair_coeff 2 2 Pair_Far-Far.table Far-Far
+pair_coeff 1 2 Pair_Near-Far.table Near-Far
+
+fix nvt all nvt temp 298.15 298.15 100.0
+velocity all create 298.15 1234 rot no dist gaussian
+
+thermo 100
+dump trr all dcd 100 ucg_sim.dcd
+
+timestep 1.0
+run 2000000 post no
