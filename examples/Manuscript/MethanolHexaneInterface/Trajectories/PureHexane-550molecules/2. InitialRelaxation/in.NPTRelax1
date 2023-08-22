@@ -1,0 +1,62 @@
+units			real
+atom_style		full
+bond_style		harmonic
+angle_style             harmonic
+dihedral_style		harmonic
+pair_style              lj/cut/coul/long 10.0
+pair_modify             mix arithmetic shift yes
+kspace_style  	        pppm 1e-04
+boundary      	        p p p
+special_bonds 		amber
+#neigh_modify		page 500000 one 10000
+
+read_data	    	../1.Replication/Data.Replicated
+
+variable 		MassinGrams equal mass(all)/6.02e23
+variable 		VolumeCubicCentimeter equal vol*1.0e-24
+variable 		Density equal v_MassinGrams/v_VolumeCubicCentimeter
+variable		SpecificVolume equal 1.0/v_Density
+variable                px equal pxx
+variable                py equal pyy
+variable                pz equal pzz
+variable                p equal press
+
+minimize		0.00001 0.00001 10000 10000
+
+reset_timestep 		0
+
+timestep  	    	1
+
+thermo_style    	custom step time atoms temp press vol etotal epair emol evdwl ecoul elong ebond eangle enthalpy pe ke v_Density lx ly lz cpu
+thermo 		    	1000
+
+#fix			NVE all nve/limit 0.1
+#run 			10000
+#unfix			NVE
+
+reset_timestep		0
+
+fix			NPT1 all npt temp 295 295 100 iso 100 100 1000
+run			200000
+unfix			NPT1
+
+fix                     NPT2 all npt temp 295 295 100 iso 50 50 1000
+run                     200000
+unfix                   NPT2
+
+fix                     NPT3 all npt temp 295 295 100 iso 10 10 1000
+run                     200000
+unfix                   NPT3
+write_data		Data.PreRelax1
+
+fix                     PX all ave/time 1 100000 100000 v_px mode scalar file px.dat
+fix                     PY all ave/time 1 100000 100000 v_py mode scalar file py.dat
+fix                     PZ all ave/time 1 100000 100000 v_pz mode scalar file pz.dat
+fix                     P  all ave/time 1 100000 100000 v_p mode scalar file p.dat
+
+fix                     NPT4 all npt temp 295 295 100 iso 1 1 1000
+restart			200000 Restart.*
+run                     2000000
+unfix                   NPT4
+write_data		Data.NPTRelax1
+
