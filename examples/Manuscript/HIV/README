@@ -14,7 +14,10 @@
 #### - inputs - contains all the input files needed for the process
 #### - outputs - contains the outputs of "run_me.bash" 
 
-#### Step 0 - AAMD #### (Download: wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/HIV/part0_aamd)
+#### Step 0 - AAMD #### 
+````
+Download: wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/HIV/part0_aamd
+````
 #### look in part0_aamd to see the final AAMD trajectory+topology files
 #### - merge.trr - protein trajectory of 18-mer
 #### - protein.pdb - PDB file of 18-mer
