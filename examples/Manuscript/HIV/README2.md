@@ -23,22 +23,37 @@ Download: wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/dow
 #### - protein.pdb - PDB file of 18-mer
 
 #### Step 1 - EDCG (mapping) ####
+````
+Download: wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/HIV/part1_edcg
+````
 cd part1_edcg
 bash run_me.bash
 
 #### Step 2 - hENM (intra-protein bond network) ####
+````
+Download: wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/HIV/part2_henm
+````
 cd ../part2_henm
 bash run_me.bash
 
 #### Step 3 - Analyze CG-mapped AAMD traj ####
+````
+Download: wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/HIV/part3_aa_analysis
+````
 cd ../part3_aa_analysis
 bash run_me.bash
 
 #### Step 4 - REM (inter-protein interactions) ####
+````
+Download: wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/HIV/part4_rem
+````
 cd ../part4_rem
 bash run_me.bash
 
 #### Step 5 - Compare CG vs AA traj ####
+````
+Download: wget --no-check-certificate https://software.rcc.uchicago.edu/mscg/downloads/openmscg-examples/Manuscript/HIV/part5_analysis
+````
 cd ../part5_analysis
 bash run_me.bash
 
