@@ -14,6 +14,7 @@ List of Commands
    cgrem
    cghenm
    cged
+   cgkmc
 
 .. toctree::
 
@@ -26,3 +27,4 @@ List of Commands
    commands/cgrem
    commands/cghenm
    commands/cged
+   commands/cgkmc
