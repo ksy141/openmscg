@@ -68,7 +68,6 @@ Atomic arrangements of the supported isomeric properties in a mapping file are s
 .. _isomer:
 
 .. figure:: _static/isomer.png
-   :scale: 70%
     
    Atomic arrangements of chiral, dihedral, cis, and trans.
 
