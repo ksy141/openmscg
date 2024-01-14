@@ -1,5 +1,5 @@
 {% set name = "OpenMSCG" %}
-{% set version = "0.9.0" %}
+{% set version = "0.9.1" %}
 
 package:
   name: "{{ name|lower }}"
@@ -25,12 +25,14 @@ requirements:
     - mkl-devel
     - mkl-include
     - gsl
+    - cython
   run:
     - python
     - numpy
     - mkl
     - gsl
     - pyyaml
+    - openmm
 
 about:
   home: "https://software.rcc.uchicago.edu/mscg/"

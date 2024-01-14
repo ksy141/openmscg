@@ -18,6 +18,7 @@ For any questions or reporting an issue, please email to the `Service Desk <open
    basics
    cli
    commands
+   mscgbackmapping
    performance
 
 .. toctree::

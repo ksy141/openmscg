@@ -1,3 +1,7 @@
+### rm -rf build dist
+### python setup.py install
+### pip install .
+
 import sys, os, re
 sys.path.insert(0, '.')
 
@@ -188,6 +192,10 @@ if __name__ == '__main__':
             sources = src_files('py_force', ['force']),
             extra_compile_args = setup_args['compile'],
             extra_link_args = setup_args['link'],
+        ),
+
+        Extension('mstool.lib.distancelib',
+                  ['mstool/lib/distancelib.pyx']
         )
     ] + get_models(src_path)
     
@@ -202,5 +210,15 @@ if __name__ == '__main__':
         install_requires = read_requirements(),
         packages = find_packages(),
         ext_modules = extensions,
-        entry_points = entry_points
+        include_dirs = [np.get_include()],
+        entry_points = entry_points,
+        include_package_data = False,
+        package_data={
+            "mstool.examples.Backmapping": ["*/cg*pdb", "*/protein_AA.pdb", "*/*.xml", "*/*.dat"],
+            "mstool.FF": ["*/*.xml", "*/*.itp", "*/*.pdb"],
+            "mstool.mapping": ["*.dat"],
+        },
+        exclude_package_data={
+            "mstool.examples.Backmapping.Example6_TRIO": ["workdir*"]
+        },
     )

@@ -10,3 +10,5 @@ run/
 build.cfg
 
 conftest.py
+
+.DS_Store
