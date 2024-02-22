@@ -196,7 +196,12 @@ if __name__ == '__main__':
 
         Extension('mstool.lib.distancelib',
                   ['mstool/lib/distancelib.pyx']
-        )
+        ),
+
+        Extension('mstool.lib.qcprot',
+                  ['mstool/lib/qcprot.pyx']
+        ),
+
     ] + get_models(src_path)
     
     entry_points = {"console_scripts": [
