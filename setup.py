@@ -221,7 +221,7 @@ if __name__ == '__main__':
         package_data={
             "mstool.examples.Backmapping": ["*/cg*pdb", "*/protein_AA.pdb", "*/*.xml", "*/*.dat"],
             "mstool.examples.BilayerBuilder": ["*pdb", "*/*pdb"],
-            "mstool.FF": ["*/*.xml", "*/*.itp", "*/*.pdb"],
+            "mstool.FF": ["*/*.xml", "*/*.itp", "*/*.pdb", "*/*/*.pdb", "*/*/*.gro", "*/*/*.itp"],
             "mstool.mapping": ["*.dat"],
         },
         exclude_package_data={
