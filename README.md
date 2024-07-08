@@ -27,6 +27,10 @@ See the documentation at https://software.rcc.uchicago.edu/mscg/docs/.
 
 ## Notes of Updates & Changes
 
+**0.9.2**
+
+1. mstool v0.3.6 is installed. 
+
 **0.7.1**
 
 1. Fixed a bug in PBC when an atom is just at the boundary.
