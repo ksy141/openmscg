@@ -23,14 +23,20 @@ from .utils.protein_sel     import three2one, one2three
 from .utils.dump            import dumpsql, dumpdf
 from .utils.gmx_energy      import getGMXEnergy
 from .utils.openmmutils     import *
-from .utils.amberselection  import amberSelection
+from .utils.amberselection  import *
 from .utils.add_termini_atoms import addTerminiAtoms
 from .utils.cap_termini_residues import capTerminiResidues
 from .utils.change_his import changeHIS
 from .utils.performance import Performance
+from .utils.saveargs import saveargs
+from .utils.rockresidue import RockResidue
+from .core.orient import *
+from .utils.sdminimizer import SDMinimizer
 
 from .lib.align import rotation_matrix, _fit_to
 from .membrane.bilayerbuilder import BilayerBuilder
+from .membrane.spherebuilder  import SphereBuilder
+from .membrane.sphereprotein  import SphereProtein
 
 
 # examples
@@ -41,7 +47,15 @@ POPCSTRUCTURE      = pwd + '/examples/Backmapping/Example4_POPC/cg.pdb'
 MULTISTRUCTURE     = pwd + '/examples/Backmapping/Example5_Sphere/cg.pdb'
 TRIOSTRUCTURE      = pwd + '/examples/Backmapping/Example6_TRIO/cg.pdb'
 TRIOMAPPING        = pwd + '/examples/Backmapping/Example6_TRIO/mapping.dat'
+TRIOMAPPING5       = pwd + '/examples/Backmapping/Example6_TRIO/mapping.5.dat'
+TRIOMARTINI        = pwd + '/examples/Backmapping/Example6_TRIO/martini.itp'
+TRIOMARTINI5       = pwd + '/examples/Backmapping/Example6_TRIO/martini.5.itp'
 TRIOFF             = pwd + '/examples/Backmapping/Example6_TRIO/ff.xml'
 MPCG               = pwd + '/examples/Backmapping/Example7_MembraneProtein/cg.pdb'
 MPAA               = pwd + '/examples/Backmapping/Example7_MembraneProtein/protein_AA.pdb'
+MPAA2              = pwd + '/examples/Backmapping/Example7_MembraneProtein/protein_AA2.pdb'
+GPCR               = pwd + '/examples/BilayerBuilder/3sn6.pdb'
+GPCR2              = pwd + '/examples/BilayerBuilder/4xnv.pdb'
+SEIPIN             = pwd + '/examples/BilayerBuilder/6ds5.pdb'
+
 

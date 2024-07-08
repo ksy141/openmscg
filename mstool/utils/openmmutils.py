@@ -82,7 +82,7 @@ def runEM(structure, forcefield, out=None, nonbondedCutoff=1.1, nonbondedMethod=
         u.atoms[['x','y','z']] = pos
         u.write(out)
 
-def runEMNPT(structure, forcefield, out=None, nonbondedCutoff=1.1, nonbondedMethod='CutoffNonPeriodic',
+def runEMNPT(structure, forcefield, out=None, nonbondedCutoff=1.1, nonbondedMethod='CutoffPeriodic',
              nsteps=10000, dcdfreq=1000, csvfreq=1000, dt=0.002, P=1.0, T=310, semiisotropic=False,
              addForces=[], barfreq=100, frictionCoeff=1.0):
     '''
@@ -99,7 +99,13 @@ def runEMNPT(structure, forcefield, out=None, nonbondedCutoff=1.1, nonbondedMeth
         forcefield = ForceField(*forcefield)
     else:
         forcefield = ForceField(forcefield)
-    system = forcefield.createSystem(pdb.topology)
+
+    if nonbondedMethod == 'CutoffPeriodic':
+        nonbondedMethod = CutoffPeriodic
+    else:
+        nonbondedMethod = CutoffNonPeriodic
+
+    system = forcefield.createSystem(pdb.topology, nonbondedMethod=nonbondedMethod)
 
     ### ADD BAROSTAT
     if barfreq > 0:
@@ -466,7 +472,7 @@ def addPeptideTorsions(u, Kpeptide):
         ctf.addTorsion(CAatom0Index, CatomIndex, NatomIndex, CAatom1Index, [Kpeptide, 3.141592])
         N += 1
 
-    print('Adding PeptideTorsion for {:d} isomers'.format(N))
+    print(f'Adding PeptideTorsion for {N:d} isomers with K={Kpeptide:.2f}')
     return ctf
 
 
@@ -483,9 +489,13 @@ def addCisTransTorsions(u, Kcistrans, mapping, exclude=[], turn_off_torsion_warn
     for resname in set(u.atoms.resname):
         if resname in exclude: continue
         if resname not in mapping.RESI.keys():
-            if resname != 'TIP3':
+            if resname == 'TIP3':
+                continue
+            elif resname.startswith('ROCK'):
+                continue
+            else:
                 print(f'Warning: {resname} not in the mapping scheme - skipping CisTransTorsions for this residue')
-            continue
+                continue
         for isomer in ['cis', 'trans']:
             atomset = mapping.RESI[resname][isomer]
             for atoms in atomset:
@@ -516,7 +526,7 @@ def addCisTransTorsions(u, Kcistrans, mapping, exclude=[], turn_off_torsion_warn
                     elif isomer == 'trans':
                         ctf.addTorsion(a, b, c, d, [Kcistrans, 3.141592])
 
-    print('Adding CisTransTorsion for {:d} isomers'.format(N))
+    print(f'Adding CisTransTorsion for {N:d} isomers with K={Kcistrans:.2f}')
     return ctf
 
 
@@ -534,9 +544,13 @@ def addDihedralTorsions(u, Kdihedral, mapping, exclude=[], turn_off_torsion_warn
     for resname in set(u.atoms.resname):
         if resname in exclude: continue
         if resname not in mapping.RESI.keys():
-            if resname != 'TIP3':
+            if resname == 'TIP3':
+                continue
+            elif resname.startswith('ROCK'):
+                continue
+            else:
                 print(f'Warning: {resname} not in the mapping scheme - skipping DihedralTorsions for this residue')
-            continue
+                continue
 
         dihedrals = mapping.RESI[resname]['dihedral']
         for dihedral in dihedrals:
@@ -565,7 +579,60 @@ def addDihedralTorsions(u, Kdihedral, mapping, exclude=[], turn_off_torsion_warn
                     N += 1
                     ctf.addTorsion(a, b, c, d, [Kdihedral, float(dihe[4]) * 3.141592 / 180])
 
-    print('Adding DihedralTorsion for {:d} isomers'.format(N))
+    print(f'Adding DihedralTorsion for {N:d} isomers with K={Kdihedral:.2f}')
+    return ctf
+
+
+def addAntiDihedralTorsions(u, Kdihedral, mapping, exclude=[], turn_off_torsion_warning=False):
+    if not isinstance(exclude, list):
+        exclude = [exclude]
+
+    ctf = CustomTorsionForce("k * (acos(0.999 * cos(theta-theta0)))^2")
+    ctf.setName('AntiDihedralTorsion')
+    ctf.addPerTorsionParameter("k")
+    ctf.addPerTorsionParameter("theta0")
+
+
+    N = 0
+    for resname in set(u.atoms.resname):
+        if resname in exclude: continue
+        if resname not in mapping.RESI.keys():
+            if resname == 'TIP3':
+                continue
+            elif resname.startswith('ROCK'):
+                continue
+            else:
+                print(f'Warning: {resname} not in the mapping scheme - skipping AntiDihedralTorsions for this residue')
+                continue
+
+        dihedrals = mapping.RESI[resname]['antidihedral']
+        for dihedral in dihedrals:
+            for ii in range(len(dihedral) // 5):
+                dihe = dihedral[ii * 5 : (ii+1) * 5]
+
+                bA  = u.atoms.resname == resname
+                bA0 = u.atoms.name    == dihe[0]
+                bA1 = u.atoms.name    == dihe[1]
+                bA2 = u.atoms.name    == dihe[2]
+                bA3 = u.atoms.name    == dihe[3]
+
+                atomA = u.atoms[bA & bA0].index
+                atomB = u.atoms[bA & bA1].index
+                atomC = u.atoms[bA & bA2].index
+                atomD = u.atoms[bA & bA3].index
+
+                checkbA = not (len(atomA) == len(atomB) == len(atomC) == len(atomD))
+                if checkbA and turn_off_torsion_warning: continue
+
+                assert len(atomA) == len(atomB) == \
+                    len(atomC) == len(atomD), \
+                    "the length of atoms for dihedral torsions is different"
+
+                for a, b, c, d in zip(atomA, atomB, atomC, atomD):
+                    N += 1
+                    ctf.addTorsion(a, b, c, d, [-Kdihedral, float(dihe[4]) * 3.141592 / 180])
+
+    print(f'Adding AntiDihedralTorsion for {N:d} isomers with K={Kdihedral:.2f}')
     return ctf
 
 
@@ -582,9 +649,13 @@ def addChiralTorsions(u, Kchiral, mapping, exclude=[], turn_off_torsion_warning=
     for resname in set(u.atoms.resname):
         if resname in exclude: continue
         if resname not in mapping.RESI.keys():
-            if resname != 'TIP3':
+            if resname == 'TIP3':
+                continue
+            elif resname.startswith('ROCK'):
+                continue
+            else:
                 print(f'Warning: {resname} not in the mapping scheme - skipping ChiralTorsions for this residue')
-            continue
+                continue
         chirals = mapping.RESI[resname]['chiral']
         for chiral in chirals:
             bA  = u.atoms.resname == resname
@@ -647,7 +718,54 @@ def addPosre(u, bfactor_posre, fcx, fcy, fcz):
         hfczd = fcz*kilojoule_per_mole/nanometer**2
         cef.addParticle(index,[ x0d, y0d, z0d, hfcxd,  hfcyd,  hfczd])
 
-    print('Adding Posre for {:d} atoms whose bfactor > {:.2f})'.format(len(df), bfactor_posre))
+    print(f'Adding Posre of ({fcx:.1f}, {fcy:.1f}, {fcz:.1f}) kJ/mol/nm^2 for {len(df):d} atoms whose bfactor > {bfactor_posre:.2f})')
+    return cef
+
+def addPosrePeriodic(u, bfactor_posre, k):
+    '''Apply positional restraints on atoms whose bfactors are larger than bfactor_posre'''
+    cef = CustomExternalForce("k * periodicdistance(x, y, z, x0, y0, z0)^2")
+    cef.addPerParticleParameter("x0")
+    cef.addPerParticleParameter("y0")
+    cef.addPerParticleParameter("z0")
+    cef.addPerParticleParameter("k")
+
+    if 'bfactor' not in u.atoms:
+        print('bfactor not in atoms; skipping Positional Restraints')
+        return cef
+
+    bA = u.atoms.bfactor > bfactor_posre
+    df = u.atoms[bA]
+
+    for index, row in df.iterrows():
+        x0d = (row.x * angstrom).value_in_unit(nanometer)
+        y0d = (row.y * angstrom).value_in_unit(nanometer)
+        z0d = (row.z * angstrom).value_in_unit(nanometer)
+        fc  = k * kilojoule_per_mole/nanometer**2
+        cef.addParticle(index,[ x0d, y0d, z0d, fc])
+
+    print('Adding Periodic Posre for {:d} atoms whose bfactor > {:.2f})'.format(len(df), bfactor_posre))
+    return cef
+
+
+def addPosrePeriodicZ(u, bfactor_posre, k):
+    '''Apply positional restraints on atoms whose bfactors are larger than bfactor_posre'''
+    cef = CustomExternalForce("k * periodicdistance(x, y, z, x, y, z0)^2")
+    cef.addPerParticleParameter("z0")
+    cef.addPerParticleParameter("k")
+
+    if 'bfactor' not in u.atoms:
+        print('bfactor not in atoms; skipping Positional Restraints')
+        return cef
+
+    bA = u.atoms.bfactor > bfactor_posre
+    df = u.atoms[bA]
+
+    for index, row in df.iterrows():
+        z0d = (row.z * angstrom).value_in_unit(nanometer)
+        fc  = k * kilojoule_per_mole/nanometer**2
+        cef.addParticle(index,[ z0d, fc])
+
+    print('Adding Periodic Posre Z for {:d} atoms whose bfactor > {:.2f})'.format(len(df), bfactor_posre))
     return cef
 
 
@@ -690,6 +808,41 @@ def addRefPosre(u, refstructure, fcx, fcy, fcz):
     print('Adding RefPosre for {:d} atoms that exist in {:s}'.format(N, refstructure))
     return cef
 
+
+def addRefPosrePeriodic(u, refstructure, k):
+    ref = Universe(refstructure)
+
+    cef = CustomExternalForce("k * periodicdistance(x, y, z, x0, y0, z0)^2")
+    cef.addPerParticleParameter("x0")
+    cef.addPerParticleParameter("y0")
+    cef.addPerParticleParameter("z0")
+    cef.addPerParticleParameter("k")
+
+    N = 0
+    for index, atom in u.atoms.iterrows():
+        bA1 = atom['name']  == ref.atoms.name
+        bA2 = atom['resid'] == ref.atoms.resid
+        bA3 = atom['chain'] == ref.atoms.chain
+
+        refatoms = ref.atoms[bA1 & bA2 & bA3]
+        if len(refatoms) == 0:
+            continue
+        elif len(refatoms) == 1:
+            refatom = refatoms.iloc[0]
+            #print(refatom.resid, refatom.chain, refatom['name'], atom.x, refatom.x, atom.y, refatom.y, atom.z, refatom.z)
+            x0d = (refatom.x * angstrom).value_in_unit(nanometer)
+            y0d = (refatom.y * angstrom).value_in_unit(nanometer)
+            z0d = (refatom.z * angstrom).value_in_unit(nanometer)
+            fc  = k * kilojoule_per_mole/nanometer**2
+            cef.addParticle(index,[ x0d, y0d, z0d, k])
+            N += 1
+
+        else:
+            assert 0 == 1, '/{:s}:{:d}@{:s} '.format(atom['chain'], atom['resid'], atom['name']) + \
+            'more than one atom with the same name, resid, chain?'
+
+    print('Adding RefPosre for {:d} atoms that exist in {:s}'.format(N, refstructure))
+    return cef
 
 def addBonds(u, xml, pdb=None):
     print("Adding bonds for non-protein residues - started")
@@ -739,7 +892,10 @@ def addBonds(u, xml, pdb=None):
 def getTopPDB(structure, ff=[], ff_add=[]):
     xml = ReadXML(ff=ff, ff_add=ff_add)
     u   = Universe(structure)
-    pdb = PDBFile(structure)
+    if structure.split('.')[-1] == 'pdb':
+        pdb = PDBFile(structure)
+    elif structure.split('.')[-1] == 'dms':
+        pdb = DesmondDMSFile(structure)
     pdbatoms = [atom for atom in pdb.topology.atoms()]
 
     print("Adding bonds for non-protein residues - started")
@@ -792,22 +948,22 @@ def getBonds(structure, ff=[], ff_add=[]):
         for bond in bonds:
             bA0 = u.atoms.resname == resname
             bA1 = u.atoms.name.isin(bond)
-            new = u.atoms[bA0 & bA1].groupby('resn').apply(lambda x: x)
+            new = u.atoms[bA0 & bA1]
 
             for i in range(len(new.index) - 1):
-                if new.index[i][0] != new.index[i+1][0]: continue
-                data.append([new.index[i][1], new.index[i+1][1]])
+                if new.iloc[i].resn == new.iloc[i+1].resn:
+                    data.append([new.iloc[i].id, new.iloc[i+1].id])
 
-        #    bA0 = u.atoms.name == bond[0]
-        #    bA1 = u.atoms.name == bond[1]
+            #bA0 = u.atoms.name == bond[0]
+            #bA1 = u.atoms.name == bond[1]
 
-        #    atomA = u.atoms[bA & bA0].index
-        #    atomB = u.atoms[bA & bA1].index
-        #    
-        #    assert len(atomA) == len(atomB), f"bond: /{resname} @{bond[0]} @{bond[1]}"
+            #atomA = u.atoms[bA & bA0].index
+            #atomB = u.atoms[bA & bA1].index
+            #
+            #assert len(atomA) == len(atomB), f"bond: /{resname} @{bond[0]} @{bond[1]}"
 
-        #    for a, b in zip(atomA, atomB):
-        #        data.append([a, b])
+            #for a, b in zip(atomA, atomB):
+            #    data.append([a, b])
     
 
     ### PROTEIN BACKBONE
@@ -849,6 +1005,55 @@ def getBonds(structure, ff=[], ff_add=[]):
 
     print("Adding bonds - finished")
     return data
+
+def addFlatBottomZ(u, bfactor_posre, radius, rfb, R0z=0.0, fc=1000.0, chain=False):
+    '''Apply Flat-bottomed position restraints for sphere simulations
+
+    | d - radius | < rfb  ---> pot = 0
+      d - radius   < -rfb ---> pot = (radius - rfb - x)**2
+      d - radius   > +rfb ---> pot = (radius + rfb - x)**2
+    
+    Parameters
+    ----------
+    u : Universe
+    bfactor_posre : float
+        atoms whose bfactors are larger than bfactor_posre will have this restraints
+    radius : float
+        radius in unit of Angstrom
+    rfb : float
+        distance from the center with a flat potential in unit of Angstrom
+    fc : float
+        force constant in unit of kilojoule_per_mole/naometer**2
+    R0 : list or array
+        a reference position with a shape of ``(3,)``.
+    '''
+
+    pot  = "fc * (radius + rfb - d)^2 * step( d - radius - rfb) + "
+    pot += "fc * (radius - rfb - d)^2 * step(-d + radius - rfb); "
+    pot += "d =  ((z-R0z)^2)^0.5;"
+    
+    cef = CustomExternalForce(pot)
+    cef.addGlobalParameter("fc",  fc * kilojoule_per_mole/nanometer**2)
+    cef.addGlobalParameter("R0z",    R0z    * 0.1 * nanometer)
+    cef.addGlobalParameter("rfb",    rfb    * 0.1 * nanometer)
+    cef.addPerParticleParameter("radius")
+
+    bA1 = u.atoms.bfactor > bfactor_posre
+    if chain:
+        bA2 = u.atoms.chain == chain
+        df  = u.atoms[bA1 & bA2]
+    else:
+        df = u.atoms[bA1]
+
+    for index, row in df.iterrows():
+        cef.addParticle(index, [radius * 0.1 * nanometer])
+
+    if chain:
+        print(f'Adding FlatBottomZ for {len(df):d} atoms whose bfactor > {bfactor_posre:.2f} and chain is {chain})')
+    else:
+        print(f'Adding FlatBottomZ for {len(df):d} atoms whose bfactor > {bfactor_posre:.2f}')
+
+    return cef
 
 
 
@@ -922,34 +1127,53 @@ def verifyFlatBottomSphere(radius=300, rfb=50, R0=[0,0,0], fc=1.0):
     print(y2)
 
 
+def addSpherePosre(u, bfactor_posre, radius, rfb, R0=[0,0,0], fc=100.0, chain=None):
+    '''Apply Flat-bottomed position restraints for sphere simulations
 
-def addPosre(u, bfactor_posre, fcx, fcy, fcz):
-    '''Apply positional restraints on atoms whose bfactors are larger than bfactor_posre'''
-    cef = CustomExternalForce("hkx*(x-x0)^2+hky*(y-y0)^2+hkz*(z-z0)^2")
-    cef.addPerParticleParameter("x0")
-    cef.addPerParticleParameter("y0")
-    cef.addPerParticleParameter("z0")
-    cef.addPerParticleParameter("hkx")
-    cef.addPerParticleParameter("hky")
-    cef.addPerParticleParameter("hkz")
+    | d - radius | < rfb  ---> pot = 0
+      d - radius   < -rfb ---> pot = (radius - rfb - x)**2
+      d - radius   > +rfb ---> pot = (radius + rfb - x)**2
+    
+    Parameters
+    ----------
+    u : Universe
+    bfactor_posre : float
+        atoms whose bfactors are larger than bfactor_posre will have this restraints
+    radius : float
+        radius in unit of Angstrom
+    rfb : float
+        distance from the center with a flat potential in unit of Angstrom
+    fc : float
+        force constant in unit of kilojoule_per_mole/naometer**2
+    R0 : list or array
+        a reference position with a shape of ``(3,)``.
+    '''
 
-    if 'bfactor' not in u.atoms:
-        print('bfactor not in atoms; skipping Positional Restraints')
-        return cef
+    pot  = "fc * (radius + rfb - d)^2 * step( d - radius - rfb) + "
+    pot += "fc * (radius - rfb - d)^2 * step(-d + radius - rfb); "
+    pot += "d = (  (x-R0x)^2 + (y-R0y)^2 + (z-R0z)^2  )^0.5;"
+    
+    cef = CustomExternalForce(pot)
+    cef.addGlobalParameter("fc",     fc * kilojoule_per_mole/nanometer**2)
+    cef.addGlobalParameter("R0x",    R0[0]  * 0.1 * nanometer)
+    cef.addGlobalParameter("R0y",    R0[1]  * 0.1 * nanometer)
+    cef.addGlobalParameter("R0z",    R0[2]  * 0.1 * nanometer)
+    cef.addGlobalParameter("rfb",    rfb    * 0.1 * nanometer)
+    cef.addPerParticleParameter("radius")
 
-    bA = u.atoms.bfactor > bfactor_posre
-    df = u.atoms[bA]
+    bA1 = u.atoms.bfactor > bfactor_posre
+    if chain:
+        bA2 = u.atoms.chain == chain
+        df  = u.atoms[bA1 & bA2]
+    else:
+        df = u.atoms[bA1]
 
     for index, row in df.iterrows():
-        x0d = (row.x * angstrom).value_in_unit(nanometer)
-        y0d = (row.y * angstrom).value_in_unit(nanometer)
-        z0d = (row.z * angstrom).value_in_unit(nanometer)
-        hfcxd = fcx*kilojoule_per_mole/nanometer**2
-        hfcyd = fcy*kilojoule_per_mole/nanometer**2
-        hfczd = fcz*kilojoule_per_mole/nanometer**2
-        cef.addParticle(index,[ x0d, y0d, z0d, hfcxd,  hfcyd,  hfczd])
+        cef.addParticle(index, [radius * 0.1 * nanometer])
 
-    print('Adding Posre for {:d} atoms whose bfactor > {:.2f})'.format(len(df), bfactor_posre))
+    if chain:
+        print(f'Adding Sphere Posre for {len(df):d} atoms whose bfactor > {bfactor_posre:.2f} and chain is {chain})')
+    else:
+        print(f'Adding Sphere Posre for {len(df):d} atoms whose bfactor > {bfactor_posre:.2f}')
     return cef
-
 

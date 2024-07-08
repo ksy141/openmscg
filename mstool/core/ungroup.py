@@ -17,14 +17,18 @@ class Ungroup(Universe):
         mapping=[], mapping_add=[],
         backbone=True,
         sort=True,
-        guess_atomic_number=False, fibor=0.5, version='v1',
+        fibor=0.5, version='v1',
         water_resname='W', water_chain=None, water_number=4, water_fibor=2.0, water_chain_dms=False,
-        use_AA_structure=False, AA_structure=[], AA_structure_add=[], AA_shrink_factor=0.7):
+        use_AA_structure=False, AA_structure=[], AA_structure_add=[], AA_shrink_factor=0.8):
+
+        if isinstance(structure, str):
+            self.u = Universe(structure)
+        else:
+            self.u = structure
 
         self.data = {'resid': [], 'resname': [], 'chain': [], 'name': [], 'x': [], 'y': [], 'z': []}
         #self.xml           = ReadXML(ff, ff_add)
         self.mapping       = ReadMappings(mapping, mapping_add)
-        self.u             = Universe(structure)
         self.prot_resnames = list(three2one.keys())
         self.bond          = []
         self.backbone      = backbone
@@ -35,6 +39,9 @@ class Ungroup(Universe):
         self.water_number  = water_number
         self.water_fibor   = water_fibor
         self.water_chain_dms = water_chain_dms
+
+        ### tmp field
+        self.u.atoms['constructed'] = 0
 
         ### Change BB -> CA
         bA2 = self.u.atoms.resname.isin(self.prot_resnames)
@@ -81,7 +88,7 @@ class Ungroup(Universe):
         self.construct_water()
 
         self.data['bfactor'] = 0.0
-        super().__init__(data=self.data, guess_atomic_number=guess_atomic_number)
+        super().__init__(data=self.data)
 
         if refstructure != None:
             self.r          = Universe(refstructure)
@@ -123,31 +130,37 @@ class Ungroup(Universe):
 
     def construct_using_AA(self):
         for ifile in self.AA_structure:
-            basename = ifile.split('/')[-1].split('.')[0]
-            ext      = ifile.split('/')[-1].split('.')[-1]
-            prefix   = '/'.join(ifile.split('/')[:-1])
+            basename = os.path.basename(ifile).split('.')[0]
+            ext      = os.path.basename(ifile).split('.')[-1]
+            prefix   = '/'.join(os.path.abspath(ifile).split('/')[:-1])
             resname  = basename.split('_')[0]
-            print(basename, ext, prefix, resname, f'./{prefix}/{resname}.{ext}')
+            path     = prefix + f'/{resname}.{ext}'
 
-            if not os.path.exists(f'./{prefix}/{resname}.{ext}'): continue
-            self.exclude_residues.append(resname)
+            mobatoms = Universe(path).atoms
+            mobpos   = mobatoms[['x','y','z']].values
+            mobcog   = np.average(mobpos, axis=0)
+            bA0      = self.u.atoms['name'].isin(mobatoms['name'])
+
+            if not os.path.exists(path):
+                print(f'{path} does not exist')
+                continue
+
+            #self.exclude_residues.append(resname)
             
             bA1 = self.u.atoms.resname == resname
             if bA1.sum() == 0: continue
+            print('Using AA structure: ' + path)
+            self.u.atoms.loc[bA0 & bA1, 'constructed'] = 1
 
             resns = self.u.atoms[bA1]['resn'].unique()
             for resn in resns:
                 bA2 = self.u.atoms.resn == resn
-                refatoms = self.u.atoms[bA1 & bA2]
+                refatoms = self.u.atoms[bA0 & bA1 & bA2]
                 resid    = refatoms['resid'].values[0]
                 chain    = refatoms['chain'].values[0]
 
-                refpos   = self.u.atoms[bA1 & bA2][['x','y','z']].values
+                refpos   = self.u.atoms[bA0 & bA1 & bA2][['x','y','z']].values
                 refcog   = np.average(refpos, axis=0)
-
-                mobatoms = Universe(f'./{prefix}/{resname}.{ext}').atoms
-                mobpos   = mobatoms[['x','y','z']].values
-                mobcog   = np.average(mobpos, axis=0)
 
                 R, min_rmsd = rotation_matrix(mobpos - mobcog, refpos - refcog)
                 
@@ -355,8 +368,8 @@ class Ungroup(Universe):
                     print(f'Warning: mapping does not have {resname}. Skipping backmapping for this molecule.')
                 continue
 
-            if resname in self.exclude_residues:
-                continue
+            #if resname in self.exclude_residues:
+            #    continue
 
             for CGAtom, AAAtoms in self.mapping.RESI[resname]['CGAtoms'].items():
                 # if you already construct backbones accroding to cg2aa, skip backbone
@@ -365,7 +378,8 @@ class Ungroup(Universe):
 
                 bA1 = self.u.atoms.resname == resname
                 bA2 = self.u.atoms.name    == CGAtom
-                CG  = self.u.atoms[bA1 & bA2]
+                bA3 = self.u.atoms.constructed == 0
+                CG  = self.u.atoms[bA1 & bA2 & bA3]
 
                 n_atoms  = len(AAAtoms)
                 name     = AAAtoms * len(CG)
@@ -393,6 +407,44 @@ class Ungroup(Universe):
                                pos     = pos)
 
 
+    #def construct_water(self):
+    #    bA = self.u.atoms.resname == self.water_resname
+    #    CG = self.u.atoms[bA]
+
+    #    fibopos   = fibo(r=self.water_fibor, N=self.water_number, verbose=False, plot=None)
+    #    fibopos  -= np.average(fibopos, axis=0)
+    #    waterbead = np.repeat(fibopos, 3, axis=0) + (np.random.rand(self.water_number * 3, 3) - 0.5) * 0.5
+    #    allwater  = np.tile(waterbead, (len(CG), 1)) + \
+    #                np.repeat(CG[['x','y','z']].to_numpy(), self.water_number * 3, axis=0)
+    #    
+    #    if self.water_chain:
+    #        water_chain = self.water_chain
+    #    else:
+    #        water_chain = 'ZYXWVUTSRQPONMLKJIHGFEDCBA'
+    #    
+    #    if self.water_chain_dms:
+    #        chains = np.repeat([c for c in water_chain[0:self.water_number]] * len(CG), 3)
+
+    #    else:    
+    #        water_chain = water_chain[0 : (len(water_chain) // self.water_number) * self.water_number ]
+    #        if len(water_chain) % self.water_number != 0:
+    #            assert 0 == 1, 'len(water_chain) % water_number should be 0'
+    #                
+    #        chains = []
+    #        for i in range(len(water_chain) // self.water_number):
+    #            chains += [c for c in water_chain[i*self.water_number:(i+1)*self.water_number]] * 9999
+    #        chains  = np.repeat(chains[:len(CG) * self.water_number], 3)
+
+    #    name    = ['OH2', 'H1', 'H2'] * len(CG) * self.water_number
+    #    resname = ['TIP3'] * 3 * len(CG) * self.water_number
+    #    resid   = np.repeat(CG['resid'].to_list(), self.water_number * 3)
+
+    #    self.list2data(name    = name,
+    #                   chain   = chains,
+    #                   resname = resname,
+    #                   resid   = resid,
+    #                   pos     = allwater)
+
     def construct_water(self):
         bA = self.u.atoms.resname == self.water_resname
         CG = self.u.atoms[bA]
@@ -408,23 +460,11 @@ class Ungroup(Universe):
         else:
             water_chain = 'ZYXWVUTSRQPONMLKJIHGFEDCBA'
         
-        if self.water_chain_dms:
-            chains = np.repeat([c for c in water_chain[0:self.water_number]] * len(CG), 3)
-
-        else:    
-            water_chain = water_chain[0 : (len(water_chain) // self.water_number) * self.water_number ]
-            if len(water_chain) % self.water_number != 0:
-                assert 0 == 1, 'len(water_chain) % water_number should be 0'
-                    
-            chains = []
-            for i in range(len(water_chain) // self.water_number):
-                chains += [c for c in water_chain[i*self.water_number:(i+1)*self.water_number]] * 9999
-            chains  = np.repeat(chains[:len(CG) * self.water_number], 3)
-
+        chains  = np.repeat([c for c in water_chain[0:self.water_number]] * len(CG), 3)
         name    = ['OH2', 'H1', 'H2'] * len(CG) * self.water_number
         resname = ['TIP3'] * 3 * len(CG) * self.water_number
-        resid   = np.repeat(CG['resid'].to_list(), self.water_number * 3)
-
+        #resid   = np.repeat(CG['resn'].to_list(), self.water_number * 3)
+        resid   = np.repeat(np.arange(1, len(CG) + 1), self.water_number * 3)
         self.list2data(name    = name,
                        chain   = chains,
                        resname = resname,

@@ -6,7 +6,7 @@ import glob
 pwd = os.path.dirname(os.path.realpath(__file__))
 
 class Lipid:
-    def __init__(self, martini, lipidpath):
+    def __init__(self, martini, lipidpath, hydrophobic_thickness):
         '''
         Parameters
         ----------
@@ -21,9 +21,9 @@ class Lipid:
             The lipid should have an orientation of +z, and approximately centered at the origin.
             Imagine that this lipid is located at the upper leaflet of a bilayer whose center is 0.
         '''
-
+        
         #             PC,    PE,    PS,    PG,    PI,               PA    cholesterol
-        self.head = ['NC3', 'NH3', 'CNO', 'GL0', 'C1', 'C2', 'C3', 'PO4']
+        self.head = ['NC3', 'NH3', 'CNO', 'GL0', 'C1', 'C2', 'C3', 'PO4', 'R1', 'ROH']
 
         self.chain1 = []
         for i in range(1, 7):
@@ -55,6 +55,7 @@ class Lipid:
             structures[moleculetype] = Universe(ifile)
 
         self.structures = structures
+        self.hydrophobic_thickness = hydrophobic_thickness
         
 
     def construct_molecule(self, resname):
@@ -65,16 +66,29 @@ class Lipid:
         chain2 = list(set(names) & set(self.chain2))
         chain3 = list(set(names) & set(self.chain3))
         Nmax   = max(len(chain1), len(chain2), len(chain3))
-        zz     = np.linspace(0, -13, Nmax + 1)
+        zz     = np.linspace(0, -(self.hydrophobic_thickness/2 - 2), Nmax + 1)
         
         for name in names:
             added = False
 
             if name in self.head:
                 if name == 'PO4':
-                    positions.append([0, 0, 5])
+                    #positions.append([0, 0, 5])
+                    positions.append([0, 0, 2.5])
+                
+                # cholesterol
+                elif 'R1' in names:
+                    # R1 or ROH
+                    if name == 'R1' or name == 'ROH':
+                        positions.append(np.random.rand(3) - 0.5 + np.array([0, 0, +5.0]))
+                    # C1 or C2
+                    else:
+                        positions.append(np.random.rand(3) - 0.5 + np.array([0, 0, -5.0]))
+                
+                # NC3
                 else:
-                    positions.append([0, 0, 10])
+                    #positions.append([0, 0, 10])
+                    positions.append([0, 0, 5])
                 added = True
 
             if name == 'GL1':
@@ -86,7 +100,7 @@ class Lipid:
                 added = True
 
             if name == 'GL3':
-                positions.append([5.0, 0, 0])
+                positions.append([2.6, 0, 0])
                 added = True
 
             if name in self.chain1:
@@ -101,7 +115,7 @@ class Lipid:
 
             if name in self.chain3:
                 posz = zz[int(name[1])]
-                positions.append([5.0, 0, posz])
+                positions.append([2.6, 0, posz])
                 added = True
 
             if not added:

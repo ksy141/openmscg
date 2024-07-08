@@ -5,10 +5,60 @@ import os
 import glob
 pwd = os.path.dirname(os.path.realpath(__file__))
 
+def make_rect2(N, dx, dN=5):
+    '''
+    Try to make sqrt(N) x sqrt(N) rectangular points.
+
+      x
+
+     ccc
+     cxc
+     ccc
+
+    ooooo
+    occco
+    ocxco
+    occco
+    ooooo
+    '''
+
+    Nx = int(np.sqrt(N)) + dN
+
+    collect = []
+    for i in range(Nx):
+        pts = np.arange(-i, i+1)
+
+        # edges
+        for j in range(1, len(pts)-1):
+            collect.append([pts[0], pts[j], 0.0])
+
+        for j in range(1, len(pts)-1):
+            collect.append([pts[j], pts[0], 0.0])
+
+        for j in range(1, len(pts)-1):
+            collect.append([pts[-1], pts[j], 0.0])
+
+        for j in range(1, len(pts)-1):
+            collect.append([pts[j], pts[-1], 0.0])
+
+        # corners
+        if len(pts) == 1:
+            collect.append([0.0,0.0,0.0])
+        
+        else:
+            collect.append([pts[0], pts[0],   0.0])
+            collect.append([pts[0], pts[-1],  0.0])
+            collect.append([pts[-1], pts[0],  0.0])
+            collect.append([pts[-1], pts[-1], 0.0])
+
+    collect = np.array(collect) * dx
+    return collect[0:N], collect[N:]
+
+
 class Bilayer(Lipid):
-    def __init__(self, protein=None, upper={}, lower={}, trans={},
-                 dx=8.0, waterz=25.0, rcut=3, out=None, mode='shift',
-                 dN=5, martini=None,
+    def __init__(self, protein=None, upper={}, lower={}, trans={}, between={},
+                 dx=8.0, waterz=25.0, rcut=3, rcut_use_enclosed_protein=False, out=None, mode='shift',
+                 dN=20, martini=None, hydrophobic_thickness=30.0, sep=0.0,
                  lipidpath=pwd + '/../../../FF/martini2.2/structures/'):
 
         '''Make a plane bilayer (or monolayer) with the provided numbers of lipids.
@@ -54,6 +104,8 @@ class Bilayer(Lipid):
             Number of additional layers in XY dimensions if you shift overlapped lipids.
             dN = 5 (default) is usually fine, but if you have a protein-crowded membrane structure,
             you should increase this value.
+        hydrophobic thickness : float
+            Hydrophobic thickness of a bilayer in A.
         lipidpath : str
             Path to a folder that contains the structures of lipids.
             Phospholipids that have names of GL*/C*/D* can be internally constructed.
@@ -75,11 +127,12 @@ class Bilayer(Lipid):
         ...             trans={'P006':1}, martini=martini)
         '''
 
-        Lipid.__init__(self, martini=martini, lipidpath=lipidpath)
+        Lipid.__init__(self, martini=martini, lipidpath=lipidpath, hydrophobic_thickness=hydrophobic_thickness)
 
         upperN = int(np.sum(list(upper.values())))
         lowerN = int(np.sum(list(lower.values())))
         transN = int(np.sum(list(trans.values())))
+        betweenN = int(np.sum(list(between.values())))
         Nmol   = len(list(upper.values()) + list(lower.values())) + len(trans.values())
         assert Nmol > 0, 'Please provide upper and/or lower, e.g., upper = {"POPC": 100}'
 
@@ -89,9 +142,9 @@ class Bilayer(Lipid):
         ### monolayer_keys = ['POPC', 'DOPE', 'SAPI']
         ### monolayer_list = [0, 0, 0, 1, 1, 2]
 
-        monolayers     = {'upper': upper, 'lower': lower, 'trans': trans}
-        monolayer_keys = {'upper': [], 'lower': [], 'trans': []}
-        monolayer_list = {'upper': [], 'lower': [], 'trans': []}
+        monolayers     = {'upper': upper, 'lower': lower, 'trans': trans, 'between': between}
+        monolayer_keys = {'upper': [], 'lower': [], 'trans': [], 'between': []}
+        monolayer_list = {'upper': [], 'lower': [], 'trans': [], 'between': []}
 
         for layerkey, monolayer in monolayers.items():
             for key in monolayer.keys():
@@ -108,14 +161,16 @@ class Bilayer(Lipid):
 
         ### Construct plane monolayer
         # upper
-        upperP, unused_upperP = self.make_rect2(upperN, dx, dN)
+        upperP, unused_upperP = make_rect2(upperN, dx, dN)
         upperU = self.make_monolayer(upperP, 
-            monolayer_keys['upper'], monolayer_list['upper'], chain='UPPER', dz=15, inverse=+1.0)
+            monolayer_keys['upper'], monolayer_list['upper'], chain='0', 
+            dz=+hydrophobic_thickness/2 + sep/2, inverse=+1.0)
 
         # lower
-        lowerP, unused_lowerP = self.make_rect2(lowerN, dx, dN)
+        lowerP, unused_lowerP = make_rect2(lowerN, dx, dN)
         lowerU = self.make_monolayer(lowerP, 
-            monolayer_keys['lower'], monolayer_list['lower'], chain='LOWER', dz=-15, inverse=-1.0)
+            monolayer_keys['lower'], monolayer_list['lower'], chain='1', 
+            dz=-hydrophobic_thickness/2 - sep/2, inverse=-1.0)
 
         # pbc
         half_pbcx = max(upperP.max(), abs(upperP.min()), lowerP.max(), abs(lowerP.min()))
@@ -126,14 +181,24 @@ class Bilayer(Lipid):
         transP[:,2] = 0.0
         transP *= half_pbcx
         transU = self.make_monolayer(transP, 
-            monolayer_keys['trans'], monolayer_list['trans'], chain='TRANS', dz=0.0, inverse=+1.0)
+            monolayer_keys['trans'], monolayer_list['trans'], chain='2', 
+            dz=0.0, inverse=+1.0)
+        
+        # between
+        betweenP = (np.random.rand(betweenN, 3) - 0.5) * np.array([[pbcx, pbcx, sep]])
+        betweenU = self.make_monolayer(betweenP, 
+            monolayer_keys['between'], monolayer_list['between'], chain='3', dz=0.0, inverse=+1.0)
 
         # protein
         if protein:
-            try:
+            if isinstance(protein, str):
                 protein = Universe(protein)
-            except:
+
+            elif isinstance(protein, Universe):
                 protein = protein
+
+            else:
+                raise IOError('input protein structure is not found')
 
         else:
             # construct an empty protein universe
@@ -142,12 +207,27 @@ class Bilayer(Lipid):
 
         ### New Universe
         proteinU = Merge(protein.atoms, transU.atoms)
-        lipidU   = Merge(upperU.atoms,  lowerU.atoms)
+        lipidU   = Merge(upperU.atoms,  lowerU.atoms,  betweenU.atoms)
 
-       
+        if rcut_use_enclosed_protein:
+            from scipy.spatial import Delaunay
+            minx, miny, minz = proteinU.atoms[['x', 'y', 'z']].min(axis=0)
+            maxx, maxy, maxz = proteinU.atoms[['x', 'y', 'z']].max(axis=0)
+            x1 = np.linspace(minx, maxx, int((maxx - minx)/dx) + 1)
+            y1 = np.linspace(miny, maxy, int((maxy - miny)/dx) + 1)
+            z1 = np.linspace(minz, maxz, int((maxz - minz)/dx) + 1)
+            x2, y2, z2 = np.meshgrid(x1, y1, z1, indexing='ij')
+            grid_points = np.stack([x2.ravel(), y2.ravel(), z2.ravel()], axis=1)
+
+            coordinates = protein.atoms[protein.atoms['name'].isin(['BB', 'CA'])][['x','y','z']].to_numpy()
+            vrt_xyz = grid_points[Delaunay(coordinates).find_simplex(grid_points) >= 0]
+            VrtU = Universe(data={'x': vrt_xyz[:,0], 'y': vrt_xyz[:,1], 'z': vrt_xyz[:,2], 
+                                  'resid': np.arange(1, len(vrt_xyz) + 1)})
+
         if mode == 'remove':
             u = RemoveOverlappedResidues(
-                    lipidU.atoms, proteinU.atoms, 
+                    lipidU.atoms, 
+                    VrtU.atoms if rcut_use_enclosed_protein else proteinU.atoms, 
                     rcut=rcut)
 
         elif mode == 'shift':
@@ -156,12 +236,14 @@ class Bilayer(Lipid):
             lipidU.addResidues()
 
             bA = RemoveOverlappedResidues(
-                    lipidU.atoms, proteinU.atoms, 
+                    lipidU.atoms, 
+                    VrtU.atoms if rcut_use_enclosed_protein else proteinU.atoms, 
                     rcut=rcut,
                     returnoverlapped=True)
             
             move_atoms = lipidU.atoms[bA]
-            move_resns = set(move_atoms['resn'])
+            move_resns = list(set(move_atoms['resn']))
+            np.random.shuffle(move_resns)
 
             for move_resn in move_resns:
                 sel = lipidU.atoms.resn == move_resn
@@ -182,68 +264,21 @@ class Bilayer(Lipid):
                 lipidU.atoms.loc[sel, ['x','y','z']] = move_xyz + np.array([move_dx, move_dy, 0.0])
 
             u = Merge(proteinU.atoms, lipidU.atoms)
-
+            if unused_upperP_index != 0: print(f"# of upper lipids moved: {unused_upperP_index}")
+            if unused_lowerP_index != 0: print(f"# of lower lipids moved: {unused_lowerP_index}")
 
 
         ### Setting pbc
         pbcx         = max(u.atoms['x'].max(), u.atoms['y'].max(), abs(u.atoms['x'].min()), abs(u.atoms['y'].min())) * 2 + 3.0
         pbcz         = max(u.atoms['z'].max(), abs(u.atoms['z'].min())) * 2 + waterz * 2
-        u.dimensions = [pbcx, pbcx, pbcz, 90, 90, 90]
-        u.cell       = [[pbcx, 0, 0], [0, pbcx, 0], [0, 0, pbcz]]
+        u.dimensions = np.array([pbcx, pbcx, pbcz, 90, 90, 90])
+        u.cell       = np.array([[pbcx, 0, 0], [0, pbcx, 0], [0, 0, pbcz]])
 
         if out: u.write(out)
         self.universe = u
+        self.upperN = upperN
+        self.lowerN = lowerN
 
-
-
-    def make_rect2(self, N, dx, dN=5):
-        '''
-        Try to make sqrt(N) x sqrt(N) rectangular points.
-
-          x
-
-         ccc
-         cxc
-         ccc
-
-        ooooo
-        occco
-        ocxco
-        occco
-        ooooo
-        '''
-
-        Nx = int(np.sqrt(N)) + dN
-
-        collect = []
-        for i in range(Nx):
-            pts = np.arange(-i, i+1)
-
-            # edges
-            for j in range(1, len(pts)-1):
-                collect.append([pts[0], pts[j], 0.0])
-
-            for j in range(1, len(pts)-1):
-                collect.append([pts[j], pts[0], 0.0])
-
-            for j in range(1, len(pts)-1):
-                collect.append([pts[-1], pts[j], 0.0])
-
-            for j in range(1, len(pts)-1):
-                collect.append([pts[j], pts[-1], 0.0])
-
-            # corners
-            if len(pts) == 1:
-                collect.append([0.0,0.0,0.0])
-            
-            else:
-                collect.append([pts[0], pts[0],   0.0])
-                collect.append([pts[0], pts[-1],  0.0])
-                collect.append([pts[-1], pts[0],  0.0])
-                collect.append([pts[-1], pts[-1], 0.0])
-
-        collect = np.array(collect) * dx
-        return collect[0:N], collect[N:]
 
 
 
@@ -288,8 +323,9 @@ class Bilayer(Lipid):
 
             else:
                 assert 0 == 1, 'resname does not exist or input structure cannot be found'
-
+            
             finalpositions = inverse * np.array(positions) + points[i] + np.array([0,0,dz])
+
             data['chain'].extend(save_chain)
             data['resname'].extend(save_resname)
             data['resid'].extend(save_resid)

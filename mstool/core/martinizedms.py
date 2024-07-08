@@ -20,7 +20,7 @@ class MartinizeDMS:
     '''
 
     def __init__(self, dms_in, out, martini, epsilon_r=15.0, 
-        fcx=10.0, fcy=10.0, fcz=10.0, bfactor_posre=0.5):
+        fcx=10.0, fcy=10.0, fcz=10.0, bfactor_posre=0.5, helix=False):
 
         self.martini       = martini
         self.epsilon_r     = epsilon_r
@@ -28,6 +28,7 @@ class MartinizeDMS:
         self.fcy           = fcy
         self.fcz           = fcz
         self.bfactor_posre = bfactor_posre
+        self.helix         = helix
 
         if not out:
             sp  = dms_in.split('.')
@@ -112,7 +113,7 @@ class MartinizeDMS:
             universe.atoms.loc[index, 'nbtype'] = universe.t2n[t]
             universe.atoms.loc[index, 'type']   = t
 
-        universe.write(out, guess_atomic_number=False)
+        universe.write(out)
 
 
     def updateBonds(self):
@@ -287,8 +288,8 @@ class MartinizeDMS:
 
 
     def updateDihedrals(self):
-        proper_param = -1
-        improper_param = -1
+        self.proper_param   = -1
+        self.improper_param = -1
         for resname in self.resnames:
             dihedrals = self.martini.martini['molecules'][resname]['dihedrals']
             for dihedral in dihedrals:
@@ -337,17 +338,17 @@ class MartinizeDMS:
 
                     if func == 1:
                         # proper dihedral
-                        proper_param += 1
-                        self.cursor.execute(sql_insert_dihedral_trig_term.format(i1, i2, i3, i4, proper_param))
+                        self.proper_param += 1
+                        self.cursor.execute(sql_insert_dihedral_trig_term.format(i1, i2, i3, i4, self.proper_param))
                         self.cursor.execute(sql_insert_dihedral_trig_param.format(
-                            atype, t0, fc['0'], fc['1'], fc['2'], fc['3'], fc['4'], fc['5'], fc['6'], proper_param))
+                            atype, t0, fc['0'], fc['1'], fc['2'], fc['3'], fc['4'], fc['5'], fc['6'], self.proper_param))
 
                     if func == 2:
                         # improper function
-                        improper_param += 1
+                        self.improper_param += 1
                         # t0 = t0 - np.floor(t0 / 180) * 180
-                        self.cursor.execute(sql_insert_improper_harm_term.format(i1, i2, i3, i4, improper_param))
-                        self.cursor.execute(sql_insert_improper_harm_param.format(atype, t0, k * 0.5, improper_param))
+                        self.cursor.execute(sql_insert_improper_harm_term.format(i1, i2, i3, i4, self.improper_param))
+                        self.cursor.execute(sql_insert_improper_harm_param.format(atype, t0, k * 0.5, self.improper_param))
 
 
     def updateLJ(self):
@@ -387,12 +388,20 @@ class MartinizeDMS:
                     epsilon = 0.0
 
                 else:
-                    sigma6  = C12 / C6
-                    sigma   = sigma6 ** (1/6)
-                    epsilon = C6 / 4 / sigma6
+                    if self.martini.martini['energy'].startswith('C12'):
+                        sigma6  = C12 / C6
+                        sigma   = sigma6 ** (1/6)
+                        epsilon = C6 / 4 / sigma6
+
+                    elif self.martini.martini['energy'].startswith('4*eps'):
+                        sigma   = C6
+                        epsilon = C12
+
+                    else:
+                        raise AssertionError('LJ function is not defined')
 
                     sigma   = sigma   * 10      # nm to A
-                    epsilon = epsilon * 0.239  # kJ/mol to kcal/mol
+                    epsilon = epsilon * 0.239   # kJ/mol to kcal/mol
 
                 self.cursor.execute(sql_insert_nonbonded_combined.format(
                     ntype1, ntype2, epsilon, sigma, ttype1 + ' ' + ttype2))
@@ -432,37 +441,73 @@ class MartinizeDMS:
             bA1 = self.u.atoms.chain == chain
             bA2 = self.u.atoms.resname.isin(prot_resnames)
             bA3 = self.u.atoms.name  == 'BB'
-
             BB  = self.u.atoms[bA1 & bA2 & bA3]
-            assert (BB.resid.to_numpy()[1:] - BB.resid.to_numpy()[:-1] == 1).all(), 'not continuous?'
 
             ### BB bond
             r0 = 0.35 * 10
             k  = 1250 * 0.5 * 2.39e-3
 
-            if len(BB.index) > 1:
-                for i1, i2 in zip(BB[:-1].index, BB[1:].index):
-                    self.bond_param += 1
+            for i in range(len(BB) - 1):
+                CG1 = BB.iloc[i+0]
+                CG2 = BB.iloc[i+1]
+                
+                if CG2.resid - CG1.resid != 1:
+                    continue
 
-                    self.cursor.execute(sql_insert_exclusion.format(i1, i2))
-                    btype = f'BB_{i1}_{i2}'
+                i1 = CG1.id
+                i2 = CG2.id
+                self.bond_param += 1
 
-                    self.cursor.execute(sql_insert_bond.format(i1, i2, 1))
-                    self.cursor.execute(sql_insert_stretch_harm_term.format(i1, i2, 0, self.bond_param))
-                    self.cursor.execute(sql_insert_stretch_harm_param.format(btype, r0, k, self.bond_param))
+                self.cursor.execute(sql_insert_exclusion.format(i1, i2))
+                btype = f'BB_{i1}_{i2}'
+
+                self.cursor.execute(sql_insert_bond.format(i1, i2, 1))
+                self.cursor.execute(sql_insert_stretch_harm_term.format(i1, i2, 0, self.bond_param))
+                self.cursor.execute(sql_insert_stretch_harm_param.format(btype, r0, k, self.bond_param))
+
+            
+            if self.helix:
+                #### BBBB dihedral
+                t0 = -120
+                k  = 400 * 1.0 * 0.239
+
+                if len(BB.index) > 3.5:
+                    for i1, i2, i3, i4 in zip(BB[:-3].index, BB[1:-2].index, BB[2:-1].index, BB[3:].index):
+                        self.proper_param += 1
+                        dtype = f'BBBB_{i1}_{i2}_{i3}_{i4}'
+                        self.cursor.execute(sql_insert_dihedral_trig_term.format(i1, i2, i3, i4, self.proper_param))
+                        self.cursor.execute(sql_insert_dihedral_trig_param.format(
+                            dtype, t0, k, k, 0.0, 0.0, 0.0, 0.0, 0.0, self.proper_param))
 
 
+                ### BBB angle params
+                t0 = 96
+                k  = 700 * 0.5 * 0.239
+            
+            else:
+                ### BBB angle params
+                t0 = 127
+                k  = 20 * 0.5 * 0.239
+            
+            
             ### BBB angle
-            t0 = 127
-            k  = 20 * 0.5 * 0.239
+            for i in range(len(BB) - 2):
+                CG1 = BB.iloc[i+0]
+                CG2 = BB.iloc[i+1]
+                CG3 = BB.iloc[i+2]
 
-            if len(BB.index) > 2:
-                for i1, i2, i3 in zip(BB[:-2].index, BB[1:-1].index, BB[2:].index):
-                    self.angle_param += 1
-                    atype = f'BBB_{i1}_{i2}_{i3}'
-                    self.cursor.execute(sql_insert_angle_harmcos_term.format(i1, i2, i3, self.angle_param))
-                    self.cursor.execute(sql_insert_angle_harmcos_param.format(atype, np.cos(t0 * np.pi / 180), k, self.angle_param))
+                if (CG3.resid - CG2.resid != 1) or (CG2.resid - CG1.resid != 1):
+                    continue
+                
+                i1 = CG1.id
+                i2 = CG2.id
+                i3 = CG3.id
+                self.angle_param += 1
 
+                atype = f'BBB_{i1}_{i2}_{i3}'
+                self.cursor.execute(sql_insert_angle_harmcos_term.format(i1, i2, i3, self.angle_param))
+                self.cursor.execute(sql_insert_angle_harmcos_param.format(atype, np.cos(t0 * np.pi / 180), k, self.angle_param))
+            
 
             ### BBS angle
             t0 = 100

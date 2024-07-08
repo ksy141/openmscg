@@ -220,6 +220,7 @@ if __name__ == '__main__':
         include_package_data = False,
         package_data={
             "mstool.examples.Backmapping": ["*/cg*pdb", "*/protein_AA.pdb", "*/*.xml", "*/*.dat"],
+            "mstool.examples.BilayerBuilder": ["*pdb", "*/*pdb"],
             "mstool.FF": ["*/*.xml", "*/*.itp", "*/*.pdb"],
             "mstool.mapping": ["*.dat"],
         },

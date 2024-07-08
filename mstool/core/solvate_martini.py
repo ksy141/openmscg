@@ -5,7 +5,8 @@ import pandas as pd
 
 
 def solvate(u, out=None, 
-            solventdr=4.93, removedr=6.0, waterslab=0.8, waterchain='W', center=True, pbc=False):
+            solventdr=4.93, removedr=6.0, waterslab=0.8, waterchain='W', center=True, pbc=False,
+            membrane=False):
     
     # if there is a zero, raise an error
     assert np.all(u.dimensions[0:3]), 'check your dimensions'
@@ -21,6 +22,12 @@ def solvate(u, out=None,
     Nz  = u.dimensions[2]               // solventdr
     Nz2 = (u.dimensions[2] - waterslab) // solventdr
     if Nz != Nz2: Nz = Nz2
+
+    if Nx > 3.5 and membrane:
+        Nx -= 3
+    
+    if Ny > 3.5 and membrane:
+        Ny -= 3
 
     xx = np.arange(Nx) * solventdr
     yy = np.arange(Ny) * solventdr
@@ -44,7 +51,7 @@ def solvate(u, out=None,
         
     # waterbox
     if len(u.atoms) == 0:
-        if out: wateru.write(out, guess_atomic_number=False)
+        if out: wateru.write(out)
         return wateru
     
     pos1 = wateru.atoms[['x','y', 'z']].to_numpy(dtype=np.float64)
@@ -58,27 +65,30 @@ def solvate(u, out=None,
 
     u.atoms = pd.concat([u.atoms, wateru.atoms[bA]], ignore_index=True)
 
-    if out: u.write(out, guess_atomic_number=False)
+    if out: u.write(out)
     return u
 
 
 def ionize(u, out=None, qtot=None,
-           conc = 0.15, pos='SOD', neg='CLA', waterresname='W', ionchain=''):
+           conc = 0.15, pos='SOD', neg='CLA', waterresname='W', ionchain='',
+           posionchain=None, negionchain=None):
     """Add ions at a given concentration.
     conc = ( N_positive_ion / 6.02e23 ) / ( V * 1e-27 ) = (N * 1e4) / (V * 6.02)
     """
     
     # if system is not parameterized, all q = 0;
     if all(u.atoms.type == 'tbd') and not all(u.atoms.resname == waterresname) and not qtot:
-        print("\nYou need to parameterize a system first before adding ions")
+        #print("\nYou need to parameterize a system first before adding ions")
         print("Adding ions while assuming the input structure has a net charge of 0")
     
     if qtot:
         qtot = qtot
     else:
         qtot = round(u.atoms.charge.sum())
-
-    vol  = u.dimensions[0] * u.dimensions[1] * u.dimensions[2]
+    
+    # instead of using vol, use the number of water * water volume per each bead
+    # vol  = u.dimensions[0] * u.dimensions[1] * u.dimensions[2]
+    vol = len(u.atoms[u.atoms.name == 'W']) * 4.93 ** 3
 
     if pos in ['MG', 'CAL', 'BAR', 'ZN2', 'CD2']:
         factor = 2
@@ -106,7 +116,10 @@ def ionize(u, out=None, qtot=None,
     wateratoms.loc[0:Npos-1, 'charge']  = factor
     wateratoms.loc[0:Npos-1, 'name']    = pos
     wateratoms.loc[0:Npos-1, 'resname'] = pos
-    wateratoms.loc[0:Npos-1, 'chain']   = ionchain + '1'
+    if posionchain:
+        wateratoms.loc[0:Npos-1, 'chain']   = posionchain
+    else:
+        wateratoms.loc[0:Npos-1, 'chain']   = ionchain + '1'
     
     pos_preexisting = u.atoms[u.atoms['name'] == pos]
     if len(pos_preexisting) == 0:
@@ -122,7 +135,10 @@ def ionize(u, out=None, qtot=None,
     wateratoms.loc[Npos:Npos+Nneg-1, 'charge']  = -1
     wateratoms.loc[Npos:Npos+Nneg-1, 'name']    = neg
     wateratoms.loc[Npos:Npos+Nneg-1, 'resname'] = neg
-    wateratoms.loc[Npos:Npos+Nneg-1, 'chain']   = ionchain + '2'
+    if negionchain:
+        wateratoms.loc[Npos:Npos+Nneg-1, 'chain']   = negionchain
+    else:
+        wateratoms.loc[Npos:Npos+Nneg-1, 'chain']   = ionchain + '2'
 
     neg_preexisting = u.atoms[u.atoms['name'] == neg]
     if len(neg_preexisting) == 0:
@@ -151,7 +167,7 @@ def ionize(u, out=None, qtot=None,
     print(f"{neg}: {Nneg}")
     print(f"{pos}.{neg}: {conc_final:.3f} M\n")
     
-    if out: u.write(out, guess_atomic_number=False)
+    if out: u.write(out)
     return u
 
 
@@ -159,7 +175,8 @@ def ionize(u, out=None, qtot=None,
 def SolvateMartini(structure=None, out=None, t=None,
                    dimensions=None,
                    solventdr=4.93, removedr=6.0, waterslab=0.8, waterchain='W', center=True,
-                   conc=0.15, qtot=None, pos='SOD', neg='CLA', waterresname='W', ionchain='ZZ', pbc=True):
+                   conc=0.15, qtot=None, pos='SOD', neg='CLA', waterresname='W', ionchain='ZZ', pbc=True,
+                   membrane=False, posionchain=None, negionchain=None):
         
     # make a water box
     if dimensions:
@@ -192,13 +209,13 @@ def SolvateMartini(structure=None, out=None, t=None,
             u.cell = np.array([[dim, 0, 0], [0, dim, 0], [0, 0, dim]])
 
     solvatedu = solvate(u, solventdr=solventdr, removedr=removedr, waterslab=waterslab,
-                        waterchain=waterchain, center=center, pbc=pbc)
+                        waterchain=waterchain, center=center, pbc=pbc, membrane=membrane)
     if conc == 0.0:
-        if out: solvatedu.write(out, guess_atomic_number=False)
+        if out: solvatedu.write(out)
         return solvatedu
 
 
     ionizedu  = ionize(solvatedu, out=out, qtot=qtot, conc=conc, pos=pos, neg=neg, 
-                       waterresname=waterresname, ionchain=ionchain)
+                       waterresname=waterresname, ionchain=ionchain, posionchain=posionchain, negionchain=negionchain)
     return ionizedu
 

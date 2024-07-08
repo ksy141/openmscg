@@ -9,6 +9,8 @@ from   .checktetrahedron import CheckTetrahedron
 
 from   ..utils.protein_sel import three2one
 from   ..utils.rock        import Rock
+from   ..utils.rockchain   import RockChain
+from   ..utils.rockresidue import RockResidue
 from   ..utils.openmmutils import *
 
 import numpy  as np
@@ -26,9 +28,8 @@ class REM:
     # mergedPositions = modeller.positions
 
     def __init__(self, structure=None, out=None, protein=None, refposre=None, outrem=None,
-        rock=None, rockrcut=1.2, rockKbond=5000.0, rockresname='ROCK', rockout='ROCK_rem.pdb',
-        nonrockout='NONROCK.dms',
-        rocktype='HL',
+        rock=None, rockout='ROCK_rem.pdb', nonrockout='NONROCK.dms',
+        rockCtype='CTL3', rockHtype='HAL3', rockprefix='ROCK',
         rcut=1.2, pbc=True, 
         A=100, C=50,
         mapping = [], mapping_add = [], 
@@ -37,12 +38,19 @@ class REM:
         fcx = 1000.0, fcy = 1000.0, fcz = 1000.0,
         bfactor_posre = 0.5, add_bonds=True, sort=False, version='v4',
         cospower=2, turn_off_torsion_warning=False,
-        nsteps=10000,
-        turn_off_EMNVT=False):
+        nsteps=10000, rem_nsteps=0,
+        turn_off_EMNVT=False,
+        T=310):
         
         # v3 should not be used
         # protein: version = 'v4' seems the best
         # lipid:   version = 'v1' seems the best
+
+        self.fcx = fcx
+        self.fcy = fcy
+        self.fcz = fcz
+        self.bfactor_posre = bfactor_posre
+        self.T = T
 
 
         ### NonbondedMethod
@@ -58,7 +66,9 @@ class REM:
         self.rcut  = rcut
         self.cospower = cospower
         self.nsteps   = nsteps
-        u          = Universe(structure)
+        self.rem_nsteps = rem_nsteps
+        u = Universe(structure)
+        self.protein = protein
 
 
         if not isinstance(ff_add, list):
@@ -67,14 +77,27 @@ class REM:
 
         ### Make a rock file
         if rock:
-            rr         = Rock(structure=rock, out='ROCK', 
-                              rcut=rockrcut, 
-                              Kbond=rockKbond, 
-                              resname=rockresname,
-                              type=rocktype)
+            #rr         = Rock(structure=rock, out='ROCK', 
+            #                  rcut=rockrcut, 
+            #                  Kbond=rockKbond, 
+            #                  resname=rockresname,
+            #                  rockCtype=rockCtype,
+            #                  rockHtype=rockHtype,
+            #                  ENM=rockENM)
+
+            #rr         = RockChain(structure=rock, 
+            #                       out='ROCK', 
+            #                       resname=rockresname,
+            #                       rockCtype=rockCtype,
+            #                       rockHtype=rockHtype)
+
+            rr         = RockResidue(structure=rock, 
+                                     out=rockprefix, 
+                                     rockCtype=rockCtype,
+                                     rockHtype=rockHtype)
 
             rrdms      = DesmondDMSFile(rr.dms)
-            ff_add    += ['ROCK.xml']
+            ff_add    += [rockprefix + '.xml']
 
 
         ### Read XML
@@ -103,20 +126,35 @@ class REM:
                 for bond in bonds:
                     pdb.topology.addBond(pdbatoms[bond[0]], pdbatoms[bond[1]])
 
+            realpbc = pdb.topology.getPeriodicBoxVectors()
+            #print(realpbc)
+
         else:
             raise IOError('Please provide a pdb or dms file')
 
+        fakepbc = Quantity(value=(Vec3(x=9.0, y=0.0, z=0.0), 
+                                  Vec3(x=0.0, y=9.0, z=0.0), 
+                                  Vec3(x=0.0, y=0.0, z=9.0)), 
+                           unit=nanometer)
 
         ### Combine systems (rock should be the first because of the bonds added later)
         modeller_combined = []
         universe_combined = []
 
         if rock:
+            if pbc:
+                rrdms.topology.setPeriodicBoxVectors(realpbc)
+            else:
+                rrdms.topology.setPeriodicBoxVectors(fakepbc)
             modeller_combined.append([rrdms.topology, rrdms.positions])
             universe_combined.append(Universe(rr.dms).atoms)
 
         if protein:
             proteinpdb = PDBFile(protein)
+            if pbc:
+                proteinpdb.topology.setPeriodicBoxVectors(realpbc)
+            else:
+                proteinpdb.topology.setPeriodicBoxVectors(fakepbc)
             modeller_combined.append([proteinpdb.topology, proteinpdb.positions])
             universe_combined.append(Universe(protein).atoms)
         
@@ -131,25 +169,26 @@ class REM:
             modeller.add(modeller_combined[i][0], modeller_combined[i][1])
 
         if pbc:
-            modeller.topology.setPeriodicBoxVectors(pdb.topology.getPeriodicBoxVectors())
+            modeller.topology.setPeriodicBoxVectors(realpbc)
 
         self.final = modeller
         print(self.final.topology)
+        #print(self.final.topology.getPeriodicBoxVectors())
 
 
         ### Make a universe
         u.atoms = pd.concat(universe_combined, ignore_index=True)
 
 
-        ### Bonds (which whill not include ROCK)
-        self.bonds = []
+        #### Bonds (which whill not include ROCK)
+        unique_bonds = set()
         for bond in self.final.topology.bonds():
-            i0 = bond[0].index
-            i1 = bond[1].index
-            if i0 > i1: i0, i1 = i1, i0
-            if [i0, i1] not in self.bonds:
-                self.bonds.append([i0, i1])
-        u.bonds = self.bonds
+            i0, i1 = bond[0].index, bond[1].index
+            if i0 > i1:
+                i0, i1 = i1, i0
+            unique_bonds.add((i0, i1))
+
+        self.bonds = [list(bond) for bond in unique_bonds]
 
 
         ### Create a system
@@ -167,10 +206,12 @@ class REM:
 
         ### Add posre
         if refposre:
-            self.system.addForce(addRefPosre(u, refposre, fcx, fcy, fcz))
+            # self.system.addForce(addRefPosre(u, refposre, fcx, fcy, fcz))
+            self.system.addForce(addRefPosrePeriodic(u, refposre, fcz))
         else:
             # rock molecules have bfactor of 0.0 -> will have no restraints
-            self.system.addForce(addPosre(u, bfactor_posre, fcx, fcy, fcz))
+            # self.system.addForce(addPosre(u, bfactor_posre, fcx, fcy, fcz))
+            self.system.addForce(addPosrePeriodic(u, bfactor_posre, fcz))
 
 
 
@@ -188,17 +229,22 @@ class REM:
             print('using REM version 3')
             self.updateCustomBondForce()
             self.removeForces(['LennardJones', 'NonbondedForce']) #LennardJones14
-        else:
+        elif version == 'v4':
             print('using REM version 4')
             self.system.addForce(self.updateCustomNonbondedForce(excl=3))
             self.updateCustomBondForce()
             self.removeForces(['LennardJones', 'NonbondedForce']) #LennardJones14
- 
+        elif version == 'v5':
+            print('using REM version 5')
+            self.updateCustomNonbondedForce5()
+            self.updateCustomBondForce()
+
         print("Adding Isomer Torsions - started")
         self.system.addForce(addPeptideTorsions(  u, Kpeptide))
-        self.system.addForce(addCisTransTorsions( u, Kcistrans, mapping, exclude=[rockresname], turn_off_torsion_warning=turn_off_torsion_warning))
-        self.system.addForce(addChiralTorsions(   u, Kchiral,   mapping, exclude=[rockresname], turn_off_torsion_warning=turn_off_torsion_warning))
-        self.system.addForce(addDihedralTorsions( u, Kdihedral, mapping, exclude=[rockresname], turn_off_torsion_warning=turn_off_torsion_warning))
+        self.system.addForce(addCisTransTorsions( u, Kcistrans, mapping, turn_off_torsion_warning=turn_off_torsion_warning))
+        self.system.addForce(addChiralTorsions(   u, Kchiral,   mapping, turn_off_torsion_warning=turn_off_torsion_warning))
+        self.system.addForce(addDihedralTorsions( u, Kdihedral, mapping, turn_off_torsion_warning=turn_off_torsion_warning))
+        self.system.addForce(addAntiDihedralTorsions( u, Kdihedral, mapping, turn_off_torsion_warning=turn_off_torsion_warning))
         print("Adding Isomer Torsions - finished")
 
 
@@ -209,14 +255,15 @@ class REM:
 
         ### Run REM without Additional Torsions
         print("Running REM without isomeric torsions")
-        self.removeForces(['PeptideTorsion', 'CisTransTorsion', 'ChiralTorsion'])
+        self.removeForces(['PeptideTorsion', 'CisTransTorsion', 'ChiralTorsion', 'DihedralTorsion', 'AntiDihedralTorsion'])
+        #self.removeForces(['PeptideTorsion', 'CisTransTorsion', 'ChiralTorsion'])
         self.runREM()
+        u.atoms[['x','y','z']] = self.numpypositions
 
         ### Save outREM
-        if outrem:
-            u.atoms[['x','y','z']] = self.numpypositions
-            u.write(outrem)
-            #CheckTetrahedron(outrem, ff=ff, ff_add=ff_add)
+        if outrem: u.write(outrem)
+        #CheckTetrahedron(outrem, ff=ff, ff_add=ff_add)
+        self.u = u
 
         ### Run EM + NVT
         if turn_off_EMNVT:
@@ -226,28 +273,31 @@ class REM:
             self.runEMNVT()
         elif rock:
             print("EM+NVT is turned off with ROCK (AA)")
-
+        
         ### Save
         u.atoms[['x','y','z']] = self.numpypositions
 
         if rock:
-            rockstruct = Universe(data = u.atoms[u.atoms.resname == 'ROCK'])
+            rockbA = u.atoms.resname.str.startswith('ROCK')
+            rockstruct = Universe(data = u.atoms[rockbA])
             rockstruct.dimensions = u.dimensions
             rockstruct.cell       = u.cell 
-            rockstruct.bodns      = addBonds(rockstruct, xml)
+            #rockstruct.bonds      = addBonds(rockstruct, xml)
+            #rockstruct.bonds      = getBonds(rockstruct, ff=ff, ff_add=ff_add)
             rockstruct.write(rockout)
 
-            nonrockstruct = Universe(data = u.atoms[u.atoms.resname != 'ROCK'])
+            nonrockstruct = Universe(data = u.atoms[~rockbA])
             nonrockstruct.dimensions = u.dimensions
             nonrockstruct.cell       = u.cell
             nonrockstruct.bonds      = addBonds(nonrockstruct, xml)
+            #nonrockstruct.bonds      = getBonds(nonrockstruct, xml)
             nonrockstruct.write(nonrockout)
 
             new = Universe(data = pd.concat([Universe(rock).atoms, nonrockstruct.atoms], ignore_index=True))
             new.dimensions = u.dimensions
             new.cell       = u.cell
             if out: new.write(out)
-            ff_add.remove('ROCK.xml')
+            ff_add.remove(rockprefix + '.xml')
 
         else:
             #if sort: u.sort()
@@ -257,10 +307,14 @@ class REM:
                 #u.bonds = self.bonds
 
             if out:
-                u.write(out, wrap=True)
+                if pbc:
+                    u.write(out, wrap=True)
+                else:
+                    u.write(out)
         
         #CheckTetrahedron(out, ff=ff, ff_add=ff_add)
         self.universe = u
+        self.u        = u
         self.forces   = { force.__class__.__name__ : force for force in self.system.getForces() }
         #print(self.forces.keys())
 
@@ -271,6 +325,28 @@ class REM:
             for i, force in enumerate(self.system.getForces()):
                 if force.getName() == remove:
                     self.system.removeForce(i)
+
+
+    def updateCustomNonbondedForce5(self):
+        forces = { force.__class__.__name__ : force for force in self.system.getForces() }
+        cnf = forces['CustomNonbondedForce']
+        # acoef/r^12 - bcoef/r^6 = 4es^12/r^12 - 4es^6/r^6
+
+        cnf.setEnergyFunction(f"min(rep, LJ); \
+            rep  = A * (cos(pi/2 * r/sig))^2; \
+            LJ   = 4 * eps * ((sig/r)^12-(sig/r)^6); \
+            eps  = bcoef(type1, type2)^2 / acoef(type1, type2) / 4 ; \
+            sig  = (acoef(type1, type2) / bcoef(type1, type2))^(1/6);")
+
+        cnf.addGlobalParameter('pi', 3.141592)
+        cnf.addGlobalParameter('A',    self.A * kilojoule/mole)
+        cnf.addGlobalParameter('rcut', self.rcut * nanometer)
+        #cnf.addGlobalParameter('rcut', cnf.getCutoffDistance())
+
+        # Original Nonbonded Force (only carries charges for charmm36)
+        onf = forces['NonbondedForce']
+        for i in range(onf.getNumParticles()):
+            onf.setParticleParameters(i, 0.0, 1.0, 0.0)
 
 
     def updateCustomNonbondedForce(self, excl=3):
@@ -402,9 +478,8 @@ class REM:
         return customforce
 
 
-
     def runREM(self):
-        integrator = LangevinIntegrator(310*kelvin, 1/picosecond, 0.002*picoseconds)
+        integrator = LangevinIntegrator(self.T*kelvin, 1/picosecond, 0.002*picoseconds)
         simulation = Simulation(self.final.topology, self.system, integrator)
         simulation.context.setPositions(self.positions)
         platform = simulation.context.getPlatform().getName()
@@ -413,6 +488,9 @@ class REM:
         print("E0: %.3e kJ/mol" %simulation.context.getState(getEnergy=True).getPotentialEnergy()._value)
         simulation.minimizeEnergy()
         print("E1: %.3e kJ/mol" %simulation.context.getState(getEnergy=True).getPotentialEnergy()._value)
+        if self.rem_nsteps > 0:
+            simulation.step(self.rem_nsteps)
+            print("E2: %.3e kJ/mol" %simulation.context.getState(getEnergy=True).getPotentialEnergy()._value)
         print("-------------------------------")
 
         self.positions      = simulation.context.getState(getPositions=True).getPositions()
@@ -420,10 +498,17 @@ class REM:
 
 
     def runEMNVT(self):
-        integrator = LangevinIntegrator(310*kelvin, 1/picosecond, 0.002*picoseconds)
+        integrator = LangevinIntegrator(self.T*kelvin, 1/picosecond, 0.002*picoseconds)
         system     = self.forcefield.createSystem(self.final.topology, 
                                                   nonbondedMethod=self.nonbondedMethod, 
                                                   nonbondedCutoff=self.rcut*nanometers)
+
+        # added on 20240302
+        # let protein does not change during EMNVT
+        if self.protein:
+            system.addForce(addPosrePeriodic(self.u, self.bfactor_posre, self.fcz))
+            # system.addForce(addRefPosre(self.u, self.protein, self.fcx, self.fcy, self.fcz))
+
         simulation = Simulation(self.final.topology, system, integrator)
         simulation.context.setPositions(self.positions)
         #print(simulation.context.getState().getPeriodicBoxVectors(asNumpy=True)._value * 10)
@@ -432,8 +517,10 @@ class REM:
         print("Platform: ", platform)
         print("E0: %.3e kJ/mol" %simulation.context.getState(getEnergy=True).getPotentialEnergy()._value)
         simulation.minimizeEnergy()
-        simulation.step(self.nsteps)
         print("E1: %.3e kJ/mol" %simulation.context.getState(getEnergy=True).getPotentialEnergy()._value)
+        if self.nsteps > 0:
+            simulation.step(self.nsteps)
+            print("E2: %.3e kJ/mol" %simulation.context.getState(getEnergy=True).getPotentialEnergy()._value)
         print("-------------------------------")
 
         self.positions      = simulation.context.getState(getPositions=True).getPositions()

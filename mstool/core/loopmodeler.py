@@ -12,6 +12,7 @@ from   .map                   import Map
 from   .readmartini           import ReadMartini
 from   .martinizedms          import MartinizeDMS
 from   .dms2openmm            import DMS2openmm
+from   .dmsfile               import DMSFile
 from   .rem                   import REM
 from   .checkstructure        import CheckStructure
 from   .ungroup               import Ungroup
@@ -31,7 +32,7 @@ class LoopModeler:
         A=100, C=50, soft=True, mutate=True, t=15.0, extend_termini={},
         mapping=[], mapping_add=[], ff=[], ff_add=[],
         fc1 = 50, fc2 = 2000, Kchiral=300.0, Kpeptide=300.0, 
-        nsteps=0, dt=0.002, dcdfreq=1000, csvfreq=1000):
+        nsteps=0, dt=0.002, dcdfreq=1000, csvfreq=1000, helix=False):
 
         self.protein     = protein
         self.fasta       = fasta
@@ -44,6 +45,7 @@ class LoopModeler:
         self.mapping     = mapping
         self.mapping_add = mapping_add
         self.fc1         = fc1
+        self.helix       = helix
 
 
         ### step1: workdir
@@ -105,26 +107,31 @@ class LoopModeler:
 
 
         ### step6: run Martini simulation
-        runMartiniEM(dms_in = workdir + '/step5_ff.dms',
-                     out    = workdir + '/step6_minimized.pdb',
-                     soft   = soft,
-                     nonbondedMethod = nonbondedMethod,
-                     nonbondedCutoff = 1.1)
+        dms = DMSFile(workdir + '/step5_ff.dms')
+        dms.createSystem(REM=True, tapering='shift', martini=True, nonbondedMethod=nonbondedMethod)
+        dms.runEMNPT(dt=dt, nsteps=nsteps, dcdfreq=dcdfreq, csvfreq=csvfreq, semiisotropic=False, out=workdir + '/step6_minimized.dms')
+        Universe(workdir + '/step6_minimized.dms').write(workdir + '/step6_minimized.pdb')
+
+        #runMartiniEM(dms_in = workdir + '/step5_ff.dms',
+        #             out    = workdir + '/step6_minimized.pdb',
+        #             soft   = soft,
+        #             nonbondedMethod = nonbondedMethod,
+        #             nonbondedCutoff = 1.1)
 
         if t == 0 or t is None or nsteps == 0:
             shutil.copy(workdir + '/step6_minimized.pdb',
                         workdir + '/step6_NPT.pdb')
-        else:
-            runMartiniEMNPT(dms_in = workdir + '/step5_ff.dms',
-                            pos_in = workdir + '/step6_minimized.pdb',
-                            out    = workdir + '/step6_NPT.pdb',
-                            soft   = False,
-                            nonbondedMethod = nonbondedMethod,
-                            nonbondedCutoff = 1.1,
-                            dt      = dt,
-                            nsteps  = nsteps,
-                            dcdfreq = dcdfreq,
-                            csvfreq = csvfreq)
+        #else:
+        #    runMartiniEMNPT(dms_in = workdir + '/step5_ff.dms',
+        #                    pos_in = workdir + '/step6_minimized.pdb',
+        #                    out    = workdir + '/step6_NPT.pdb',
+        #                    soft   = False,
+        #                    nonbondedMethod = nonbondedMethod,
+        #                    nonbondedCutoff = 1.1,
+        #                    dt      = dt,
+        #                    nsteps  = nsteps,
+        #                    dcdfreq = dcdfreq,
+        #                    csvfreq = csvfreq)
 
 
         ### step7: ungroup (output must be a pdb so that openMM recognizes protein residues)
@@ -244,7 +251,8 @@ class LoopModeler:
                      out     = out,
                      fcx     = self.fc1,
                      fcy     = self.fc1,
-                     fcz     = self.fc1)
+                     fcz     = self.fc1,
+                     helix   = self.helix)
         dumpsql(out)
 
 
